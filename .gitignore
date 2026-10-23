@@ -1,0 +1,19 @@
+# Build do Maven
+target/
+
+# Banco SQLite gerado ao rodar o sistema
+*.db
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+out/
+bin/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
