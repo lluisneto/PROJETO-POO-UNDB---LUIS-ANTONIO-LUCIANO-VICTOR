@@ -71,7 +71,7 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 ## ✅ Funcionalidades
 
 ### Etapa 1: Pedidos agendados
-- [ ] Cadastro de clientes
+- [x] Cadastro de clientes
 - [ ] Cadastro de produtos (salgados, preços)
 - [ ] Registro de pedido com itens, **data e horário de entrega**
 - [ ] Controle de status: `PENDENTE` → `EM_PRODUCAO` → `SAIU_PARA_ENTREGA` → `ENTREGUE` / `CANCELADO`
@@ -131,7 +131,7 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 - **Polimorfismo:** cada tipo de `Pagamento` implementa `processar()` do seu jeito; o `PagamentoFiado`, por exemplo, lança o valor na conta fiado do cliente.
 - **Abstração:** `Pessoa` e `Pagamento` são classes abstratas, representando conceitos gerais.
 
-> 📐 O diagrama de classes UML completo ficará em [`docs/diagramas/`](docs/diagramas/).
+> 📐 Diagramas em [`docs/diagramas/`](docs/diagramas/): [classes](docs/diagramas/diagrama-de-classes.md) e [casos de uso](docs/diagramas/casos-de-uso.md). Requisitos em [`docs/requisitos/requisitos.md`](docs/requisitos/requisitos.md).
 
 ---
 
@@ -163,18 +163,26 @@ PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR/
 
 ## ▶️ Como executar
 
-> 🚧 Em construção. As instruções serão adicionadas quando a primeira versão do código estiver pronta.
-
-Pré-requisitos previstos:
+Pré-requisitos:
 - JDK 21 ou superior
-- Maven
+- Maven 3.9 ou superior
 - Git
 
 ```bash
 # Clonar o repositório
 git clone https://github.com/lluisneto/PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR.git
 cd PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR
+
+# Rodar os testes automatizados
+mvn test
+
+# Abrir o sistema
+mvn javafx:run
 ```
+
+Na primeira vez que o sistema abre, ele cria o arquivo `controle-agil.db` (o banco SQLite) na pasta do projeto. Esse arquivo fica fora do Git (`.gitignore`).
+
+O que já funciona na tela: **cadastro de clientes**, com a opção de abrir a conta fiado. As regras de pedidos, pagamentos e fiado já estão prontas e testadas no código; as telas delas são os próximos passos.
 
 ---
 
@@ -182,13 +190,14 @@ cd PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR
 
 - [x] Levantamento dos problemas com o cliente
 - [x] Documentação inicial (README) e estrutura do repositório
-- [ ] Diagrama de classes UML
-- [ ] Implementação das classes do domínio (`model`)
-- [ ] Banco de dados SQLite
-- [ ] Módulo de pedidos agendados
-- [ ] Módulo de conta fiado
-- [ ] Interface gráfica (JavaFX)
-- [ ] Testes automatizados
+- [x] Diagrama de classes UML e casos de uso
+- [x] Requisitos documentados (RF, RN, RNF)
+- [x] Implementação das classes do domínio (`model`)
+- [ ] Banco de dados SQLite (tabelas criadas; clientes e produtos já salvam)
+- [ ] Módulo de pedidos agendados (regras prontas, falta a tela)
+- [ ] Módulo de conta fiado (regras prontas, falta a tela)
+- [ ] Interface gráfica (JavaFX): tela inicial e clientes prontas
+- [ ] Testes automatizados (33 testes passando; ampliar junto com as telas)
 - [ ] Apresentação ao cliente
 - [ ] Etapa 2: módulo de entregas
 

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="raiz" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="br.com.controleagil.controller.PrincipalController">
+
+    <top>
+        <HBox styleClass="topo" alignment="CENTER_LEFT" spacing="12">
+            <Label text="Controle Ágil" styleClass="marca"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Início" onAction="#abrirInicio" styleClass="menu"/>
+            <Button text="Clientes" onAction="#abrirClientes" styleClass="menu"/>
+            <Button text="Pedidos" disable="true" styleClass="menu"/>
+            <Button text="Fiado" disable="true" styleClass="menu"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox styleClass="inicio" spacing="24">
+            <padding><Insets top="40" right="48" bottom="40" left="48"/></padding>
+            <Label text="Olá! O que vamos fazer hoje?" styleClass="titulo"/>
+            <Label text="Pedidos agendados e fiado digital da A L Salgados Distribuidora." styleClass="subtitulo"/>
+            <HBox spacing="20">
+                <VBox styleClass="cartao" spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="Clientes" styleClass="cartao-titulo"/>
+                    <Label text="Cadastre clientes e abra a conta fiado." wrapText="true"/>
+                    <Button text="Abrir clientes" onAction="#abrirClientes" styleClass="primario"/>
+                </VBox>
+                <VBox styleClass="cartao, cartao-breve" spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="Pedidos agendados" styleClass="cartao-titulo"/>
+                    <Label text="Agenda do dia e alertas de entrega." wrapText="true"/>
+                    <Label text="Em breve" styleClass="selo"/>
+                </VBox>
+                <VBox styleClass="cartao, cartao-breve" spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="Conta fiado" styleClass="cartao-titulo"/>
+                    <Label text="Compras, pagamentos e devedores." wrapText="true"/>
+                    <Label text="Em breve" styleClass="selo"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

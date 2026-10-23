@@ -1,0 +1,98 @@
+/* Visual do Controle Ágil: verde da apresentação, fundo claro e cartões brancos */
+
+.root {
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #F8F7F2;
+    -verde: #0B7D5B;
+    -verde-escuro: #075E44;
+    -tinta: #222A27;
+    -texto: #4E5753;
+}
+
+.topo {
+    -fx-background-color: -verde;
+    -fx-padding: 14 32 14 32;
+}
+
+.marca {
+    -fx-text-fill: #F6FBF8;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.menu {
+    -fx-background-color: transparent;
+    -fx-text-fill: #F6FBF8;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.menu:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+}
+
+.menu:disabled {
+    -fx-opacity: 0.55;
+}
+
+.titulo {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -tinta;
+}
+
+.subtitulo {
+    -fx-font-size: 15px;
+    -fx-text-fill: -texto;
+}
+
+.cartao {
+    -fx-background-color: #FDFCF9;
+    -fx-background-radius: 14;
+    -fx-border-color: #DAD8CF;
+    -fx-border-radius: 14;
+    -fx-padding: 20;
+}
+
+.cartao-breve {
+    -fx-border-style: dashed;
+}
+
+.cartao-titulo {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -tinta;
+}
+
+.selo {
+    -fx-background-color: #DDF1E8;
+    -fx-text-fill: -verde-escuro;
+    -fx-background-radius: 999;
+    -fx-padding: 3 10 3 10;
+    -fx-font-size: 12px;
+}
+
+.primario {
+    -fx-background-color: -verde;
+    -fx-text-fill: #F6FBF8;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.primario:hover {
+    -fx-background-color: -verde-escuro;
+}
+
+.mensagem {
+    -fx-font-size: 14px;
+}
+
+.mensagem.sucesso {
+    -fx-text-fill: -verde-escuro;
+}
+
+.mensagem.erro {
+    -fx-text-fill: #B54708;
+}
