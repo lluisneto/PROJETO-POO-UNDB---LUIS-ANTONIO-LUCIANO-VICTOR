@@ -76,7 +76,8 @@
     -fx-padding: 16 12 4 12;
 }
 
-.botao-menu {
+/* ".menu-lateral .botao-menu" (duas classes) ganha do estilo geral ".button", que vem depois no arquivo */
+.menu-lateral .botao-menu {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-text-fill: #F3E9DA;
@@ -88,18 +89,24 @@
     -fx-cursor: hand;
 }
 
-.botao-menu:hover {
+.menu-lateral .botao-menu:hover {
     -fx-background-color: rgba(240, 163, 94, 0.14);
 }
 
-.botao-menu:focused {
+.menu-lateral .botao-menu:pressed {
+    -fx-background-color: rgba(240, 163, 94, 0.24);
+}
+
+.menu-lateral .botao-menu:focused {
     -fx-background-color: rgba(240, 163, 94, 0.14);
     -fx-border-color: -cor-destaque-claro;
+    -fx-border-width: 1;
     -fx-border-radius: 8;
+    -fx-padding: 10 12 10 12;
 }
 
 /* A tela aberta fica destacada no menu */
-.botao-menu.ativo {
+.menu-lateral .botao-menu.ativo {
     -fx-background-color: -cor-destaque;
     -fx-text-fill: #FFFDF9;
     -fx-font-weight: bold;
@@ -109,7 +116,7 @@
     -fx-fill: #D9C8B4;
 }
 
-.botao-menu.ativo .icone-menu {
+.menu-lateral .botao-menu.ativo .icone-menu {
     -fx-fill: #FFFDF9;
 }
 
@@ -426,6 +433,7 @@
     -fx-padding: 0 12 0 12;
     -fx-alignment: CENTER_LEFT;
     -fx-text-fill: -cor-texto;
+    -fx-border-color: transparent; /* sem as linhas verticais entre as colunas */
 }
 
 /* Seleção visível, com texto escuro (contraste alto) */
