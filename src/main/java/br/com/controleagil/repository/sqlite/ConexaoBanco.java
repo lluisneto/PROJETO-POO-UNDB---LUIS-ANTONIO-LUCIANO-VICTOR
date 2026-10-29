@@ -1,4 +1,4 @@
-package br.com.controleagil.repository;
+package br.com.controleagil.repository.sqlite;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,9 +9,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
- * Abre conexões com o banco SQLite e cria as tabelas.
+/*
+ * Responsabilidade: abrir conexões com o banco SQLite e criar as tabelas (resources/db/schema.sql).
  * Por padrão o banco é o arquivo controle-agil.db, na pasta onde o sistema roda.
+ *
+ * Ainda não é usado pelo esqueleto da interface (que roda em memória); só pelos testes do SQLite.
  */
 public class ConexaoBanco {
 

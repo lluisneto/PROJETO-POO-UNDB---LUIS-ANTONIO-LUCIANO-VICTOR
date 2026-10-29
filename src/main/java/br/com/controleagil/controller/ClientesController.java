@@ -2,8 +2,9 @@ package br.com.controleagil.controller;
 
 import br.com.controleagil.model.Cliente;
 import br.com.controleagil.repository.ClienteRepository;
-import br.com.controleagil.repository.ConexaoBanco;
-import br.com.controleagil.repository.RepositorioException;
+import br.com.controleagil.repository.sqlite.ClienteRepositorySqlite;
+import br.com.controleagil.repository.sqlite.ConexaoBanco;
+import br.com.controleagil.repository.sqlite.RepositorioException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -22,7 +23,7 @@ public class ClientesController {
 
     private static final NumberFormat REAIS = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
 
-    private final ClienteRepository repositorio = new ClienteRepository(new ConexaoBanco());
+    private final ClienteRepository repositorio = new ClienteRepositorySqlite(new ConexaoBanco());
 
     @FXML private TextField campoNome;
     @FXML private TextField campoTelefone;

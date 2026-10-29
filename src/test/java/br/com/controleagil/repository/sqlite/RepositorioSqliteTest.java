@@ -1,7 +1,9 @@
-package br.com.controleagil.repository;
+package br.com.controleagil.repository.sqlite;
 
 import br.com.controleagil.model.Cliente;
 import br.com.controleagil.model.Produto;
+import br.com.controleagil.repository.ClienteRepository;
+import br.com.controleagil.repository.ProdutoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,8 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Testa os repositories num banco SQLite de verdade, criado numa pasta temporária. */
-class RepositoryTest {
+/*
+ * Responsabilidade: testar os repositórios SQLite num banco de verdade, criado numa pasta temporária.
+ * Repare que as variáveis são do tipo da INTERFACE (ClienteRepository): o teste não depende do SQLite.
+ */
+class RepositorioSqliteTest {
 
     @TempDir
     Path pasta;
@@ -30,8 +35,8 @@ class RepositoryTest {
         ConexaoBanco banco = new ConexaoBanco("jdbc:sqlite:" + pasta.resolve("teste.db"));
         banco.criarTabelas();
         banco.criarTabelas(); // rodar duas vezes não pode dar erro nem apagar nada
-        produtos = new ProdutoRepository(banco);
-        clientes = new ClienteRepository(banco);
+        produtos = new ProdutoRepositorySqlite(banco);
+        clientes = new ClienteRepositorySqlite(banco);
     }
 
     @Test

@@ -1,6 +1,6 @@
 package br.com.controleagil;
 
-import br.com.controleagil.repository.ConexaoBanco;
+import br.com.controleagil.repository.sqlite.ConexaoBanco;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
