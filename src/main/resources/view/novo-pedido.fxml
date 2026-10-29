@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Tela Novo pedido. À esquerda: cliente, entrega e itens. À direita: total, pagamento e os botões.
+-->
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.controleagil.controller.NovoPedidoController"
+      styleClass="tela" spacing="16">
+
+    <!-- ===== Cliente, entrega e itens ===== -->
+    <VBox styleClass="painel" spacing="10" HBox.hgrow="ALWAYS">
+        <Label text="Cliente" styleClass="secao-titulo"/>
+        <ComboBox fx:id="campoCliente" promptText="Escolha o cliente" maxWidth="Infinity"/>
+
+        <Label text="Entrega" styleClass="secao-titulo"/>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="Dia" styleClass="rotulo"/>
+            <DatePicker fx:id="campoData" prefWidth="160"/>
+            <Label text="Hora" styleClass="rotulo"/>
+            <ComboBox fx:id="campoHora" editable="true" prefWidth="110" promptText="HH:mm"/>
+            <Label text="de 15 em 15 min, ou digite (ex.: 15:40)" styleClass="dica"/>
+        </HBox>
+
+        <Label text="Itens" styleClass="secao-titulo"/>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <ComboBox fx:id="campoProduto" promptText="Escolha o produto" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Label text="Qtd" styleClass="rotulo"/>
+            <Spinner fx:id="campoQuantidade" editable="true" prefWidth="96"/>
+            <Button text="Adicionar" onAction="#adicionarItem" defaultButton="false"/>
+        </HBox>
+        <TableView fx:id="tabelaItens" VBox.vgrow="ALWAYS" minHeight="160">
+            <columns>
+                <TableColumn fx:id="colunaProduto" text="Produto" prefWidth="190"/>
+                <TableColumn fx:id="colunaQuantidade" text="Qtd" prefWidth="60" styleClass="coluna-numero"/>
+                <TableColumn fx:id="colunaPreco" text="Preço un." prefWidth="100" styleClass="coluna-numero"/>
+                <TableColumn fx:id="colunaSubtotal" text="Subtotal" prefWidth="110" styleClass="coluna-numero"/>
+                <TableColumn fx:id="colunaRemover" text="" prefWidth="110" sortable="false"/>
+            </columns>
+            <placeholder>
+                <Label text="Nenhum item ainda. Escolha um produto, a quantidade e clique em Adicionar." styleClass="dica"/>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+    <!-- ===== Total, pagamento e botões ===== -->
+    <VBox styleClass="painel" spacing="10" prefWidth="340" minWidth="320">
+        <Label text="Total do pedido" styleClass="rotulo"/>
+        <Label fx:id="totalPedido" styleClass="total-destaque"/>
+        <Label fx:id="resumoItens" styleClass="dica"/>
+        <Separator/>
+
+        <Label text="Pagamento" styleClass="secao-titulo"/>
+        <fx:define>
+            <ToggleGroup fx:id="formasPagamento"/>
+        </fx:define>
+        <RadioButton fx:id="opcaoPagarDepois" text="Pagar depois" toggleGroup="$formasPagamento" selected="true"/>
+        <RadioButton fx:id="opcaoDinheiro" text="Dinheiro" toggleGroup="$formasPagamento"/>
+        <VBox fx:id="camposDinheiro" spacing="6" styleClass="sub-opcao">
+            <Label text="Valor recebido" styleClass="rotulo"/>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <TextField fx:id="campoRecebido" promptText="ex.: 100,00" prefWidth="130"/>
+                <Label fx:id="textoTroco"/>
+            </HBox>
+        </VBox>
+        <RadioButton fx:id="opcaoPix" text="Pix" toggleGroup="$formasPagamento"/>
+        <VBox fx:id="camposPix" spacing="6" styleClass="sub-opcao">
+            <Label text="Código da transação (opcional)" styleClass="rotulo"/>
+            <TextField fx:id="campoCodigoPix" promptText="ex.: E2E1234..."/>
+        </VBox>
+        <RadioButton fx:id="opcaoFiado" text="Fiado" toggleGroup="$formasPagamento"/>
+        <Label fx:id="textoFiado" styleClass="dica" wrapText="true"/>
+
+        <Region VBox.vgrow="ALWAYS"/>
+        <Label fx:id="mensagemErro" styleClass="erro-campo" wrapText="true"/>
+        <Button text="Salvar pedido" onAction="#salvar" styleClass="botao-primario" maxWidth="Infinity"/>
+        <Button text="Limpar" onAction="#limpar" maxWidth="Infinity"/>
+    </VBox>
+</HBox>

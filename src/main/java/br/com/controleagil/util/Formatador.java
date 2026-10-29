@@ -67,6 +67,11 @@ public final class Formatador {
         return dataHora == null ? "" : HORA.format(dataHora);
     }
 
+    /** 15:30 (só o horário, sem data) */
+    public static String hora(LocalTime hora) {
+        return hora == null ? "" : HORA.format(hora);
+    }
+
     /** 29/10/2026 15:30 */
     public static String dataHora(LocalDateTime dataHora) {
         return dataHora == null ? "" : DATA_HORA.format(dataHora);
