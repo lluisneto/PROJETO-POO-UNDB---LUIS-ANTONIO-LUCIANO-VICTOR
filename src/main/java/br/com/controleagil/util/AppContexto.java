@@ -1,6 +1,7 @@
 package br.com.controleagil.util;
 
 import br.com.controleagil.controller.AgendaController;
+import br.com.controleagil.controller.ClientesController;
 import br.com.controleagil.controller.InicioController;
 import br.com.controleagil.controller.Navegacao;
 import br.com.controleagil.controller.NovoPedidoController;
@@ -75,6 +76,9 @@ public class AppContexto {
         }
         if (tipo == NovoPedidoController.class) {
             return new NovoPedidoController(clienteService, produtoService, pedidoService, navegacao);
+        }
+        if (tipo == ClientesController.class) {
+            return new ClientesController(clienteService, navegacao);
         }
         throw new IllegalArgumentException("O AppContexto não sabe criar o controller " + tipo.getName());
     }
