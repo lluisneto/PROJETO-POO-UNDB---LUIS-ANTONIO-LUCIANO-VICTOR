@@ -6,6 +6,7 @@ import br.com.controleagil.controller.InicioController;
 import br.com.controleagil.controller.Navegacao;
 import br.com.controleagil.controller.NovoPedidoController;
 import br.com.controleagil.controller.PrincipalController;
+import br.com.controleagil.controller.ProdutosController;
 import br.com.controleagil.repository.ClienteRepository;
 import br.com.controleagil.repository.PedidoRepository;
 import br.com.controleagil.repository.ProdutoRepository;
@@ -79,6 +80,9 @@ public class AppContexto {
         }
         if (tipo == ClientesController.class) {
             return new ClientesController(clienteService, navegacao);
+        }
+        if (tipo == ProdutosController.class) {
+            return new ProdutosController(produtoService, navegacao);
         }
         throw new IllegalArgumentException("O AppContexto não sabe criar o controller " + tipo.getName());
     }

@@ -34,6 +34,9 @@ public class ProdutoService {
      * antigos continuam com o preço da época, porque cada item guardou o seu.
      */
     public Produto atualizar(Produto produto, String nome, BigDecimal novoPreco) {
+        // Confere nome E preço antes de mudar qualquer coisa: assim o produto nunca fica "pela metade"
+        // (nome novo com preço velho) se um dos dois for inválido. O objeto criado aqui é jogado fora.
+        new Produto(nome, novoPreco);
         produto.alterarNome(nome);
         produto.alterarPreco(novoPreco);
         return repositorio.salvar(produto);
