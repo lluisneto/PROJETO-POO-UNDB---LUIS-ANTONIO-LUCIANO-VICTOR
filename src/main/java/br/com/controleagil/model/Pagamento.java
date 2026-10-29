@@ -1,22 +1,31 @@
 package br.com.controleagil.model;
 
+import br.com.controleagil.exception.RegraNegocioException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Base de todas as formas de pagamento (abstração).
- * Cada subclasse implementa processar() do seu jeito (polimorfismo).
+/*
+ * Responsabilidade: o que TODA forma de pagamento tem em comum: valor e data.
+ *
+ * Conceitos de POO:
+ *  - ABSTRAÇÃO: a classe é "abstract". Não existe "um pagamento qualquer": ele é sempre em
+ *    dinheiro, Pix ou fiado. Por isso não dá para fazer "new Pagamento(...)".
+ *  - MÉTODO ABSTRATO: processar() não tem corpo aqui. Cada subclasse é OBRIGADA a escrever o seu.
+ *  - POLIMORFISMO: o Pedido trabalha com "Pagamento" e chama processar() sem saber o tipo real.
+ *    Para criar uma forma nova (ex.: cartão), basta uma subclasse nova; o Pedido não muda.
  */
 public abstract class Pagamento {
 
     private final BigDecimal valor;
     private final LocalDateTime data;
 
+    /** "protected": só as subclasses chamam, com super(valor). */
     protected Pagamento(BigDecimal valor) {
         if (valor == null || valor.signum() <= 0) {
-            throw new IllegalArgumentException("O valor do pagamento precisa ser maior que zero.");
+            throw new RegraNegocioException("O valor do pagamento precisa ser maior que zero.");
         }
-        this.valor = valor;
+        this.valor = Dinheiro.arredondar(valor);
         this.data = LocalDateTime.now();
     }
 
@@ -28,6 +37,12 @@ public abstract class Pagamento {
         return data;
     }
 
-    /** Chamado por Pedido.registrarPagamento(). Deve lançar exceção se o pagamento não puder ser feito. */
+    /**
+     * Faz o que esta forma de pagamento precisa fazer para ser aceita.
+     * Chamado por Pedido.registrarPagamento(). Lança RegraNegocioException se não puder.
+     */
     public abstract void processar(Pedido pedido);
+
+    /** Texto para a tela, ex.: "Dinheiro (troco R$ 6,00)". Também é polimórfico: cada forma se descreve. */
+    public abstract String getDescricao();
 }

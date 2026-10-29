@@ -1,76 +1,122 @@
 package br.com.controleagil.model;
 
+import br.com.controleagil.exception.RegraNegocioException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+import static br.com.controleagil.TesteDinheiro.assertValor;
+import static br.com.controleagil.TesteDinheiro.reais;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/*
+ * Responsabilidade: testar as regras da ContaFiado (RN03 e RN04) e o saldo calculado.
+ */
 class ContaFiadoTest {
 
     private ContaFiado conta;
 
     @BeforeEach
-    void criarConta() {
+    void criarContaComLimiteDe100() {
         conta = new ContaFiado(reais("100.00"));
     }
 
     @Test
-    @DisplayName("Uma conta nova não deve nada")
+    @DisplayName("Uma conta nova não deve nada e tem todo o limite disponível")
     void contaNovaComecaZerada() {
         assertValor("0", conta.getSaldoDevedor());
         assertValor("100.00", conta.getCreditoDisponivel());
     }
 
     @Test
-    @DisplayName("Compras somam e pagamentos subtraem do saldo")
-    void comprasEPagamentosAtualizamOSaldo() {
-        conta.registrarCompra(reais("50.00"), null);
-        conta.registrarPagamento(reais("20.00"));
-        conta.registrarCompra(reais("30.00"), null);
-
-        assertValor("60.00", conta.getSaldoDevedor());
-        assertValor("40.00", conta.getCreditoDisponivel());
-        assertEquals(3, conta.getMovimentacoes().size());
-    }
-
-    @Test
-    @DisplayName("Compra acima do crédito disponível é recusada e o saldo não muda")
-    void compraAcimaDoLimiteERecusada() {
+    @DisplayName("Compra dentro do limite é aceita e entra no histórico")
+    void compraDentroDoLimiteEhAceita() {
         conta.registrarCompra(reais("60.00"), null);
 
-        assertFalse(conta.podeComprar(reais("60.00")));
-        assertThrows(IllegalStateException.class, () -> conta.registrarCompra(reais("60.00"), null));
         assertValor("60.00", conta.getSaldoDevedor());
+        assertEquals(1, conta.getMovimentacoes().size());
+        assertEquals(TipoMovimentacao.COMPRA, conta.getMovimentacoes().get(0).getTipo());
     }
 
     @Test
     @DisplayName("Dá para comprar exatamente o crédito que sobra")
-    void compraNoLimiteExatoEAceita() {
+    void compraNoLimiteExatoEhAceita() {
         assertTrue(conta.podeComprar(reais("100.00")));
         conta.registrarCompra(reais("100.00"), null);
         assertValor("0.00", conta.getCreditoDisponivel());
     }
 
     @Test
-    @DisplayName("Pagamento maior que a dívida é recusado")
-    void pagamentoMaiorQueADividaERecusado() {
-        conta.registrarCompra(reais("30.00"), null);
-        assertThrows(IllegalArgumentException.class, () -> conta.registrarPagamento(reais("30.01")));
+    @DisplayName("RN03: compra acima do limite lança exceção e o saldo não muda")
+    void compraAcimaDoLimiteLancaExcecao() {
+        conta.registrarCompra(reais("60.00"), null);
+
+        assertFalse(conta.podeComprar(reais("40.01")));
+        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
+                () -> conta.registrarCompra(reais("40.01"), null));
+        assertTrue(erro.getMessage().contains("limite"), "a mensagem precisa explicar o motivo");
+        assertValor("60.00", conta.getSaldoDevedor());
     }
 
     @Test
-    @DisplayName("Valores zerados ou negativos são recusados")
+    @DisplayName("RN04: pagamento maior que o saldo lança exceção")
+    void pagamentoMaiorQueOSaldoLancaExcecao() {
+        conta.registrarCompra(reais("30.00"), null);
+        assertThrows(RegraNegocioException.class, () -> conta.registrarPagamento(reais("30.01")));
+        assertValor("30.00", conta.getSaldoDevedor());
+    }
+
+    @Test
+    @DisplayName("RN04: pagamento zero, negativo ou sem dívida lança exceção")
+    void pagamentoZeroOuNegativoLancaExcecao() {
+        assertThrows(RegraNegocioException.class, () -> conta.registrarPagamento(reais("10.00")));
+
+        conta.registrarCompra(reais("30.00"), null);
+        assertThrows(RegraNegocioException.class, () -> conta.registrarPagamento(BigDecimal.ZERO));
+        assertThrows(RegraNegocioException.class, () -> conta.registrarPagamento(reais("-5.00")));
+        assertThrows(RegraNegocioException.class, () -> conta.registrarPagamento(null));
+    }
+
+    @Test
+    @DisplayName("O saldo é calculado a partir das movimentações: compras somam, pagamentos subtraem")
+    void saldoCalculadoPelasMovimentacoes() {
+        conta.registrarCompra(reais("50.00"), null);
+        conta.registrarPagamento(reais("20.00"));
+        conta.registrarCompra(reais("30.00"), null);
+
+        assertValor("60.00", conta.getSaldoDevedor());
+        assertEquals(3, conta.getMovimentacoes().size());
+        assertEquals(TipoMovimentacao.PAGAMENTO, conta.getMovimentacoes().get(1).getTipo());
+    }
+
+    @Test
+    @DisplayName("Crédito disponível = limite − saldo devedor")
+    void creditoDisponivel() {
+        conta.registrarCompra(reais("75.50"), null);
+        assertValor("24.50", conta.getCreditoDisponivel());
+
+        conta.registrarPagamento(reais("50.00"));
+        assertValor("74.50", conta.getCreditoDisponivel());
+    }
+
+    @Test
+    @DisplayName("Valores ficam com 2 casas decimais (arredondamento HALF_EVEN)")
+    void valoresComDuasCasas() {
+        conta.registrarCompra(reais("10.005"), null); // meio exato: vai para o par, 10.00
+        assertEquals(new BigDecimal("10.00"), conta.getSaldoDevedor());
+        assertEquals(2, conta.getLimiteCredito().scale());
+    }
+
+    @Test
+    @DisplayName("Limite negativo e compra de valor zero são recusados")
     void valoresInvalidosSaoRecusados() {
-        assertThrows(IllegalArgumentException.class, () -> conta.registrarCompra(BigDecimal.ZERO, null));
-        assertThrows(IllegalArgumentException.class, () -> conta.registrarCompra(reais("-5.00"), null));
-        assertThrows(IllegalArgumentException.class, () -> conta.registrarPagamento(null));
-        assertThrows(IllegalArgumentException.class, () -> new ContaFiado(reais("-1.00")));
+        assertThrows(RegraNegocioException.class, () -> new ContaFiado(reais("-1.00")));
+        assertThrows(RegraNegocioException.class, () -> conta.registrarCompra(BigDecimal.ZERO, null));
     }
 
     @Test
@@ -78,14 +124,5 @@ class ContaFiadoTest {
     void historicoEhSomenteLeitura() {
         conta.registrarCompra(reais("10.00"), null);
         assertThrows(UnsupportedOperationException.class, () -> conta.getMovimentacoes().clear());
-        assertEquals(TipoMovimentacao.COMPRA, conta.getMovimentacoes().get(0).getTipo());
-    }
-
-    static BigDecimal reais(String valor) {
-        return new BigDecimal(valor);
-    }
-
-    static void assertValor(String esperado, BigDecimal atual) {
-        assertEquals(0, new BigDecimal(esperado).compareTo(atual), "esperado R$ " + esperado + ", veio R$ " + atual);
     }
 }

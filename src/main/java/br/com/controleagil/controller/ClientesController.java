@@ -60,7 +60,7 @@ public class ClientesController {
             mostrar("Cliente " + cliente.getNome() + " cadastrado.", false);
             limparCampos();
             atualizarTabela();
-        } catch (IllegalArgumentException | IllegalStateException | RepositorioException e) {
+        } catch (br.com.controleagil.exception.RegraNegocioException | IllegalArgumentException | RepositorioException e) {
             mostrar(e.getMessage(), true);
         }
     }

@@ -1,19 +1,24 @@
 package br.com.controleagil.model;
 
+import br.com.controleagil.exception.RegraNegocioException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
-import static br.com.controleagil.model.ContaFiadoTest.assertValor;
-import static br.com.controleagil.model.ContaFiadoTest.reais;
+import static br.com.controleagil.TesteDinheiro.assertValor;
+import static br.com.controleagil.TesteDinheiro.reais;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Polimorfismo: o Pedido chama processar() e cada forma de pagamento age do seu jeito. */
+/*
+ * Responsabilidade: testar as três formas de pagamento.
+ * Conceito mostrado: POLIMORFISMO. O Pedido chama processar() e cada forma age do seu jeito.
+ */
 class PagamentoTest {
 
     private Cliente cliente;
@@ -24,36 +29,43 @@ class PagamentoTest {
         cliente = new Cliente("João", "(98) 90000-0001", "Rua B, 25");
         pedido = new Pedido(cliente, LocalDateTime.now().plusHours(1));
         pedido.adicionarItem(new Produto("Coxinha", reais("5.00")), 10);
-        pedido.adicionarItem(new Produto("Pastel", reais("3.50")), 4);
+        pedido.adicionarItem(new Produto("Kibe", reais("3.50")), 4);
     }
 
     @Test
     @DisplayName("Dinheiro: calcula o troco")
-    void dinheiroCalculaTroco() {
+    void trocoDoPagamentoDinheiro() {
         PagamentoDinheiro dinheiro = new PagamentoDinheiro(reais("64.00"), reais("70.00"));
         pedido.registrarPagamento(dinheiro);
+
         assertValor("6.00", dinheiro.calcularTroco());
         assertValor("64.00", pedido.calcularValorPago());
     }
 
     @Test
-    @DisplayName("Dinheiro: valor recebido menor que o pagamento é recusado")
-    void dinheiroInsuficienteERecusado() {
-        assertThrows(IllegalStateException.class,
+    @DisplayName("Dinheiro: valor recebido menor que o valor a pagar é recusado")
+    void dinheiroInsuficienteLancaExcecao() {
+        assertThrows(RegraNegocioException.class,
                 () -> pedido.registrarPagamento(new PagamentoDinheiro(reais("64.00"), reais("50.00"))));
         assertTrue(pedido.getPagamentos().isEmpty());
     }
 
     @Test
-    @DisplayName("Pix: sem o código da transação é recusado")
-    void pixSemCodigoERecusado() {
-        assertThrows(IllegalStateException.class,
-                () -> pedido.registrarPagamento(new PagamentoPix(reais("64.00"), " ")));
+    @DisplayName("Pix: o código é opcional, mas se vier precisa ter formato válido")
+    void pixCodigoOpcional() {
+        PagamentoPix semCodigo = new PagamentoPix(reais("10.00"), "   ");
+        pedido.registrarPagamento(semCodigo);
+        assertNull(semCodigo.getCodigoTransacao());
+
+        assertThrows(RegraNegocioException.class,
+                () -> pedido.registrarPagamento(new PagamentoPix(reais("10.00"), "código@inválido!")));
+        pedido.registrarPagamento(new PagamentoPix(reais("10.00"), "E2E 1234 ABCD"));
+        assertValor("20.00", pedido.calcularValorPago());
     }
 
     @Test
     @DisplayName("Fiado: lança a compra na conta do cliente, ligada ao pedido")
-    void fiadoLancaNaConta() {
+    void pagamentoFiadoLancaCompraNaConta() {
         cliente.abrirContaFiado(reais("100.00"));
         pedido.registrarPagamento(new PagamentoFiado(reais("64.00")));
 
@@ -64,28 +76,38 @@ class PagamentoTest {
     }
 
     @Test
-    @DisplayName("Fiado: cliente sem conta fiado é recusado")
-    void fiadoSemContaERecusado() {
-        assertThrows(IllegalStateException.class,
+    @DisplayName("Fiado: cliente sem conta fiado lança exceção")
+    void pagamentoFiadoSemContaLancaExcecao() {
+        assertThrows(RegraNegocioException.class,
                 () -> pedido.registrarPagamento(new PagamentoFiado(reais("64.00"))));
+        assertTrue(pedido.getPagamentos().isEmpty());
     }
 
     @Test
-    @DisplayName("Fiado: compra acima do limite é recusada e o pedido continua sem pagamento")
-    void fiadoAcimaDoLimiteERecusado() {
+    @DisplayName("Fiado: compra acima do limite é bloqueada e o pedido continua sem pagamento (RN03)")
+    void pagamentoFiadoAcimaDoLimiteLancaExcecao() {
         cliente.abrirContaFiado(reais("50.00"));
-        assertThrows(IllegalStateException.class,
+        assertThrows(RegraNegocioException.class,
                 () -> pedido.registrarPagamento(new PagamentoFiado(reais("64.00"))));
         assertValor("0", pedido.calcularValorPago());
+        assertValor("0", cliente.getContaFiado().getSaldoDevedor());
     }
 
     @Test
     @DisplayName("Dá para dividir o pagamento em formas diferentes")
     void pagamentoDividido() {
         cliente.abrirContaFiado(reais("100.00"));
-        pedido.registrarPagamento(new PagamentoPix(reais("40.00"), "E2E-0001"));
+        pedido.registrarPagamento(new PagamentoPix(reais("40.00"), "E2E0001"));
         pedido.registrarPagamento(new PagamentoFiado(reais("24.00")));
+
         assertValor("64.00", pedido.calcularValorPago());
         assertValor("24.00", cliente.getContaFiado().getSaldoDevedor());
+    }
+
+    @Test
+    @DisplayName("Valor do pagamento precisa ser maior que zero")
+    void valorZeroLancaExcecao() {
+        assertThrows(RegraNegocioException.class, () -> new PagamentoFiado(reais("0")));
+        assertThrows(RegraNegocioException.class, () -> new PagamentoDinheiro(reais("10.00"), null));
     }
 }

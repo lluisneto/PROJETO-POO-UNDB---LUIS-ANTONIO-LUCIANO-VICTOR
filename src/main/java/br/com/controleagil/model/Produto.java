@@ -1,48 +1,61 @@
 package br.com.controleagil.model;
 
+import br.com.controleagil.exception.RegraNegocioException;
+
 import java.math.BigDecimal;
 
-/** Salgado vendido pela distribuidora. */
+/*
+ * Responsabilidade: representar um salgado vendido pela distribuidora (nome e preço).
+ *
+ * Conceito de POO: ENCAPSULAMENTO. Não existe setPreco(): o preço só muda por alterarPreco(),
+ * que recusa preço zero ou negativo. Assim nenhum produto fica com preço inválido.
+ */
 public class Produto {
 
     private Long id;
-    private final String nome;
+    private String nome;
     private BigDecimal preco;
 
     public Produto(String nome, BigDecimal preco) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome do produto é obrigatório.");
-        }
-        validarPreco(preco);
-        this.nome = nome;
-        this.preco = preco;
-    }
-
-    public void alterarPreco(BigDecimal novoPreco) {
-        validarPreco(novoPreco);
-        this.preco = novoPreco;
+        alterarNome(nome);
+        alterarPreco(preco);
     }
 
     public BigDecimal getPreco() {
         return preco;
     }
 
+    /**
+     * Muda o preço do produto daqui para frente.
+     * Os pedidos antigos NÃO mudam: cada ItemPedido guardou o preço do dia em que foi vendido.
+     *
+     * @param novoPreco precisa ser maior que zero
+     */
+    public final void alterarPreco(BigDecimal novoPreco) {
+        if (novoPreco == null || novoPreco.signum() <= 0) {
+            throw new RegraNegocioException("O preço do produto precisa ser maior que zero.");
+        }
+        this.preco = Dinheiro.arredondar(novoPreco);
+    }
+
     public String getNome() {
         return nome;
+    }
+
+    /** Troca o nome do produto. O nome é obrigatório. */
+    public final void alterarNome(String novoNome) {
+        if (novoNome == null || novoNome.isBlank()) {
+            throw new RegraNegocioException("O nome do produto é obrigatório.");
+        }
+        this.nome = novoNome.strip();
     }
 
     public Long getId() {
         return id;
     }
 
-    /** Usado pelo repository depois de salvar no banco. */
+    /** Chamado só pelo repositório, quando o produto é salvo pela primeira vez e ganha um número. */
     public void setId(Long id) {
         this.id = id;
-    }
-
-    private void validarPreco(BigDecimal preco) {
-        if (preco == null || preco.signum() <= 0) {
-            throw new IllegalArgumentException("O preço precisa ser maior que zero.");
-        }
     }
 }

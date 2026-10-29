@@ -3,9 +3,13 @@ package br.com.controleagil.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Uma linha do "caderno": uma compra ou um pagamento na conta fiado.
- * Só a ContaFiado cria movimentações (construtor sem "public").
+/*
+ * Responsabilidade: uma linha do "caderno" do fiado: quando, quanto, se foi compra ou pagamento
+ * e, nas compras, de qual pedido veio.
+ *
+ * Conceito de POO: ENCAPSULAMENTO. O construtor não tem "public": só classes do pacote model
+ * (na prática, a ContaFiado) criam movimentações. Assim ninguém consegue inventar uma linha no
+ * caderno sem passar pelas regras da conta (limite, saldo...).
  */
 public class MovimentacaoFiado {
 
@@ -33,7 +37,7 @@ public class MovimentacaoFiado {
         return tipo;
     }
 
-    /** Pedido que originou a compra; null quando a movimentação é um pagamento. */
+    /** Pedido que originou a compra; null quando a movimentação é um pagamento da dívida. */
     public Pedido getPedido() {
         return pedido;
     }
