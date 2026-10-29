@@ -5,6 +5,7 @@ import br.com.controleagil.model.Cliente;
 import br.com.controleagil.model.ItemPedido;
 import br.com.controleagil.model.Pedido;
 import javafx.util.StringConverter;
+import javafx.util.converter.LocalDateStringConverter;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -45,6 +46,15 @@ public final class Formatador {
         }
         // O Java separa "R$" do número com um espaço especial (que não quebra linha); trocamos por espaço comum.
         return NumberFormat.getCurrencyInstance(BRASIL).format(valor).replace(' ', ' ');
+    }
+
+    /** Número com vírgula e 2 casas, sem "R$" e sem ponto de milhar, para preencher campos: 1234,50 */
+    public static String numero(BigDecimal valor) {
+        NumberFormat formato = NumberFormat.getNumberInstance(BRASIL);
+        formato.setMinimumFractionDigits(2);
+        formato.setMaximumFractionDigits(2);
+        formato.setGroupingUsed(false);
+        return formato.format(valor);
     }
 
     /** 29/10/2026 */
@@ -121,6 +131,11 @@ public final class Formatador {
         } catch (DateTimeParseException e) {
             throw new RegraNegocioException("Horário inválido. Use o formato HH:mm, por exemplo 15:30.");
         }
+    }
+
+    /** Faz o DatePicker mostrar e ler a data como dd/MM/yyyy, qualquer que seja o idioma do Windows. */
+    public static StringConverter<LocalDate> conversorDeData() {
+        return new LocalDateStringConverter(DATA, DATA);
     }
 
     /**

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Tela Agenda do dia: filtros em cima, a tabela de pedidos por horário no meio
+  e as ações para o pedido selecionado embaixo.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.controleagil.controller.AgendaController"
+      styleClass="tela" spacing="16">
+
+    <!-- ===== Filtros ===== -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="Dia" styleClass="rotulo"/>
+        <DatePicker fx:id="filtroData" prefWidth="160" editable="false"/>
+        <Button text="Hoje" onAction="#irParaHoje"/>
+        <Label text="Status" styleClass="rotulo">
+            <padding><Insets left="12"/></padding>
+        </Label>
+        <ComboBox fx:id="filtroStatus" prefWidth="200"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="resumoDia" styleClass="dica"/>
+    </HBox>
+
+    <!-- ===== Pedidos do dia ===== -->
+    <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colunaHora" text="Hora" prefWidth="64"/>
+            <TableColumn fx:id="colunaNumero" text="Nº" prefWidth="48"/>
+            <TableColumn fx:id="colunaCliente" text="Cliente" prefWidth="180"/>
+            <TableColumn fx:id="colunaItens" text="Itens" prefWidth="240"/>
+            <TableColumn fx:id="colunaTotal" text="Total" prefWidth="100" styleClass="coluna-numero"/>
+            <TableColumn fx:id="colunaPago" text="Pago" prefWidth="100" styleClass="coluna-numero"/>
+            <TableColumn fx:id="colunaStatus" text="Status" prefWidth="240"/>
+        </columns>
+        <!-- O "placeholder" aparece no lugar da tabela quando não há nenhum pedido -->
+        <placeholder>
+            <VBox alignment="CENTER" spacing="12">
+                <Label text="Nenhum pedido para este dia" styleClass="estado-vazio-titulo"/>
+                <Label text="Os pedidos agendados aparecem aqui, por horário de entrega." styleClass="dica"/>
+                <Button text="Novo pedido" onAction="#abrirNovoPedido" styleClass="botao-primario"/>
+            </VBox>
+        </placeholder>
+    </TableView>
+
+    <!-- ===== Ações para o pedido selecionado ===== -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Button fx:id="botaoAvancar" text="Avançar status" onAction="#avancarStatus" styleClass="botao-primario"/>
+        <Button fx:id="botaoPagamento" text="Registrar pagamento" onAction="#registrarPagamento"/>
+        <Button fx:id="botaoDetalhes" text="Ver detalhes" onAction="#verDetalhes"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Dica: dois cliques no pedido abrem os detalhes." styleClass="dica"/>
+        <Button fx:id="botaoCancelar" text="Cancelar pedido" onAction="#cancelarPedido" styleClass="botao-perigo"/>
+    </HBox>
+</VBox>
