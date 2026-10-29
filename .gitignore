@@ -17,3 +17,6 @@ bin/
 # Sistema operacional
 .DS_Store
 Thumbs.db
+
+# Pasta de contexto usada para orientar o Claude (não vai para o Git)
+contexto-claude/
