@@ -381,6 +381,11 @@
     -fx-padding: 4 0 4 0;
 }
 
+/* Campos que aparecem embaixo da opção de pagamento escolhida (tela Novo pedido) */
+.sub-opcao {
+    -fx-padding: 0 0 4 28;
+}
+
 /* ===================================================================== TABELAS */
 
 .table-view {
@@ -410,12 +415,18 @@
     -fx-size: 38px;
 }
 
+/* Tabelas com títulos de coluna em duas linhas (tela Fiado) */
+.table-view.cabecalho-duplo .column-header,
+.table-view.cabecalho-duplo .filler {
+    -fx-size: 48px;
+}
+
 .table-view .column-header .label {
     -fx-text-fill: -cor-texto-2;
     -fx-font-weight: bold;
     -fx-font-size: 13px;
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 0 12 0 12;
+    -fx-padding: 0 8 0 8;
 }
 
 .table-row-cell {
@@ -430,7 +441,7 @@
 }
 
 .table-cell {
-    -fx-padding: 0 12 0 12;
+    -fx-padding: 0 8 0 8;
     -fx-alignment: CENTER_LEFT;
     -fx-text-fill: -cor-texto;
     -fx-border-color: transparent; /* sem as linhas verticais entre as colunas */
@@ -529,6 +540,7 @@
 /* ===================================================================== FIADO */
 
 .barra-limite {
+    -fx-min-height: 14;
     -fx-pref-height: 14;
 }
 

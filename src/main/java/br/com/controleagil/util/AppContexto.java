@@ -2,6 +2,7 @@ package br.com.controleagil.util;
 
 import br.com.controleagil.controller.AgendaController;
 import br.com.controleagil.controller.ClientesController;
+import br.com.controleagil.controller.FiadoController;
 import br.com.controleagil.controller.InicioController;
 import br.com.controleagil.controller.Navegacao;
 import br.com.controleagil.controller.NovoPedidoController;
@@ -83,6 +84,9 @@ public class AppContexto {
         }
         if (tipo == ProdutosController.class) {
             return new ProdutosController(produtoService, navegacao);
+        }
+        if (tipo == FiadoController.class) {
+            return new FiadoController(fiadoService, navegacao);
         }
         throw new IllegalArgumentException("O AppContexto não sabe criar o controller " + tipo.getName());
     }
