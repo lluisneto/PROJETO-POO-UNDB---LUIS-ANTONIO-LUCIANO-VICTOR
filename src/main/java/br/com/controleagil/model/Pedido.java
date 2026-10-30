@@ -16,7 +16,7 @@ import java.util.List;
  *  - COMPOSIÇÃO: os ItemPedido e os Pagamento vivem DENTRO do pedido (losango preto no diagrama).
  *  - ASSOCIAÇÃO: o pedido conhece o seu Cliente, mas o cliente existe sem o pedido.
  *  - POLIMORFISMO: em registrarPagamento(), o pedido chama pagamento.processar(this) sem saber
- *    se é dinheiro, Pix ou fiado. Cada tipo de pagamento faz o seu trabalho.
+ *    se é dinheiro, Pix, cartão ou fiado. Cada tipo de pagamento faz o seu trabalho.
  *  - ENCAPSULAMENTO: listas privadas, entregues para fora só como somente leitura; status só
  *    muda por alterarStatus(), que aplica a RN05.
  */
@@ -107,7 +107,7 @@ public class Pedido {
      * Registra um pagamento (total ou parcial) no pedido.
      *
      * POLIMORFISMO: a variável "pagamento" é do tipo Pagamento (a classe abstrata), mas o objeto
-     * de verdade é um PagamentoDinheiro, PagamentoPix ou PagamentoFiado. Na hora de rodar, o Java
+     * de verdade é um PagamentoDinheiro, PagamentoPix, PagamentoCartao ou PagamentoFiado. Na hora de rodar, o Java
      * chama o processar() da classe de verdade. O pedido não precisa de nenhum "if" de tipo.
      */
     public void registrarPagamento(Pagamento pagamento) {

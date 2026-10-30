@@ -2,6 +2,7 @@ package br.com.controleagil.controller;
 
 import br.com.controleagil.exception.RegraNegocioException;
 import br.com.controleagil.model.Cliente;
+import br.com.controleagil.model.ContaFiado;
 import br.com.controleagil.model.Pagamento;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.service.FormaPagamento;
@@ -25,12 +26,12 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 /*
- * Responsabilidade: a janelinha "Registrar pagamento" da Agenda: escolhe a forma (dinheiro, Pix
- * ou fiado), o valor (total ou parcial) e mostra quanto falta pagar e o troco.
+ * Responsabilidade: a janelinha "Registrar pagamento" da Agenda: escolhe a forma (dinheiro, Pix,
+ * cartão de débito/crédito ou fiado), o valor (total ou parcial) e mostra quanto falta pagar e o troco.
  *
- * É montada em código (sem FXML) por ser pequena. Se a regra recusar o pagamento (ex.: fiado
- * acima do limite, valor maior que o que falta), a mensagem aparece DENTRO da janelinha,
- * perto dos campos, e ela continua aberta para o usuário corrigir.
+ * É montada em código (sem FXML) por ser pequena. Se a regra recusar o pagamento (ex.: valor
+ * maior que o que falta), a mensagem aparece DENTRO da janelinha, perto dos campos, e ela
+ * continua aberta para o usuário corrigir. Fiado acima do limite não é recusado: pede confirmação (RN03).
  */
 public class PagamentoDialogo {
 
@@ -41,7 +42,13 @@ public class PagamentoDialogo {
     private final ToggleGroup formas = new ToggleGroup();
     private final RadioButton opcaoDinheiro = new RadioButton(FormaPagamento.DINHEIRO.getDescricao());
     private final RadioButton opcaoPix = new RadioButton(FormaPagamento.PIX.getDescricao());
+    private final RadioButton opcaoCartao = new RadioButton("Cartão");
     private final RadioButton opcaoFiado = new RadioButton(FormaPagamento.FIADO.getDescricao());
+    private final ToggleGroup tiposCartao = new ToggleGroup();
+    private final RadioButton opcaoDebito = new RadioButton("Débito");
+    private final RadioButton opcaoCredito = new RadioButton("Crédito");
+    private final Label rotuloTipoCartao = rotulo("Tipo do cartão");
+    private final HBox caixaTipoCartao = new HBox(16, opcaoDebito, opcaoCredito);
     private final TextField campoValor = new TextField();
     private final TextField campoRecebido = new TextField();
     private final TextField campoCodigoPix = new TextField();
@@ -103,9 +110,14 @@ public class PagamentoDialogo {
 
         opcaoDinheiro.setToggleGroup(formas);
         opcaoPix.setToggleGroup(formas);
+        opcaoCartao.setToggleGroup(formas);
         opcaoFiado.setToggleGroup(formas);
         opcaoDinheiro.setSelected(true);
-        formulario.addRow(linha++, rotulo("Forma"), new HBox(16, opcaoDinheiro, opcaoPix, opcaoFiado));
+        formulario.addRow(linha++, rotulo("Forma"), new HBox(16, opcaoDinheiro, opcaoPix, opcaoCartao, opcaoFiado));
+        opcaoDebito.setToggleGroup(tiposCartao);
+        opcaoCredito.setToggleGroup(tiposCartao);
+        opcaoDebito.setSelected(true);
+        formulario.addRow(linha++, rotuloTipoCartao, caixaTipoCartao);
 
         campoValor.setText(Formatador.numero(falta));
         formulario.addRow(linha++, rotulo("Valor deste pagamento"), campoValor);
@@ -132,8 +144,10 @@ public class PagamentoDialogo {
     private void configurarFiado() {
         Cliente cliente = pedido.getCliente();
         if (cliente.temContaFiado()) {
-            textoFiado.setText("Crédito disponível no fiado: "
-                    + Formatador.moeda(cliente.getContaFiado().getCreditoDisponivel()));
+            ContaFiado conta = cliente.getContaFiado();
+            textoFiado.setText("Crédito disponível no fiado: " + Formatador.moeda(conta.getCreditoDisponivel())
+                    + (conta.estaAcimaDoLimite()
+                    ? ". A dívida já passou do limite em " + Formatador.moeda(conta.getValorAcimaDoLimite()) + "." : ""));
         } else {
             opcaoFiado.setDisable(true);
             textoFiado.setText("Fiado desligado: este cliente não tem conta fiado (abra na tela Clientes).");
@@ -146,6 +160,7 @@ public class PagamentoDialogo {
         FormaPagamento forma = formaEscolhida();
         mostrar(forma == FormaPagamento.DINHEIRO, rotuloRecebido, caixaRecebido);
         mostrar(forma == FormaPagamento.PIX, rotuloCodigoPix, campoCodigoPix);
+        mostrar(opcaoCartao.isSelected(), rotuloTipoCartao, caixaTipoCartao);
         mostrar(forma == FormaPagamento.FIADO || opcaoFiado.isDisable(), textoFiado);
         mensagemErro.setText("");
         if (dialogo.getDialogPane().getScene() != null) {
@@ -175,10 +190,14 @@ public class PagamentoDialogo {
 
     /** Tenta registrar. Se uma regra recusar, mostra a mensagem perto dos campos e devolve false. */
     private boolean tentarRegistrar() {
+        mensagemErro.setText(""); // um erro de antes pode não valer para o valor de agora
         try {
             FormaPagamento forma = formaEscolhida();
             BigDecimal valor = Formatador.lerValor(campoValor.getText());
             BigDecimal recebido = forma == FormaPagamento.DINHEIRO ? Formatador.lerValor(campoRecebido.getText()) : null;
+            if (forma == FormaPagamento.FIADO && !confirmarFiadoAcimaDoLimite(valor)) {
+                return false; // preferiu outra forma: a janelinha continua aberta
+            }
             Pagamento pagamento = pedidoService.criarPagamento(forma, valor, recebido, campoCodigoPix.getText());
             pedidoService.registrarPagamento(pedido, pagamento);
             registrado = pagamento;
@@ -191,9 +210,35 @@ public class PagamentoDialogo {
         return false;
     }
 
+    /**
+     * RN03: fiado acima do limite não é bloqueado, mas precisa de um "sim" de propósito.
+     * Valor inválido ou cliente sem conta: devolve true e deixa a regra do model responder.
+     */
+    private boolean confirmarFiadoAcimaDoLimite(BigDecimal valor) {
+        Cliente cliente = pedido.getCliente();
+        if (!cliente.temContaFiado() || valor.signum() <= 0
+                || valor.compareTo(pedidoService.calcularValorRestante(pedido)) > 0) {
+            return true;
+        }
+        ContaFiado conta = cliente.getContaFiado();
+        BigDecimal passa = conta.quantoPassariaDoLimite(valor);
+        if (passa.signum() == 0) {
+            return true;
+        }
+        return Dialogos.confirmar("Fiado acima do limite",
+                cliente.getNome() + " tem limite de " + Formatador.moeda(conta.getLimiteCredito())
+                        + " e já deve " + Formatador.moeda(conta.getSaldoDevedor()) + ".\n"
+                        + "Com mais " + Formatador.moeda(valor) + " no fiado, a dívida passa do limite em "
+                        + Formatador.moeda(passa) + ".\n\nLançar no fiado mesmo assim?",
+                "Lançar no fiado");
+    }
+
     private FormaPagamento formaEscolhida() {
         if (opcaoPix.isSelected()) {
             return FormaPagamento.PIX;
+        }
+        if (opcaoCartao.isSelected()) {
+            return opcaoCredito.isSelected() ? FormaPagamento.CARTAO_CREDITO : FormaPagamento.CARTAO_DEBITO;
         }
         return opcaoFiado.isSelected() ? FormaPagamento.FIADO : FormaPagamento.DINHEIRO;
     }

@@ -52,15 +52,27 @@ class ContaFiadoTest {
     }
 
     @Test
-    @DisplayName("RN03: compra acima do limite lança exceção e o saldo não muda")
-    void compraAcimaDoLimiteLancaExcecao() {
+    @DisplayName("RN03: compra acima do limite só gera aviso; ela entra na conta e a dívida fica acima do limite")
+    void compraAcimaDoLimiteEntraNaConta() {
         conta.registrarCompra(reais("60.00"), null);
 
-        assertFalse(conta.podeComprar(reais("40.01")));
-        RegraNegocioException erro = assertThrows(RegraNegocioException.class,
-                () -> conta.registrarCompra(reais("40.01"), null));
-        assertTrue(erro.getMessage().contains("limite"), "a mensagem precisa explicar o motivo");
-        assertValor("60.00", conta.getSaldoDevedor());
+        assertFalse(conta.podeComprar(reais("40.01")), "a tela usa isto para avisar");
+        assertValor("0.01", conta.quantoPassariaDoLimite(reais("40.01")));
+        conta.registrarCompra(reais("40.01"), null);
+
+        assertValor("100.01", conta.getSaldoDevedor());
+        assertTrue(conta.estaAcimaDoLimite());
+        assertValor("0.01", conta.getValorAcimaDoLimite());
+        assertValor("0.00", conta.getCreditoDisponivel(), "o crédito disponível nunca fica negativo");
+    }
+
+    @Test
+    @DisplayName("Dentro do limite, a conta não está acima do limite e nada passaria")
+    void dentroDoLimiteNaoPassa() {
+        conta.registrarCompra(reais("60.00"), null);
+        assertFalse(conta.estaAcimaDoLimite());
+        assertValor("0.00", conta.getValorAcimaDoLimite());
+        assertValor("0.00", conta.quantoPassariaDoLimite(reais("40.00")));
     }
 
     @Test
@@ -120,7 +132,7 @@ class ContaFiadoTest {
     }
 
     @Test
-    @DisplayName("Alterar o limite muda o crédito; limite abaixo da dívida bloqueia novas compras")
+    @DisplayName("Alterar o limite muda o crédito; limite abaixo da dívida deixa a conta acima do limite")
     void alterarLimite() {
         conta.registrarCompra(reais("80.00"), null);
 
@@ -129,6 +141,7 @@ class ContaFiadoTest {
 
         conta.alterarLimite(reais("50.00"));
         assertFalse(conta.podeComprar(reais("0.01")));
+        assertValor("30.00", conta.getValorAcimaDoLimite());
         assertValor("80.00", conta.getSaldoDevedor(), "o histórico não muda");
         assertThrows(RegraNegocioException.class, () -> conta.alterarLimite(reais("-1")));
     }

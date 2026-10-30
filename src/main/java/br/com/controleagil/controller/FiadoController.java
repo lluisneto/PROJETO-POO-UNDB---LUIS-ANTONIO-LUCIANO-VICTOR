@@ -110,8 +110,13 @@ public class FiadoController {
                 Formatador.moeda(c.getValue().getContaFiado().getLimiteCredito())));
         colunaSaldo.setCellValueFactory(c -> new SimpleStringProperty(
                 Formatador.moeda(c.getValue().getContaFiado().getSaldoDevedor())));
-        colunaCredito.setCellValueFactory(c -> new SimpleStringProperty(
-                Formatador.moeda(c.getValue().getContaFiado().getCreditoDisponivel())));
+        // Acima do limite: valor negativo (ex.: -R$ 5,00 = passou R$ 5,00). O painel ao lado explica por extenso.
+        colunaCredito.setCellValueFactory(c -> {
+            ContaFiado conta = c.getValue().getContaFiado();
+            return new SimpleStringProperty(conta.estaAcimaDoLimite()
+                    ? Formatador.moeda(conta.getValorAcimaDoLimite().negate())
+                    : Formatador.moeda(conta.getCreditoDisponivel()));
+        });
         colunaUltimaCompra.setCellValueFactory(c -> new SimpleStringProperty(
                 fiadoService.dataUltimaCompra(c.getValue().getContaFiado())
                         .map(data -> Formatador.data(data.toLocalDate()))
@@ -171,7 +176,9 @@ public class FiadoController {
             barraLimite.getStyleClass().add("alerta");
         }
         textoLimite.setText(Formatador.moeda(conta.getSaldoDevedor()) + " de " + Formatador.moeda(conta.getLimiteCredito())
-                + " usados. Ainda pode comprar " + Formatador.moeda(conta.getCreditoDisponivel()) + ".");
+                + " usados. " + (conta.estaAcimaDoLimite()
+                ? "Passou do limite em " + Formatador.moeda(conta.getValorAcimaDoLimite()) + "."
+                : "Ainda pode comprar " + Formatador.moeda(conta.getCreditoDisponivel()) + "."));
     }
 
     private void configurarHistorico() {

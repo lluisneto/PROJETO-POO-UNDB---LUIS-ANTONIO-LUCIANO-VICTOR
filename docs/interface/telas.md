@@ -50,13 +50,13 @@ Regras usadas: RF06, RF07.
 | Em breve | Pedido não finalizado com entrega nos próximos 60 minutos: linha destacada e etiqueta "Em breve". |
 | Atrasado | Pedido não finalizado com a hora já passada: etiqueta "Atrasado". |
 | Avançar status | Mostra para onde vai (ex.: "Avançar para Em produção"). Desabilitado para pedido entregue ou cancelado. |
-| Registrar pagamento | Diálogo com total, já pago, falta pagar, forma (dinheiro com troco, Pix, fiado com crédito disponível) e valor (total ou parcial). Se a regra recusar, a mensagem aparece dentro do diálogo. |
+| Registrar pagamento | Diálogo com total, já pago, falta pagar, forma (dinheiro com troco, Pix, cartão de débito ou crédito, fiado com crédito disponível) e valor (total ou parcial). Se a regra recusar, a mensagem aparece dentro do diálogo. Fiado que passa do limite pede confirmação antes de lançar. |
 | Ver detalhes | Diálogo com cliente, entrega, itens com o preço da época, pagamentos, total, pago e falta pagar. Também abre com dois cliques na linha. |
-| Cancelar pedido | Pede confirmação. O que foi pago no **fiado é estornado** (sai da dívida do cliente, e o histórico mostra "Estorno"); dinheiro e Pix são devolvidos por fora, e o aviso lembra disso. |
+| Cancelar pedido | Pede confirmação. O que foi pago no **fiado é estornado** (sai da dívida do cliente, e o histórico mostra "Estorno"); dinheiro, Pix e cartão são devolvidos por fora, e o aviso lembra disso. |
 | Atrasados de outros dias | Pedidos de dias anteriores que ninguém marcou como entregues aparecem num aviso no topo ("Há N pedidos atrasados de dias anteriores") com o botão **Ver atrasados**, que também está no filtro de status: "Atrasados (todos os dias)". |
 | Estado vazio | "Nenhum pedido para este dia" com o botão **Novo pedido**. |
 
-Regras usadas: RN05, RC02, RC03, RC07, RN03 e RN04 (pagamento fiado), RF05, RF06, RF07, RF14.
+Regras usadas: RN05, RC02, RC03, RC07, RN03 (fiado acima do limite **só avisa** e pede confirmação) e RN04 (pagamento fiado), RC18, RF05, RF06, RF07, RF14.
 
 ## Novo pedido
 
@@ -66,11 +66,11 @@ Regras usadas: RN05, RC02, RC03, RC07, RN03 e RN04 (pagamento fiado), RF05, RF06
 | Entrega | Dia (padrão: hoje) e hora: lista de 15 em 15 minutos, das 06:00 às 22:00, ou digitada no formato HH:mm (validada). O sistema sugere o próximo horário redondo. |
 | Itens | Produto (com preço) + quantidade + **Adicionar**. Adicionar um produto que já está na lista **soma a quantidade**. Cada linha tem **Remover**. |
 | Total | Em destaque, atualizado na hora. |
-| Pagamento | **Pagar depois** (padrão), **Dinheiro** (valor recebido e troco calculado na hora), **Pix** (código opcional) ou **Fiado** (mostra o crédito disponível e avisa se o total passa do limite; desabilitado, com explicação, se o cliente não tiver conta fiado). |
+| Pagamento | **Pagar depois** (padrão), **Dinheiro** (valor recebido e troco calculado na hora), **Pix** (código opcional), **Cartão** (escolha **Débito** ou **Crédito**) ou **Fiado** (mostra o crédito disponível e avisa quanto o total passa do limite; ao salvar, pede confirmação; desabilitado, com explicação, se o cliente não tiver conta fiado). |
 | Salvar / Limpar | Salvar registra o pedido e mostra o número na barra de status. Erros aparecem logo acima do botão Salvar. |
 | Rascunho guardado | Dá para ir até **Clientes** (cadastrar um cliente novo) ou **Produtos** e voltar: o pedido que estava sendo montado continua lá, e o cliente novo já aparece na lista. Com a lista vazia, o campo diz onde cadastrar. |
 
-Regras usadas: RN01, RN02, RN03 (fiado acima do limite **bloqueia** o pedido inteiro), RC06, RC10, RC11, RC12, RF03, RF04, RF08, RF14.
+Regras usadas: RN01, RN02, RN03 (fiado acima do limite **só avisa** e pede confirmação), RC18, RC06, RC10, RC11, RC12, RF03, RF04, RF08, RF14.
 
 ## Clientes
 
@@ -79,7 +79,7 @@ Regras usadas: RN01, RN02, RN03 (fiado acima do limite **bloqueia** o pedido int
 | Busca | Filtra enquanto digita, por nome (sem ligar para acentos e maiúsculas) ou por pedaço do telefone. |
 | Tabela | Nome · Telefone · Endereço · Conta fiado (Sim/Não) · Saldo devedor. |
 | Formulário | Clicar num cliente da tabela leva ele para o formulário (edição); o botão **Novo cliente** limpa o formulário (cadastro). Usar a busca no meio da edição não apaga o que já foi digitado. Nome obrigatório. |
-| Abrir conta fiado / Alterar limite | Sem conta: pede o limite e abre a conta. Com conta: o mesmo botão vira **Alterar limite do fiado** (ex.: limite digitado errado, cliente ganhou mais crédito). Limite abaixo da dívida bloqueia novas compras fiado até o cliente pagar. |
+| Abrir conta fiado / Alterar limite | Sem conta: pede o limite e abre a conta. Com conta: o mesmo botão vira **Alterar limite do fiado** (ex.: limite digitado errado, cliente ganhou mais crédito). Limite abaixo da dívida deixa a conta acima do limite: as próximas compras fiado mostram o aviso. |
 
 Regras usadas: RC14, RC13 (limite ≥ 0), RC15, RF01, RF11.
 
@@ -97,13 +97,13 @@ Regras usadas: RC05, RC13 (preço > 0), RC14, RF02.
 
 | Elemento | O que faz |
 |----------|-----------|
-| Contas | Cliente · Limite · Saldo devedor · Crédito disponível · Última compra, de quem deve mais para quem deve menos. Opção **Mostrar só quem deve**. |
-| Conta selecionada | Saldo devedor em destaque, "devendo desde", barra de uso do limite com texto (ex.: "R$ 120,00 de R$ 200,00 usados"; fica vermelha a partir de 90%). |
+| Contas | Cliente · Limite · Saldo devedor · Crédito disponível · Última compra, de quem deve mais para quem deve menos. Se a conta passou do limite, o Crédito disponível mostra quanto passou, com sinal de menos (ex.: -R$ 5,00). Opção **Mostrar só quem deve**. |
+| Conta selecionada | Saldo devedor em destaque, "devendo desde", barra de uso do limite com texto (ex.: "R$ 120,00 de R$ 200,00 usados. Ainda pode comprar R$ 80,00."; acima do limite: "Passou do limite em R$ 5,00."; fica vermelha a partir de 90%). |
 | Histórico | Data · Tipo (Compra, Pagamento ou Estorno) · Valor · Pedido nº, do mais novo para o mais antigo. |
 | Registrar pagamento | Valor + botão. Pagamento válido reduz o saldo e entra no histórico. |
 | Rodapé | Total a receber somando todas as contas e quantos clientes estão devendo. |
 
-Regras usadas: RN04, RC08, RF08 a RF13.
+Regras usadas: RN03 (conta acima do limite só avisa), RN04, RC08, RC17, RF08 a RF13.
 
 ## Roteiro rápido de teste manual
 
@@ -111,7 +111,7 @@ Regras usadas: RN04, RC08, RF08 a RF13.
 2. Clique em cada item do menu: as 6 telas abrem e o item ativo fica laranja.
 3. **Agenda do dia**: confira um pedido "Atrasado" e um "Em breve" (linha destacada). Isso vale no dia em que os exemplos foram carregados; nos dias seguintes, os pedidos de exemplo que ficaram em aberto aparecem no aviso "atrasados de dias anteriores" (para refazer o roteiro do zero, feche o sistema e apague o `controle-agil.db`).
 4. Selecione um pedido pendente e clique em **Avançar para Em produção** até **Entregue**. Depois disso, os botões de avançar e cancelar ficam desabilitados.
-5. **Novo pedido**: escolha **Mercadinho Bom Preço** (crédito de R$ 45,00), adicione 10 coxinhas, escolha **Fiado** e salve: o pedido é **bloqueado** com mensagem. Troque para **Pagar depois**, adicione mais um item e salve: o pedido aparece na Agenda.
+5. **Novo pedido**: escolha **Mercadinho Bom Preço** (crédito de R$ 45,00), adicione 10 coxinhas, escolha **Fiado**: o texto avisa quanto passa do limite. Salve: o sistema pede confirmação; escolha **Salvar no fiado** e o pedido aparece na Agenda (na tela Fiado, a conta aparece acima do limite). Em outro pedido, escolha **Cartão** › **Crédito** e salve.
 6. **Fiado**: selecione a **Lanchonete Sabor da Praça** (deve R$ 30,00), digite 50 e registre: recusado (maior que o saldo). Digite 10 e registre: o saldo cai para R$ 20,00 e o pagamento aparece no histórico.
 7. **Produtos**: mude o preço da coxinha para 6,00. Na Agenda, o pedido nº 1 continua com o total antigo (R$ 100,00).
 8. **Clientes**: busque por "pao" (sem acento) e por "0104"; abra a conta fiado de um cliente sem conta.

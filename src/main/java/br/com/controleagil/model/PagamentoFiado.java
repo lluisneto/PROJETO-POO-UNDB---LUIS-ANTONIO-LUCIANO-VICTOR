@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
  * Responsabilidade: "pagar" deixando na conta: lança o valor como COMPRA na conta fiado do cliente.
  *
  * Conceitos de POO: HERANÇA ("extends Pagamento") e POLIMORFISMO. Este é o processar() mais
- * diferente dos três: em vez de só conferir dados, ele mexe em outro objeto (a ContaFiado).
- * Repare que a regra do limite (RN03) NÃO está aqui: ela fica na própria ContaFiado,
- * que é quem conhece o limite. Cada objeto cuida das suas regras.
+ * diferente de todos: em vez de só conferir dados, ele mexe em outro objeto (a ContaFiado).
+ * Repare que o limite (RN03) NÃO é conferido aqui: quem conhece o limite é a própria ContaFiado
+ * (podeComprar), e passar do limite só gera um aviso na tela. Cada objeto cuida das suas regras.
  */
 public class PagamentoFiado extends Pagamento {
 
@@ -27,7 +27,7 @@ public class PagamentoFiado extends Pagamento {
         super(valor, data);
     }
 
-    /** Fiado: o cliente precisa ter conta fiado, e a compra precisa caber no limite (RN03). */
+    /** Fiado: o cliente precisa ter conta fiado. A compra entra na conta mesmo se passar do limite (RN03 só avisa). */
     @Override
     public void processar(Pedido pedido) {
         Cliente cliente = pedido.getCliente();

@@ -2,6 +2,7 @@ package br.com.controleagil.controller;
 
 import br.com.controleagil.exception.RegraNegocioException;
 import br.com.controleagil.model.Cliente;
+import br.com.controleagil.model.ContaFiado;
 import br.com.controleagil.model.ItemPedido;
 import br.com.controleagil.model.Pagamento;
 import br.com.controleagil.model.Pedido;
@@ -45,7 +46,8 @@ import java.util.stream.Stream;
  * escolher o pagamento e salvar.
  *
  * Controller FINO: a lista de itens é só um RASCUNHO até salvar. Somar quantidades, calcular
- * total e troco e validar as regras (RN01, RN02, RN03...) é trabalho do PedidoService e do model.
+ * total e troco e validar as regras (RN01, RN02...) é trabalho do PedidoService e do model.
+ * RN03 (limite do fiado): o model calcula quanto passaria do limite; a tela só avisa e pede confirmação.
  */
 public class NovoPedidoController implements TelaAtualizavel {
 
@@ -78,9 +80,13 @@ public class NovoPedidoController implements TelaAtualizavel {
     @FXML private RadioButton opcaoPagarDepois;
     @FXML private RadioButton opcaoDinheiro;
     @FXML private RadioButton opcaoPix;
+    @FXML private RadioButton opcaoCartao;
+    @FXML private RadioButton opcaoDebito;
+    @FXML private RadioButton opcaoCredito;
     @FXML private RadioButton opcaoFiado;
     @FXML private VBox camposDinheiro;
     @FXML private VBox camposPix;
+    @FXML private VBox camposCartao;
     @FXML private TextField campoRecebido;
     @FXML private Label textoTroco;
     @FXML private TextField campoCodigoPix;
@@ -168,7 +174,13 @@ public class NovoPedidoController implements TelaAtualizavel {
     private void salvar() {
         mensagemErro.setText("");
         try {
-            Pedido pedido = pedidoService.registrarPedido(campoCliente.getValue(), lerDataHora(), itens, criarPagamento());
+            // Lê a hora e o pagamento antes: a pergunta do fiado só aparece se o resto já estiver certo.
+            LocalDateTime entrega = lerDataHora();
+            Pagamento pagamento = criarPagamento();
+            if (!confirmarFiadoAcimaDoLimite()) {
+                return;
+            }
+            Pedido pedido = pedidoService.registrarPedido(campoCliente.getValue(), entrega, itens, pagamento);
             navegacao.mostrarMensagem("Pedido nº " + pedido.getId() + " salvo para " + quando(pedido.getDataHoraEntrega()) + ".");
             limpar();
         } catch (RegraNegocioException e) {
@@ -186,6 +198,7 @@ public class NovoPedidoController implements TelaAtualizavel {
         campoQuantidade.getValueFactory().setValue(1);
         sugerirDataEHora();
         opcaoPagarDepois.setSelected(true);
+        opcaoDebito.setSelected(true);
         campoRecebido.clear();
         campoCodigoPix.clear();
         mensagemErro.setText("");
@@ -243,6 +256,7 @@ public class NovoPedidoController implements TelaAtualizavel {
     private void atualizarPagamento() {
         mostrar(camposDinheiro, opcaoDinheiro.isSelected());
         mostrar(camposPix, opcaoPix.isSelected());
+        mostrar(camposCartao, opcaoCartao.isSelected());
         atualizarTroco();
     }
 
@@ -276,19 +290,45 @@ public class NovoPedidoController implements TelaAtualizavel {
         if (!podeFiado && opcaoFiado.isSelected()) {
             opcaoPagarDepois.setSelected(true);
         }
-        textoFiado.getStyleClass().remove("erro-campo");
+        textoFiado.getStyleClass().remove("aviso-campo");
         if (cliente == null) {
             textoFiado.setText("Escolha o cliente para ver se ele pode comprar fiado.");
         } else if (!podeFiado) {
             textoFiado.setText("Fiado desligado: " + cliente.getNome() + " não tem conta fiado (abra na tela Clientes).");
         } else {
-            BigDecimal credito = cliente.getContaFiado().getCreditoDisponivel();
-            textoFiado.setText("Crédito disponível: " + Formatador.moeda(credito));
-            if (!cliente.getContaFiado().podeComprar(pedidoService.calcularTotal(itens))) {
-                textoFiado.setText(textoFiado.getText() + ". O total passa do limite: no fiado, o pedido será bloqueado.");
-                textoFiado.getStyleClass().add("erro-campo");
+            ContaFiado conta = cliente.getContaFiado();
+            BigDecimal passa = conta.quantoPassariaDoLimite(pedidoService.calcularTotal(itens));
+            textoFiado.setText("Crédito disponível: " + Formatador.moeda(conta.getCreditoDisponivel()) + ".");
+            // RN03: passar do limite não bloqueia; o texto avisa e, ao salvar, o sistema pede confirmação.
+            if (!itens.isEmpty() && passa.signum() > 0) {
+                textoFiado.setText(textoFiado.getText() + " No fiado, a dívida passa do limite em "
+                        + Formatador.moeda(passa) + " (o sistema pede confirmação).");
+                textoFiado.getStyleClass().add("aviso-campo");
             }
         }
+    }
+
+    /**
+     * RN03: fiado acima do limite não é bloqueado, mas precisa de um "sim" de propósito.
+     * Devolve false se o usuário preferir voltar e escolher outra forma de pagamento.
+     */
+    private boolean confirmarFiadoAcimaDoLimite() {
+        Cliente cliente = campoCliente.getValue();
+        if (!opcaoFiado.isSelected() || itens.isEmpty() || cliente == null || !cliente.temContaFiado()) {
+            return true;
+        }
+        ContaFiado conta = cliente.getContaFiado();
+        BigDecimal total = pedidoService.calcularTotal(itens);
+        BigDecimal passa = conta.quantoPassariaDoLimite(total);
+        if (passa.signum() == 0) {
+            return true;
+        }
+        return Dialogos.confirmar("Fiado acima do limite",
+                cliente.getNome() + " tem limite de " + Formatador.moeda(conta.getLimiteCredito())
+                        + " e já deve " + Formatador.moeda(conta.getSaldoDevedor()) + ".\n"
+                        + "Com este pedido de " + Formatador.moeda(total) + ", a dívida passa do limite em "
+                        + Formatador.moeda(passa) + ".\n\nSalvar no fiado mesmo assim?",
+                "Salvar no fiado");
     }
 
     /** Cria o pagamento da forma escolhida, no valor total. "Pagar depois" não cria nenhum. */
@@ -302,6 +342,10 @@ public class NovoPedidoController implements TelaAtualizavel {
         }
         if (opcaoPix.isSelected()) {
             return pedidoService.criarPagamento(FormaPagamento.PIX, total, null, campoCodigoPix.getText());
+        }
+        if (opcaoCartao.isSelected()) {
+            FormaPagamento cartao = opcaoCredito.isSelected() ? FormaPagamento.CARTAO_CREDITO : FormaPagamento.CARTAO_DEBITO;
+            return pedidoService.criarPagamento(cartao, total, null, null);
         }
         return pedidoService.criarPagamento(FormaPagamento.FIADO, total, null, null);
     }

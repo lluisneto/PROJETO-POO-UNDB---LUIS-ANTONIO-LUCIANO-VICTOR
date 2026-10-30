@@ -234,6 +234,12 @@
     -fx-font-weight: bold;
 }
 
+/* Aviso que não impede a ação (ex.: fiado acima do limite) */
+.aviso-campo {
+    -fx-text-fill: -cor-destaque-escuro;
+    -fx-font-weight: bold;
+}
+
 /* Valores grandes: total do pedido, saldo do fiado */
 .total-destaque {
     -fx-font-size: 28px;

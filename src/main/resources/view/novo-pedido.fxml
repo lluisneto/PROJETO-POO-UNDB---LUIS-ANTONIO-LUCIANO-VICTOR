@@ -69,6 +69,7 @@
         <Label text="Pagamento" styleClass="secao-titulo"/>
         <fx:define>
             <ToggleGroup fx:id="formasPagamento"/>
+            <ToggleGroup fx:id="tiposCartao"/>
         </fx:define>
         <RadioButton fx:id="opcaoPagarDepois" text="Pagar depois" toggleGroup="$formasPagamento" selected="true"/>
         <RadioButton fx:id="opcaoDinheiro" text="Dinheiro" toggleGroup="$formasPagamento"/>
@@ -83,6 +84,13 @@
         <VBox fx:id="camposPix" spacing="8" styleClass="sub-opcao">
             <Label text="Código da transação (opcional)" styleClass="rotulo"/>
             <TextField fx:id="campoCodigoPix" promptText="ex.: E2E1234..."/>
+        </VBox>
+        <RadioButton fx:id="opcaoCartao" text="Cartão" toggleGroup="$formasPagamento"/>
+        <VBox fx:id="camposCartao" spacing="8" styleClass="sub-opcao">
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <RadioButton fx:id="opcaoDebito" text="Débito" toggleGroup="$tiposCartao" selected="true"/>
+                <RadioButton fx:id="opcaoCredito" text="Crédito" toggleGroup="$tiposCartao"/>
+            </HBox>
         </VBox>
         <RadioButton fx:id="opcaoFiado" text="Fiado" toggleGroup="$formasPagamento"/>
         <Label fx:id="textoFiado" styleClass="dica" wrapText="true" minHeight="-Infinity"/>

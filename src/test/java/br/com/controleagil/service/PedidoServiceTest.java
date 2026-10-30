@@ -3,9 +3,12 @@ package br.com.controleagil.service;
 import br.com.controleagil.exception.RegraNegocioException;
 import br.com.controleagil.model.Cliente;
 import br.com.controleagil.model.ItemPedido;
+import br.com.controleagil.model.Pagamento;
+import br.com.controleagil.model.PagamentoCartao;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
+import br.com.controleagil.model.TipoCartao;
 import br.com.controleagil.repository.memoria.PedidoRepositoryMemoria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +24,7 @@ import static br.com.controleagil.TesteDinheiro.assertValor;
 import static br.com.controleagil.TesteDinheiro.reais;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -82,15 +86,35 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("Fiado acima do limite bloqueia o pedido inteiro: nada é salvo (RN03)")
-    void fiadoAcimaDoLimiteNaoSalvaOPedido() {
+    @DisplayName("Fiado acima do limite é salvo (RN03 só avisa, na tela) e a dívida passa do limite")
+    void fiadoAcimaDoLimiteEhSalvo() {
         cliente.abrirContaFiado(reais("10.00"));
         List<ItemPedido> itens = List.of(new ItemPedido(coxinha, 3)); // R$ 15,00
 
+        Pedido pedido = service.registrarPedido(cliente, AGORA.plusHours(1), itens,
+                service.criarPagamento(FormaPagamento.FIADO, service.calcularTotal(itens), null, null));
+        assertNotNull(pedido.getId());
+        assertValor("15.00", cliente.getContaFiado().getSaldoDevedor());
+        assertValor("5.00", cliente.getContaFiado().getValorAcimaDoLimite());
+    }
+
+    @Test
+    @DisplayName("Fiado sem conta continua recusado: nada é salvo")
+    void fiadoSemContaNaoSalvaOPedido() {
+        List<ItemPedido> itens = List.of(new ItemPedido(coxinha, 3));
         assertThrows(RegraNegocioException.class, () -> service.registrarPedido(cliente, AGORA.plusHours(1), itens,
                 service.criarPagamento(FormaPagamento.FIADO, service.calcularTotal(itens), null, null)));
         assertTrue(service.listarTodos().isEmpty());
-        assertValor("0", cliente.getContaFiado().getSaldoDevedor());
+    }
+
+    @Test
+    @DisplayName("A forma escolhida na tela vira a subclasse certa de Pagamento (cartão de débito e de crédito)")
+    void criarPagamentoNoCartao() {
+        Pagamento debito = service.criarPagamento(FormaPagamento.CARTAO_DEBITO, reais("10.00"), null, null);
+        Pagamento credito = service.criarPagamento(FormaPagamento.CARTAO_CREDITO, reais("10.00"), null, null);
+
+        assertEquals(TipoCartao.DEBITO, assertInstanceOf(PagamentoCartao.class, debito).getTipo());
+        assertEquals(TipoCartao.CREDITO, assertInstanceOf(PagamentoCartao.class, credito).getTipo());
     }
 
     @Test

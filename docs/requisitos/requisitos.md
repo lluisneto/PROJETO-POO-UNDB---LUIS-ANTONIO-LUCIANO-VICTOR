@@ -47,21 +47,22 @@ O que o sistema precisa fazer. "Situação" diz como está no sistema (MVP, com 
 
 | Código | Requisito | Etapa | Situação |
 |--------|-----------|-------|----------|
-| RF14 | Receber pagamento em dinheiro (com troco), Pix ou fiado, de uma vez ou em partes | 1 | Pronto (Novo pedido e Agenda do dia) |
+| RF14 | Receber pagamento em dinheiro (com troco), Pix, cartão (débito ou crédito) ou fiado, de uma vez ou em partes | 1 | Pronto (Novo pedido e Agenda do dia) |
 | RF15 | Cadastrar entregadores fixos e avulsos | 2 | Futuro |
 | RF16 | Atribuir pedidos a entregadores e agrupar por bairro e horário | 2 | Futuro |
 | RF17 | Permitir retirada no local | 2 | Futuro |
 
 ## Regras de negócio (RN)
 
-Regras do negócio do cliente que o sistema não deixa quebrar. Quando uma regra é quebrada, o sistema
-lança `RegraNegocioException` com uma mensagem em português, e a tela mostra essa mensagem.
+Regras do negócio do cliente. Na maioria delas o sistema não deixa quebrar: lança
+`RegraNegocioException` com uma mensagem em português, e a tela mostra essa mensagem. A exceção é a
+RN03: passar do limite do fiado não é bloqueado; o sistema só avisa e pede confirmação.
 
 | Código | Regra | Onde está |
 |--------|-------|-----------|
 | RN01 | Todo pedido precisa ter data e horário de entrega | Construtor de `Pedido` |
 | RN02 | Um pedido precisa ter pelo menos um item para ser salvo | `PedidoService.registrarPedido()` |
-| RN03 | Uma compra fiado não pode ultrapassar o limite de crédito do cliente (**neste esqueleto, bloqueia**) 🔎 | `ContaFiado.registrarCompra()` usando `podeComprar()` |
+| RN03 | Compra fiado que passa do limite de crédito do cliente **não é bloqueada: o sistema avisa e pede confirmação** (decisão do cliente) | `ContaFiado.podeComprar()` e `quantoPassariaDoLimite()`; aviso nas telas Novo pedido e Registrar pagamento |
 | RN04 | Um pagamento de fiado não pode ser maior que o saldo devedor, nem menor ou igual a zero | `ContaFiado.registrarPagamento()` |
 | RN05 | Pedido ENTREGUE ou CANCELADO não muda mais de status | `Pedido.alterarStatus()` usando `StatusPedido.isFinal()` |
 
@@ -88,7 +89,8 @@ elas estão aqui (veja a coluna "Antes").
 | RC14 | Nome do cliente e do produto são obrigatórios | `Pessoa`, `Produto` | – |
 | RC15 | Cada cliente tem no máximo uma conta fiado | `Cliente.abrirContaFiado()` | – |
 | RC16 | Cancelar um pedido pago no fiado estorna a compra da conta do cliente (até o valor da dívida; o que o cliente já pagou é devolvido por fora) | `Pedido.alterarStatus()`, `PagamentoFiado.cancelar()`, `ContaFiado.registrarEstorno()` | – |
-| RC17 | O limite do fiado pode ser alterado; um limite menor que a dívida bloqueia novas compras fiado até o cliente pagar | `ContaFiado.alterarLimite()` | – |
+| RC17 | O limite do fiado pode ser alterado; com um limite menor que a dívida, a conta aparece acima do limite e cada nova compra fiado gera o aviso da RN03 | `ContaFiado.alterarLimite()` | – |
+| RC18 | No cartão, é preciso dizer se foi **débito** ou **crédito** (a aprovação acontece na maquininha, fora do sistema) | `PagamentoCartao.processar()` | – |
 
 ## Requisitos não funcionais (RNF)
 
@@ -107,10 +109,8 @@ Como o sistema precisa ser.
 
 ## Perguntas pendentes para o cliente 🔎
 
-- Ao passar do limite do fiado, o sistema deve **bloquear** a venda (como está hoje) ou só **avisar**?
 - Existe prazo para pagar o fiado? Cobram juros ou multa?
 - Com quanto tempo de antecedência querem ser avisados de um pedido? (hoje: 60 minutos)
-- Além de dinheiro, Pix e fiado, aceitam cartão?
 - Se um pedido pago no fiado for cancelado, o valor deve sair da conta automaticamente? *(hoje: sai, com um "Estorno" no histórico)*
 - Os preços mudam com frequência? Existe preço diferente por cliente?
 - Quantos pedidos, em média, recebem por dia? Quem vai usar o sistema no dia a dia?

@@ -5,12 +5,14 @@ import br.com.controleagil.model.Cliente;
 import br.com.controleagil.model.ContaFiado;
 import br.com.controleagil.model.ItemPedido;
 import br.com.controleagil.model.MovimentacaoFiado;
+import br.com.controleagil.model.PagamentoCartao;
 import br.com.controleagil.model.PagamentoDinheiro;
 import br.com.controleagil.model.PagamentoFiado;
 import br.com.controleagil.model.PagamentoPix;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
+import br.com.controleagil.model.TipoCartao;
 import br.com.controleagil.model.TipoMovimentacao;
 import br.com.controleagil.repository.Repositorios;
 import br.com.controleagil.service.ClienteService;
@@ -247,6 +249,67 @@ class RepositorioSqliteTest {
         maria.getContaFiado().registrarEstorno(reais("10.00"), null);
         repositorios.clientes().salvar(maria); // na versão antiga, ESTORNO seria recusado pelo banco
         assertValor("20.00", reabrir().clientes().buscarPorId(1).orElseThrow().getContaFiado().getSaldoDevedor());
+    }
+
+    @Test
+    @DisplayName("Pagamentos no cartão de débito e de crédito voltam iguais do banco")
+    void cartaoVoltaIgual() {
+        Repositorios repositorios = reabrir();
+        Produto coxinha = new ProdutoService(repositorios.produtos()).cadastrar("Coxinha", reais("5.00"));
+        Cliente bar = new ClienteService(repositorios.clientes()).cadastrar("Bar do Zé", null, null);
+        PedidoService pedidos = new PedidoService(repositorios.pedidos(), RELOGIO);
+        Pedido pedido = pedidos.registrarPedido(bar, AGORA.plusHours(1), List.of(new ItemPedido(coxinha, 6)),
+                pedidos.criarPagamento(FormaPagamento.CARTAO_DEBITO, reais("10.00"), null, null));
+        pedidos.registrarPagamento(pedido, pedidos.criarPagamento(FormaPagamento.CARTAO_CREDITO, reais("20.00"), null, null));
+
+        Pedido lido = reabrir().pedidos().buscarPorId(pedido.getId()).orElseThrow();
+        assertEquals(TipoCartao.DEBITO, assertInstanceOf(PagamentoCartao.class, lido.getPagamentos().get(0)).getTipo());
+        assertEquals(TipoCartao.CREDITO, assertInstanceOf(PagamentoCartao.class, lido.getPagamentos().get(1)).getTipo());
+        assertValor("30.00", lido.calcularValorPago());
+    }
+
+    @Test
+    @DisplayName("Fiado acima do limite é gravado e volta do banco ainda acima do limite (RN03 só avisa)")
+    void fiadoAcimaDoLimiteVoltaIgual() {
+        Repositorios repositorios = reabrir();
+        ClienteService clientes = new ClienteService(repositorios.clientes());
+        Produto coxinha = new ProdutoService(repositorios.produtos()).cadastrar("Coxinha", reais("5.00"));
+        Cliente bar = clientes.cadastrar("Bar do Zé", null, null);
+        clientes.abrirContaFiado(bar, reais("20.00"));
+        PedidoService pedidos = new PedidoService(repositorios.pedidos(), RELOGIO);
+        pedidos.registrarPedido(bar, AGORA.plusHours(1), List.of(new ItemPedido(coxinha, 6)),
+                pedidos.criarPagamento(FormaPagamento.FIADO, reais("30.00"), null, null));
+
+        ContaFiado conta = reabrir().clientes().buscarPorId(bar.getId()).orElseThrow().getContaFiado();
+        assertValor("30.00", conta.getSaldoDevedor());
+        assertValor("10.00", conta.getValorAcimaDoLimite());
+    }
+
+    @Test
+    @DisplayName("Banco de uma versão antiga (sem cartão) é atualizado sozinho, sem perder pagamentos")
+    void migraBancoSemCartao() throws Exception {
+        reabrir(); // cria as tabelas atuais...
+        // ...e troca a de pagamentos pela da versão antiga, que só aceita DINHEIRO, PIX e FIADO.
+        executar("DROP TABLE pagamento");
+        executar("CREATE TABLE pagamento (id INTEGER PRIMARY KEY AUTOINCREMENT, pedido_id INTEGER NOT NULL REFERENCES pedido (id),"
+                + " forma TEXT NOT NULL CHECK (forma IN ('DINHEIRO', 'PIX', 'FIADO')), valor TEXT NOT NULL, data TEXT NOT NULL,"
+                + " valor_recebido TEXT, codigo_transacao TEXT)");
+        executar("INSERT INTO cliente (nome) VALUES ('Maria')");
+        executar("INSERT INTO produto (nome, preco) VALUES ('Coxinha', '5.00')");
+        executar("INSERT INTO pedido (cliente_id, data_criacao, data_hora_entrega, status)"
+                + " VALUES (1, '2026-10-29T09:00', '2026-10-29T11:00', 'PENDENTE')");
+        executar("INSERT INTO item_pedido (pedido_id, produto_id, quantidade, preco_unitario) VALUES (1, 1, 4, '5.00')");
+        executar("INSERT INTO pagamento (pedido_id, forma, valor, data, codigo_transacao)"
+                + " VALUES (1, 'PIX', '8.00', '2026-10-29T09:00', 'E2E0001')");
+
+        Repositorios repositorios = reabrir(); // aqui acontece a migração
+        Pedido pedido = repositorios.pedidos().buscarPorId(1).orElseThrow();
+        assertEquals("E2E0001", assertInstanceOf(PagamentoPix.class, pedido.getPagamentos().get(0)).getCodigoTransacao());
+
+        // Na versão antiga, o banco recusaria o cartão.
+        new PedidoService(repositorios.pedidos(), RELOGIO).registrarPagamento(pedido,
+                new PagamentoCartao(reais("12.00"), TipoCartao.CREDITO));
+        assertValor("20.00", reabrir().pedidos().buscarPorId(1).orElseThrow().calcularValorPago());
     }
 
     private void executar(String sql) throws Exception {

@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -66,36 +67,42 @@ public class ConexaoBanco {
     }
 
     /**
-     * MIGRAÇÃO: bancos criados antes do estorno têm a tabela movimentacao_fiado aceitando só
-     * 'COMPRA' e 'PAGAMENTO'. O SQLite não deixa mudar essa regra (CHECK) direto, então a tabela
-     * antiga é renomeada, o schema.sql cria a nova e as linhas são copiadas de volta. Tudo numa
-     * transação: se der errado, o banco fica como estava.
+     * MIGRAÇÃO de bancos de versões antigas. O SQLite não deixa mudar uma regra CHECK direto,
+     * então a tabela antiga é renomeada, a nova é criada e as linhas são copiadas de volta.
+     *  - movimentacao_fiado: antes do estorno, aceitava só 'COMPRA' e 'PAGAMENTO';
+     *  - pagamento: antes do cartão, aceitava só 'DINHEIRO', 'PIX' e 'FIADO'.
+     * Tudo numa transação: se der errado, o banco fica como estava.
      */
     private void atualizarVersaoAntiga(Connection conexao) throws SQLException {
-        String definicao = null;
-        try (Statement comando = conexao.createStatement();
-             ResultSet linha = comando.executeQuery(
-                     "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'movimentacao_fiado'")) {
-            if (linha.next()) {
-                definicao = linha.getString(1);
-            }
-        }
-        if (definicao == null || definicao.contains("ESTORNO")) {
-            return; // banco novo (a tabela ainda não existe) ou já atualizado
+        boolean fiadoAntigo = precisaAtualizar(conexao, "movimentacao_fiado", "ESTORNO");
+        boolean pagamentoAntigo = precisaAtualizar(conexao, "pagamento", "CARTAO_DEBITO");
+        if (!fiadoAntigo && !pagamentoAntigo) {
+            return;
         }
         conexao.setAutoCommit(false);
         try (Statement comando = conexao.createStatement()) {
-            comando.execute("ALTER TABLE movimentacao_fiado RENAME TO movimentacao_fiado_antiga");
-            comando.execute("CREATE TABLE movimentacao_fiado ("
-                    + " id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + " cliente_id INTEGER NOT NULL REFERENCES cliente (id),"
-                    + " tipo TEXT NOT NULL CHECK (tipo IN ('COMPRA', 'PAGAMENTO', 'ESTORNO')),"
-                    + " valor TEXT NOT NULL,"
-                    + " data TEXT NOT NULL,"
-                    + " pedido_id INTEGER REFERENCES pedido (id))");
-            comando.execute("INSERT INTO movimentacao_fiado (id, cliente_id, tipo, valor, data, pedido_id)"
-                    + " SELECT id, cliente_id, tipo, valor, data, pedido_id FROM movimentacao_fiado_antiga");
-            comando.execute("DROP TABLE movimentacao_fiado_antiga");
+            if (fiadoAntigo) {
+                recriar(comando, "movimentacao_fiado", "id, cliente_id, tipo, valor, data, pedido_id",
+                        "CREATE TABLE movimentacao_fiado ("
+                                + " id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                + " cliente_id INTEGER NOT NULL REFERENCES cliente (id),"
+                                + " tipo TEXT NOT NULL CHECK (tipo IN ('COMPRA', 'PAGAMENTO', 'ESTORNO')),"
+                                + " valor TEXT NOT NULL,"
+                                + " data TEXT NOT NULL,"
+                                + " pedido_id INTEGER REFERENCES pedido (id))");
+            }
+            if (pagamentoAntigo) {
+                recriar(comando, "pagamento", "id, pedido_id, forma, valor, data, valor_recebido, codigo_transacao",
+                        "CREATE TABLE pagamento ("
+                                + " id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                + " pedido_id INTEGER NOT NULL REFERENCES pedido (id),"
+                                + " forma TEXT NOT NULL"
+                                + " CHECK (forma IN ('DINHEIRO', 'PIX', 'CARTAO_DEBITO', 'CARTAO_CREDITO', 'FIADO')),"
+                                + " valor TEXT NOT NULL,"
+                                + " data TEXT NOT NULL,"
+                                + " valor_recebido TEXT,"
+                                + " codigo_transacao TEXT)");
+            }
             conexao.commit();
         } catch (SQLException e) {
             conexao.rollback();
@@ -103,6 +110,26 @@ public class ConexaoBanco {
         } finally {
             conexao.setAutoCommit(true);
         }
+    }
+
+    /** A tabela existe e a regra CHECK dela ainda não conhece o valor novo? (Banco novo: ainda não existe.) */
+    private static boolean precisaAtualizar(Connection conexao, String tabela, String valorNovo) throws SQLException {
+        try (PreparedStatement sql = conexao.prepareStatement(
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?")) {
+            sql.setString(1, tabela);
+            try (ResultSet linha = sql.executeQuery()) {
+                return linha.next() && !linha.getString(1).contains(valorNovo);
+            }
+        }
+    }
+
+    /** Renomeia a tabela antiga, cria a nova com a regra atualizada e copia as linhas (com os mesmos ids). */
+    private static void recriar(Statement comando, String tabela, String colunas, String criarTabela) throws SQLException {
+        // Os nomes vêm só deste arquivo (nunca do usuário), então podem ir no texto do SQL.
+        comando.execute("ALTER TABLE " + tabela + " RENAME TO " + tabela + "_antiga");
+        comando.execute(criarTabela);
+        comando.execute("INSERT INTO " + tabela + " (" + colunas + ") SELECT " + colunas + " FROM " + tabela + "_antiga");
+        comando.execute("DROP TABLE " + tabela + "_antiga");
     }
 
     /**

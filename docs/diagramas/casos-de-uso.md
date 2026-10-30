@@ -43,6 +43,6 @@ flowchart LR
 | Ver agenda do dia | RF06 | Agenda do dia | `PedidoService.pedidosDoDia()`, `AgendaController` |
 | Ver alertas de entrega | RF07 | Início e Agenda do dia | `PedidoService.estaEmBreve()` / `estaAtrasado()` |
 | Abrir conta fiado | RF11 | Clientes | `Cliente.abrirContaFiado()`, `ContaFiado` |
-| Receber pagamento | RF14, RF08 | Novo pedido e Agenda do dia | `Pagamento`, `PagamentoDinheiro`, `PagamentoPix`, `PagamentoFiado` |
+| Receber pagamento | RF14, RF08 | Novo pedido e Agenda do dia | `Pagamento`, `PagamentoDinheiro`, `PagamentoPix`, `PagamentoCartao`, `PagamentoFiado` |
 | Registrar pagamento do fiado | RF09, RF10, RF13 | Fiado | `FiadoService`, `ContaFiado`, `MovimentacaoFiado` |
 | Ver relatório de devedores | RF12 | Fiado e Início | `FiadoService`, `Devedor` |

@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS item_pedido (
 CREATE TABLE IF NOT EXISTS pagamento (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     pedido_id         INTEGER NOT NULL REFERENCES pedido (id),
-    forma             TEXT    NOT NULL CHECK (forma IN ('DINHEIRO', 'PIX', 'FIADO')),
+    forma             TEXT    NOT NULL
+        CHECK (forma IN ('DINHEIRO', 'PIX', 'CARTAO_DEBITO', 'CARTAO_CREDITO', 'FIADO')),
     valor             TEXT    NOT NULL,
     data              TEXT    NOT NULL,
     valor_recebido    TEXT,              -- só no dinheiro

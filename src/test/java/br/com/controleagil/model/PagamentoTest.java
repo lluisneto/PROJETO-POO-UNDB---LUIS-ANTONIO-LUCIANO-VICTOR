@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
- * Responsabilidade: testar as três formas de pagamento.
+ * Responsabilidade: testar as formas de pagamento (dinheiro, Pix, cartão e fiado).
  * Conceito mostrado: POLIMORFISMO. O Pedido chama processar() e cada forma age do seu jeito.
  */
 class PagamentoTest {
@@ -84,13 +84,44 @@ class PagamentoTest {
     }
 
     @Test
-    @DisplayName("Fiado: compra acima do limite é bloqueada e o pedido continua sem pagamento (RN03)")
-    void pagamentoFiadoAcimaDoLimiteLancaExcecao() {
+    @DisplayName("Fiado: compra acima do limite é aceita (RN03 só avisa) e a dívida passa do limite")
+    void pagamentoFiadoAcimaDoLimiteEhAceito() {
         cliente.abrirContaFiado(reais("50.00"));
+        pedido.registrarPagamento(new PagamentoFiado(reais("64.00")));
+
+        assertValor("64.00", pedido.calcularValorPago());
+        assertValor("64.00", cliente.getContaFiado().getSaldoDevedor());
+        assertValor("14.00", cliente.getContaFiado().getValorAcimaDoLimite());
+    }
+
+    @Test
+    @DisplayName("Cartão: débito e crédito entram no pedido com a descrição certa")
+    void pagamentoNoCartao() {
+        PagamentoCartao debito = new PagamentoCartao(reais("40.00"), TipoCartao.DEBITO);
+        PagamentoCartao credito = new PagamentoCartao(reais("24.00"), TipoCartao.CREDITO);
+        pedido.registrarPagamento(debito);
+        pedido.registrarPagamento(credito);
+
+        assertValor("64.00", pedido.calcularValorPago());
+        assertEquals("Cartão de débito", debito.getDescricao());
+        assertEquals("Cartão de crédito", credito.getDescricao());
+    }
+
+    @Test
+    @DisplayName("Cartão: sem dizer se é débito ou crédito, o pagamento é recusado")
+    void cartaoSemTipoLancaExcecao() {
         assertThrows(RegraNegocioException.class,
-                () -> pedido.registrarPagamento(new PagamentoFiado(reais("64.00"))));
-        assertValor("0", pedido.calcularValorPago());
-        assertValor("0", cliente.getContaFiado().getSaldoDevedor());
+                () -> pedido.registrarPagamento(new PagamentoCartao(reais("64.00"), null)));
+        assertTrue(pedido.getPagamentos().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Cancelar pedido pago no cartão não mexe no fiado")
+    void cancelarPedidoNoCartaoNaoMexeNoFiado() {
+        cliente.abrirContaFiado(reais("100.00"));
+        pedido.registrarPagamento(new PagamentoCartao(reais("64.00"), TipoCartao.CREDITO));
+        pedido.alterarStatus(StatusPedido.CANCELADO);
+        assertTrue(cliente.getContaFiado().getMovimentacoes().isEmpty());
     }
 
     @Test

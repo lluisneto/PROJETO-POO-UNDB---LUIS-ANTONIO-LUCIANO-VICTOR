@@ -183,7 +183,7 @@ public class AgendaController implements TelaAtualizavel {
         if (pedido.calcularValorPago().signum() > 0) {
             mensagem += "\n\nEste pedido já tem " + Formatador.moeda(pedido.calcularValorPago())
                     + " em pagamentos. O que foi lançado no FIADO é estornado (sai da dívida do cliente). "
-                    + "O que foi pago em dinheiro ou Pix precisa ser devolvido ao cliente por fora do sistema.";
+                    + "O que foi pago em dinheiro, Pix ou cartão precisa ser devolvido ao cliente por fora do sistema.";
         }
         if (Dialogos.confirmar("Cancelar pedido", mensagem, "Cancelar pedido")
                 && Dialogos.tentar(() -> pedidoService.cancelar(pedido))) {

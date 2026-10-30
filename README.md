@@ -78,6 +78,7 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 - [x] Registro de pedido com itens, **data e horário de entrega**
 - [x] Controle de status: `PENDENTE` → `EM_PRODUCAO` → `SAIU_PARA_ENTREGA` → `ENTREGUE` / `CANCELADO`
 - [x] Agenda do dia (pedidos ordenados por horário)
+- [x] Formas de pagamento: dinheiro (com troco), Pix, cartão (débito ou crédito) e fiado, de uma vez ou em partes
 - [x] Alerta de pedidos com entrega próxima ("Em breve") e atrasados
 
 ### Etapa 1: Conta fiado
@@ -85,7 +86,8 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 - [x] Registro de compras fiado (débitos)
 - [x] Registro de pagamentos (total ou parcial)
 - [x] Cálculo automático do saldo devedor
-- [x] Limite de crédito por cliente
+- [x] Limite de crédito por cliente: passar do limite não bloqueia; o sistema avisa e pede confirmação
+- [x] Telas Fiado e Clientes mostram quando a conta passou do limite (e quanto)
 - [x] Relatório de devedores (quem deve, quanto e há quanto tempo)
 - [x] Histórico de movimentações
 - [x] Alterar o limite de crédito
@@ -126,11 +128,11 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 | `StatusPedido` *(enum)* | Estados possíveis de um pedido |
 | `ContaFiado` | Saldo devedor, limite de crédito e movimentações |
 | `Pagamento` *(abstrata)* | Base para as formas de pagamento |
-| `PagamentoDinheiro`, `PagamentoPix`, `PagamentoFiado` | Formas de pagamento concretas |
+| `PagamentoDinheiro`, `PagamentoPix`, `PagamentoCartao` (débito ou crédito), `PagamentoFiado` | Formas de pagamento concretas |
 
 ### Conceitos de POO aplicados
 
-- **Encapsulamento:** o saldo da `ContaFiado` é privado e só muda pelos métodos `registrarCompra()` e `registrarPagamento()`, que validam as regras (ex.: limite de crédito).
+- **Encapsulamento:** o saldo da `ContaFiado` é privado e só muda pelos métodos `registrarCompra()`, `registrarPagamento()` e `registrarEstorno()`, que validam os valores (ex.: o pagamento não pode ser maior que a dívida, RN04). O limite (RN03) não bloqueia: a conta diz quanto a compra passaria do limite (`quantoPassariaDoLimite()`) e a tela avisa e pede confirmação.
 - **Herança:** `Cliente` herda de `Pessoa` (e futuramente `Entregador` também).
 - **Polimorfismo:** cada tipo de `Pagamento` implementa `processar()` do seu jeito; o `PagamentoFiado`, por exemplo, lança o valor na conta fiado do cliente.
 - **Abstração:** `Pessoa` e `Pagamento` são classes abstratas, representando conceitos gerais.
@@ -250,7 +252,7 @@ O passo a passo para testar cada tela está em [`docs/interface/telas.md`](docs/
 - [x] Módulo de conta fiado (contas, limite, histórico, pagamentos, total a receber)
 - [x] Testes automatizados das regras de negócio (model, services e formatação)
 - [x] Banco de dados SQLite: clientes, produtos, pedidos (itens e pagamentos) e histórico do fiado salvos no `controle-agil.db`
-- [ ] Validar com o cliente as perguntas pendentes (limite do fiado bloqueia ou avisa? antecedência do alerta? cartão?)
+- [ ] Validar com o cliente as perguntas pendentes (antecedência do alerta? prazo e juros do fiado?)
 - [ ] Apresentação ao cliente
 - [ ] Etapa 2: módulo de entregas
 

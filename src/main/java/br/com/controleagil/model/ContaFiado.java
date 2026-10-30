@@ -15,8 +15,10 @@ import java.util.List;
  * Conceito de POO: ENCAPSULAMENTO, o exemplo principal do projeto.
  *  - Não existe setSaldo(). O saldo devedor nem é guardado: é CALCULADO a partir do histórico
  *    (getSaldoDevedor). Assim o saldo nunca fica diferente do que está no caderno.
- *  - O histórico só cresce por registrarCompra() e registrarPagamento(), que validam as regras
- *    RN03 e RN04 ANTES de anotar qualquer coisa.
+ *  - O histórico só cresce por registrarCompra(), registrarPagamento() e registrarEstorno(), que
+ *    validam os valores (e a RN04) ANTES de anotar qualquer coisa.
+ *  - RN03 (limite): a conta SABE dizer se uma compra passa do limite (podeComprar), mas não
+ *    recusa a compra. Quem decide é a pessoa no balcão: a tela avisa e pede confirmação.
  *  - getMovimentacoes() devolve uma lista que não pode ser alterada de fora.
  */
 public class ContaFiado {
@@ -35,17 +37,15 @@ public class ContaFiado {
     /**
      * Anota uma compra fiado (a dívida aumenta).
      *
+     * RN03: a compra pode passar do limite de crédito. O sistema só AVISA (a tela confere com
+     * podeComprar() e pede confirmação antes); depois disso, a dívida fica acima do limite e
+     * getValorAcimaDoLimite() mostra quanto passou.
+     *
      * @param valor  valor da compra, maior que zero
      * @param pedido pedido que originou a compra (pode ser null)
      */
     public void registrarCompra(BigDecimal valor, Pedido pedido) {
         BigDecimal compra = exigirValorPositivo(valor, "O valor da compra precisa ser maior que zero.");
-        // RN03: compra fiado não pode passar do limite de crédito. Neste esqueleto, BLOQUEIA a compra.
-        if (!podeComprar(compra)) {
-            throw new RegraNegocioException("Compra fiado de " + Dinheiro.formatar(compra)
-                    + " passa do limite. Crédito disponível: " + Dinheiro.formatar(getCreditoDisponivel())
-                    + " (limite de " + Dinheiro.formatar(limiteCredito) + ").");
-        }
         movimentacoes.add(new MovimentacaoFiado(compra, TipoMovimentacao.COMPRA, pedido));
     }
 
@@ -88,9 +88,9 @@ public class ContaFiado {
     /**
      * REMONTA uma linha do histórico que já estava salva no banco. Só o repositório usa este método.
      *
-     * Atenção: aqui as regras RN03 e RN04 NÃO são conferidas de novo, porque já foram conferidas no
-     * dia em que a compra ou o pagamento aconteceu (e o limite pode ter mudado depois). Para uma
-     * compra ou um pagamento NOVO, use sempre registrarCompra() e registrarPagamento().
+     * Atenção: aqui a RN04 NÃO é conferida de novo, porque já foi conferida no dia em que o
+     * pagamento aconteceu. Para uma compra ou um pagamento NOVO, use sempre registrarCompra()
+     * e registrarPagamento().
      */
     public void restaurarMovimentacao(TipoMovimentacao tipo, BigDecimal valor, LocalDateTime data, Pedido pedido) {
         movimentacoes.add(new MovimentacaoFiado(Dinheiro.arredondar(valor), tipo, pedido, data));
@@ -112,12 +112,27 @@ public class ContaFiado {
         return saldo;
     }
 
-    /** Quanto ainda dá para comprar fiado: limite − saldo devedor. */
+    /** Quanto ainda dá para comprar fiado sem passar do limite: limite − saldo devedor (nunca menos que zero). */
     public BigDecimal getCreditoDisponivel() {
-        return limiteCredito.subtract(getSaldoDevedor());
+        return limiteCredito.subtract(getSaldoDevedor()).max(Dinheiro.ZERO);
     }
 
-    /** Diz se uma compra deste valor cabe no crédito disponível (usado pela RN03). */
+    /** Quanto a dívida passou do limite (zero quando está dentro do limite). */
+    public BigDecimal getValorAcimaDoLimite() {
+        return getSaldoDevedor().subtract(limiteCredito).max(Dinheiro.ZERO);
+    }
+
+    /** Se esta compra fosse feita, quanto a dívida ficaria acima do limite (zero quando cabe). */
+    public BigDecimal quantoPassariaDoLimite(BigDecimal compra) {
+        return getSaldoDevedor().add(compra).subtract(limiteCredito).max(Dinheiro.ZERO);
+    }
+
+    /** true quando a dívida já passou do limite. */
+    public boolean estaAcimaDoLimite() {
+        return getValorAcimaDoLimite().signum() > 0;
+    }
+
+    /** Diz se uma compra deste valor cabe no crédito disponível (RN03: se não couber, a tela avisa). */
     public boolean podeComprar(BigDecimal valor) {
         // compareTo, e não equals: para o BigDecimal, 5.0 e 5.00 são "diferentes" no equals.
         return valor != null && valor.compareTo(getCreditoDisponivel()) <= 0;
@@ -125,8 +140,8 @@ public class ContaFiado {
 
     /**
      * Muda o limite de crédito (ex.: o cliente ganhou mais crédito, ou o limite foi digitado errado).
-     * Pode ficar MENOR que a dívida atual: nesse caso o histórico não muda, mas o cliente não
-     * consegue comprar mais fiado até pagar (RN03).
+     * Pode ficar MENOR que a dívida atual: nesse caso o histórico não muda, a conta passa a
+     * aparecer acima do limite e cada nova compra fiado gera o aviso da RN03.
      *
      * @param novoLimite zero ou mais
      */

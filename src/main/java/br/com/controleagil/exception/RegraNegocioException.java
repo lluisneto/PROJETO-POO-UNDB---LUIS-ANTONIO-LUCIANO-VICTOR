@@ -2,7 +2,7 @@ package br.com.controleagil.exception;
 
 /*
  * Responsabilidade: representar a quebra de uma REGRA DE NEGÓCIO
- * (ex.: compra fiado acima do limite, pedido sem itens).
+ * (ex.: pagamento maior que a dívida do fiado, pedido sem itens).
  *
  * Conceito de POO: HERANÇA. Ela herda de RuntimeException, então ganha de graça tudo o que
  * uma exceção tem (mensagem, pilha de chamadas...). Ser "Runtime" significa que o Java não

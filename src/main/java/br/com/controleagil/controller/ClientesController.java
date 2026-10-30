@@ -193,7 +193,9 @@ public class ClientesController {
         }
         ContaFiado conta = cliente.getContaFiado();
         return "Limite de " + Formatador.moeda(conta.getLimiteCredito()) + ". Deve " + Formatador.moeda(conta.getSaldoDevedor())
-                + " e ainda pode comprar " + Formatador.moeda(conta.getCreditoDisponivel()) + ".";
+                + (conta.estaAcimaDoLimite()
+                ? ": passou do limite em " + Formatador.moeda(conta.getValorAcimaDoLimite()) + "."
+                : " e ainda pode comprar " + Formatador.moeda(conta.getCreditoDisponivel()) + ".");
     }
 
     private static String textoOuTraco(String texto) {

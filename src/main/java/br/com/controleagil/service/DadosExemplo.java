@@ -26,8 +26,9 @@ import java.util.stream.Stream;
  * para a interface já aparecer "viva" (com agenda, atrasados, fiado...).
  *
  * Tudo passa pelos SERVICES, como se alguém estivesse usando o sistema: nenhum atalho.
- * Assim os pedidos fiado geram as movimentações na conta respeitando o limite (RN03), e um dado
- * de exemplo que quebre uma regra faz o sistema avisar logo na abertura.
+ * Assim os pedidos fiado geram as movimentações na conta, e um dado de exemplo que quebre uma regra
+ * que bloqueia (RN04, RN05, quantidade...) faz o sistema avisar logo na abertura. A RN03 (limite do
+ * fiado) só AVISA na tela; aqui não há tela, então os valores abaixo foram escolhidos para caber no limite.
  *
  * Os horários são calculados a partir da hora em que o sistema abre, para sempre existir um pedido
  * atrasado, um "em breve" (daqui a ~30 min) e outros mais tarde. A distribuidora entrega das 06:00

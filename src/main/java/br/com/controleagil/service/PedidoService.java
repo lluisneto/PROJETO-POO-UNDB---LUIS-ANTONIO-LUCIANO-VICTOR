@@ -5,11 +5,13 @@ import br.com.controleagil.model.Cliente;
 import br.com.controleagil.model.ItemPedido;
 import br.com.controleagil.model.Pagamento;
 import br.com.controleagil.model.PagamentoDinheiro;
+import br.com.controleagil.model.PagamentoCartao;
 import br.com.controleagil.model.PagamentoFiado;
 import br.com.controleagil.model.PagamentoPix;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
+import br.com.controleagil.model.TipoCartao;
 import br.com.controleagil.repository.PedidoRepository;
 
 import java.math.BigDecimal;
@@ -86,7 +88,7 @@ public class PedidoService {
             pedido.adicionarItem(item.getProduto(), item.getQuantidade());
         }
         if (pagamento != null) {
-            // Polimorfismo: dinheiro, Pix ou fiado. No fiado, a RN03 (limite) é conferida aqui dentro.
+            // Polimorfismo: dinheiro, Pix, cartão ou fiado. Cada forma confere os próprios dados.
             pedido.registrarPagamento(pagamento);
         }
         return repositorio.salvar(pedido); // grava o pedido e, se foi no fiado, a compra na conta do cliente
@@ -134,6 +136,8 @@ public class PedidoService {
         return switch (forma) {
             case DINHEIRO -> new PagamentoDinheiro(valor, valorRecebido);
             case PIX -> new PagamentoPix(valor, codigoPix);
+            case CARTAO_DEBITO -> new PagamentoCartao(valor, TipoCartao.DEBITO);
+            case CARTAO_CREDITO -> new PagamentoCartao(valor, TipoCartao.CREDITO);
             case FIADO -> new PagamentoFiado(valor);
         };
     }

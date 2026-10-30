@@ -34,6 +34,9 @@ classDiagram
         +getSaldoDevedor() BigDecimal
         +getCreditoDisponivel() BigDecimal
         +podeComprar(BigDecimal valor) boolean
+        +quantoPassariaDoLimite(BigDecimal compra) BigDecimal
+        +getValorAcimaDoLimite() BigDecimal
+        +estaAcimaDoLimite() boolean
         +getMovimentacoes() List~MovimentacaoFiado~
     }
 
@@ -50,6 +53,7 @@ classDiagram
         <<enumeration>>
         COMPRA
         PAGAMENTO
+        ESTORNO
     }
 
     class Pedido {
@@ -113,6 +117,19 @@ classDiagram
         +processar(Pedido pedido) void
     }
 
+    class PagamentoCartao {
+        -TipoCartao tipo
+        +getTipo() TipoCartao
+        +processar(Pedido pedido) void
+    }
+
+    class TipoCartao {
+        <<enumeration>>
+        DEBITO
+        CREDITO
+        +getDescricao() String
+    }
+
     class PagamentoFiado {
         +processar(Pedido pedido) void
     }
@@ -129,6 +146,8 @@ classDiagram
     Pedido ..> StatusPedido
     Pagamento <|-- PagamentoDinheiro
     Pagamento <|-- PagamentoPix
+    Pagamento <|-- PagamentoCartao
+    PagamentoCartao ..> TipoCartao
     Pagamento <|-- PagamentoFiado
     PagamentoFiado ..> ContaFiado : usa
 ```
@@ -142,7 +161,7 @@ Toda regra quebrada lança `RegraNegocioException`, com mensagem em português.
 |--------|-------|------|
 | RN01 | Todo pedido precisa de data e hora de entrega | `Pedido` (construtor) |
 | RN02 | Pedido precisa de pelo menos um item para ser salvo | `PedidoService.registrarPedido` |
-| RN03 | Compra fiado não pode passar do limite de crédito (bloqueia) | `ContaFiado.registrarCompra` usando `podeComprar` |
+| RN03 | Compra fiado acima do limite não é bloqueada: a tela avisa e pede confirmação | `ContaFiado.podeComprar` e `quantoPassariaDoLimite` (usados pelas telas) |
 | RN04 | Pagamento do fiado não pode ser maior que a dívida, nem zero ou negativo | `ContaFiado.registrarPagamento` |
 | RN05 | Pedido entregue ou cancelado não muda mais de status | `Pedido.alterarStatus` usando `StatusPedido.isFinal` |
 | RC01 | Todo pedido nasce `PENDENTE` | `Pedido` (construtor) |
@@ -154,6 +173,7 @@ Toda regra quebrada lança `RegraNegocioException`, com mensagem em português.
 | RC09 | Fiado só para cliente com conta fiado aberta | `PagamentoFiado.processar` |
 | RC10 | Dinheiro: valor recebido precisa cobrir o pagamento | `PagamentoDinheiro.processar` |
 | RC11 | Pix: código da transação opcional; se vier, precisa ter formato válido | `PagamentoPix.processar` |
+| RC18 | Cartão: precisa dizer se foi débito ou crédito | `PagamentoCartao.processar` |
 | RC12 | Pedido novo não pode ter entrega no passado | `PedidoService.registrarPedido` |
 | – | Pedidos atrasados também aparecem no alerta de entrega próxima | `Pedido.estaProximoDaEntrega` |
 

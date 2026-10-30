@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
  *
  * Conceitos de POO:
  *  - ABSTRAÇÃO: a classe é "abstract". Não existe "um pagamento qualquer": ele é sempre em
- *    dinheiro, Pix ou fiado. Por isso não dá para fazer "new Pagamento(...)".
+ *    dinheiro, Pix, cartão ou fiado. Por isso não dá para fazer "new Pagamento(...)".
  *  - MÉTODO ABSTRATO: processar() não tem corpo aqui. Cada subclasse é OBRIGADA a escrever o seu.
  *  - POLIMORFISMO: o Pedido trabalha com "Pagamento" e chama processar() sem saber o tipo real.
- *    Para criar uma forma nova (ex.: cartão), basta uma subclasse nova; o Pedido não muda.
+ *    Foi assim que o cartão entrou (PagamentoCartao): bastou uma subclasse nova; o Pedido não mudou.
  */
 public abstract class Pagamento {
 
@@ -46,7 +46,7 @@ public abstract class Pagamento {
     public abstract void processar(Pedido pedido);
 
     /**
-     * Chamado quando o pedido é CANCELADO. Por padrão não faz nada no sistema: dinheiro e Pix são
+     * Chamado quando o pedido é CANCELADO. Por padrão não faz nada no sistema: dinheiro, Pix e cartão são
      * devolvidos ao cliente por fora. O PagamentoFiado sobrescreve (override) este método para
      * estornar a compra na conta fiado. Polimorfismo de novo: o Pedido chama cancelar() em todos
      * os pagamentos sem perguntar o tipo de cada um.

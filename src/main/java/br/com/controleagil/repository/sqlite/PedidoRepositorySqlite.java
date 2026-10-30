@@ -3,12 +3,14 @@ package br.com.controleagil.repository.sqlite;
 import br.com.controleagil.model.Cliente;
 import br.com.controleagil.model.ItemPedido;
 import br.com.controleagil.model.Pagamento;
+import br.com.controleagil.model.PagamentoCartao;
 import br.com.controleagil.model.PagamentoDinheiro;
 import br.com.controleagil.model.PagamentoFiado;
 import br.com.controleagil.model.PagamentoPix;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
+import br.com.controleagil.model.TipoCartao;
 import br.com.controleagil.repository.PedidoRepository;
 import br.com.controleagil.repository.ProdutoRepository;
 
@@ -148,6 +150,8 @@ public class PedidoRepositorySqlite implements PedidoRepository {
                     Pagamento pagamento = switch (linha.getString("forma")) {
                         case "DINHEIRO" -> new PagamentoDinheiro(valor, new BigDecimal(linha.getString("valor_recebido")), data);
                         case "PIX" -> new PagamentoPix(valor, linha.getString("codigo_transacao"), data);
+                        case "CARTAO_DEBITO" -> new PagamentoCartao(valor, TipoCartao.DEBITO, data);
+                        case "CARTAO_CREDITO" -> new PagamentoCartao(valor, TipoCartao.CREDITO, data);
                         case "FIADO" -> new PagamentoFiado(valor, data);
                         default -> throw new SQLException("Forma de pagamento desconhecida: " + linha.getString("forma"));
                     };
@@ -208,8 +212,9 @@ public class PedidoRepositorySqlite implements PedidoRepository {
     }
 
     /**
-     * Regrava os pagamentos. A tabela tem uma coluna "forma" e colunas que só valem para uma das
-     * formas (valor_recebido no dinheiro, codigo_transacao no Pix). Aqui é o ÚNICO lugar que precisa
+     * Regrava os pagamentos. A tabela tem uma coluna "forma" (no cartão, ela já diz se foi débito ou
+     * crédito) e colunas que só valem para uma das formas (valor_recebido no dinheiro,
+     * codigo_transacao no Pix). Aqui é o ÚNICO lugar que precisa
      * perguntar "que tipo de pagamento é este?" (instanceof): é a tradução entre os objetos e a tabela.
      */
     private void gravarPagamentos(Connection conexao, long idPedido, Pedido pedido) throws SQLException {
@@ -228,8 +233,12 @@ public class PedidoRepositorySqlite implements PedidoRepository {
                 } else if (pagamento instanceof PagamentoPix pix) {
                     sql.setString(2, "PIX");
                     sql.setString(6, pix.getCodigoTransacao());
-                } else {
+                } else if (pagamento instanceof PagamentoCartao cartao) {
+                    sql.setString(2, "CARTAO_" + cartao.getTipo().name()); // CARTAO_DEBITO ou CARTAO_CREDITO
+                } else if (pagamento instanceof PagamentoFiado) {
                     sql.setString(2, "FIADO");
+                } else {
+                    throw new SQLException("Forma de pagamento sem coluna no banco: " + pagamento.getDescricao());
                 }
                 sql.executeUpdate();
             }
