@@ -9,7 +9,7 @@ import java.util.Optional;
 /*
  * Responsabilidade: contrato para guardar e buscar pedidos. O id do pedido é o número do pedido.
  *
- * Conceito de POO: INTERFACE. Hoje: PedidoRepositoryMemoria. Depois: SQLite.
+ * Conceito de POO: INTERFACE. No sistema: PedidoRepositorySqlite. Nos testes: PedidoRepositoryMemoria.
  */
 public interface PedidoRepository {
 

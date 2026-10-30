@@ -3,6 +3,7 @@ package br.com.controleagil.model;
 import br.com.controleagil.exception.RegraNegocioException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +67,17 @@ public class ContaFiado {
                     + " é maior que o saldo devedor de " + Dinheiro.formatar(saldo) + ".");
         }
         movimentacoes.add(new MovimentacaoFiado(pagamento, TipoMovimentacao.PAGAMENTO, null));
+    }
+
+    /**
+     * REMONTA uma linha do histórico que já estava salva no banco. Só o repositório usa este método.
+     *
+     * Atenção: aqui as regras RN03 e RN04 NÃO são conferidas de novo, porque já foram conferidas no
+     * dia em que a compra ou o pagamento aconteceu (e o limite pode ter mudado depois). Para uma
+     * compra ou um pagamento NOVO, use sempre registrarCompra() e registrarPagamento().
+     */
+    public void restaurarMovimentacao(TipoMovimentacao tipo, BigDecimal valor, LocalDateTime data, Pedido pedido) {
+        movimentacoes.add(new MovimentacaoFiado(Dinheiro.arredondar(valor), tipo, pedido, data));
     }
 
     /**

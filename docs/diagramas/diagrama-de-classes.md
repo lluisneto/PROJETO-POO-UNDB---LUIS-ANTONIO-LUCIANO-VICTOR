@@ -173,8 +173,10 @@ camadas, entraram também as classes abaixo. Elas não mudam o diagrama: ficam e
 | Classe | Pacote | Por que existe |
 |--------|--------|----------------|
 | `ClienteRepository`, `ProdutoRepository`, `PedidoRepository` | `repository` | **Interfaces**: dizem *o que* dá para fazer (salvar, buscar, listar), sem dizer *como*. Os services só conhecem as interfaces. |
-| `ClienteRepositoryMemoria`, `ProdutoRepositoryMemoria`, `PedidoRepositoryMemoria` | `repository.memoria` | Guardam os objetos na memória (somem ao fechar). É o que o esqueleto da interface usa. Geram os ids com `AtomicLong`; o id do pedido é o número do pedido. |
-| `ClienteRepositorySqlite`, `ProdutoRepositorySqlite`, `ConexaoBanco`, `RepositorioException` | `repository.sqlite` | Primeira versão com SQLite (já testada), implementando as mesmas interfaces. **Ainda não é usada**: falta o `PedidoRepositorySqlite` (pedidos, itens e pagamentos) e gravar as movimentações do fiado. Depois disso, a troca é feita no `AppContexto`. |
+| `ClienteRepositoryMemoria`, `ProdutoRepositoryMemoria`, `PedidoRepositoryMemoria` | `repository.memoria` | Guardam os objetos na memória (somem ao fechar). Usados nos testes. Geram os ids com `AtomicLong`; o id do pedido é o número do pedido. |
+| `ClienteRepositorySqlite`, `ProdutoRepositorySqlite`, `PedidoRepositorySqlite` | `repository.sqlite` | Guardam tudo no SQLite (`controle-agil.db`): clientes com o limite e o histórico do fiado, produtos, pedidos com itens (preço da época) e pagamentos. Na abertura leem tudo para a memória (um "cache"); cada `salvar()` grava no banco, numa transação, e atualiza o cache. Assim todas as telas usam os mesmos objetos. |
+| `ConexaoBanco`, `BancoSqlite`, `RepositorioException` | `repository.sqlite` | `ConexaoBanco` abre conexões, cria as tabelas e roda gravações em transação (ou grava tudo, ou nada). `BancoSqlite` monta os três repositórios na ordem certa (clientes e produtos, depois pedidos, depois o histórico do fiado, que aponta para os pedidos). |
+| `Repositorios` *(record)* | `repository` | Junta os três repositórios num objeto só, para o `AppContexto` receber "os repositórios" sem saber se são do SQLite ou da memória. |
 
 ### Services (os casos de uso)
 
@@ -208,5 +210,6 @@ camadas, entraram também as classes abaixo. Elas não mudam o diagrama: ficam e
 | `Pessoa.alterarNome()`, `alterarTelefone()`, `Cliente.alterarEndereco()`, `Produto.alterarNome()` | Edição dos cadastros, validando os dados (não existem setters livres). |
 | `ItemPedido.somarQuantidade()` | Adicionar de novo o mesmo produto soma a quantidade, mantendo o preço da época. |
 | `Pagamento.getDescricao()` | Cada forma de pagamento se descreve (outro exemplo de polimorfismo). |
-| `Pedido(cliente, entrega, dataCriacao)` e `Pedido.estaProximoDaEntrega(minutos, agora)` | Permitem informar o "agora" (relógio do service, testes e, no futuro, carregar do banco). |
+| `Pedido(cliente, entrega, dataCriacao)` e `Pedido.estaProximoDaEntrega(minutos, agora)` | Permitem informar o "agora" (relógio do service e testes). |
+| `Pedido.restaurar(...)`, `ItemPedido.restaurar(...)`, `ContaFiado.restaurarMovimentacao(...)` e os construtores de pagamento com data | Só o repositório SQLite usa: remontam o que estava salvo **sem** repetir as regras (o fiado não é lançado de novo, um pedido entregue volta entregue, o item volta com o preço da época). |
 | `Dinheiro` (classe interna do pacote `model`) | Regra de dinheiro num lugar só: 2 casas e arredondamento HALF_EVEN. |

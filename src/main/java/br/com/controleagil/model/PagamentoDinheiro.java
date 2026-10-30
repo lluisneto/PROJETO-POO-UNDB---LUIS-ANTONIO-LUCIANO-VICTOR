@@ -3,6 +3,7 @@ package br.com.controleagil.model;
 import br.com.controleagil.exception.RegraNegocioException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /*
  * Responsabilidade: pagamento em dinheiro vivo: guarda quanto o cliente entregou e calcula o troco.
@@ -19,7 +20,12 @@ public class PagamentoDinheiro extends Pagamento {
      * @param valorRecebido quanto o cliente entregou em dinheiro (pode ser mais, e aí tem troco)
      */
     public PagamentoDinheiro(BigDecimal valor, BigDecimal valorRecebido) {
-        super(valor);
+        this(valor, valorRecebido, LocalDateTime.now());
+    }
+
+    /** Usado ao remontar um pagamento salvo no banco, com a data em que ele foi feito. */
+    public PagamentoDinheiro(BigDecimal valor, BigDecimal valorRecebido, LocalDateTime data) {
+        super(valor, data);
         if (valorRecebido == null) {
             throw new RegraNegocioException("Informe o valor recebido em dinheiro.");
         }

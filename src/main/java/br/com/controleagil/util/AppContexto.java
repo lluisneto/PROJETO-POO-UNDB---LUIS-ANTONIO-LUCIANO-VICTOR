@@ -9,11 +9,7 @@ import br.com.controleagil.controller.NovoPedidoController;
 import br.com.controleagil.controller.PrincipalController;
 import br.com.controleagil.controller.ProdutosController;
 import br.com.controleagil.repository.ClienteRepository;
-import br.com.controleagil.repository.PedidoRepository;
-import br.com.controleagil.repository.ProdutoRepository;
-import br.com.controleagil.repository.memoria.ClienteRepositoryMemoria;
-import br.com.controleagil.repository.memoria.PedidoRepositoryMemoria;
-import br.com.controleagil.repository.memoria.ProdutoRepositoryMemoria;
+import br.com.controleagil.repository.Repositorios;
 import br.com.controleagil.service.ClienteService;
 import br.com.controleagil.service.DadosExemplo;
 import br.com.controleagil.service.FiadoService;
@@ -31,8 +27,8 @@ import java.time.Clock;
  * própria, ele RECEBE os services prontos no construtor. Vantagens:
  *  1. Todas as telas usam os MESMOS objetos: o pedido salvo no "Novo pedido" aparece na Agenda.
  *     (Se cada tela criasse o seu repositório em memória, cada uma teria uma lista diferente!)
- *  2. Quem monta o sistema é só esta classe: quando o SQLite estiver pronto, a troca de qual
- *     repositório usar acontece aqui, sem os controllers precisarem saber (veja o comentário abaixo).
+ *  2. O AppContexto não sabe se os dados ficam no SQLite ou na memória: ele recebe os
+ *     "Repositorios" prontos. O App usa o SQLite; os testes podem usar a memória.
  *  3. Nos testes, dá para montar um service com um repositório e um relógio de mentira.
  *
  * Como o controller chega até aqui? O FXMLLoader normalmente cria o controller sozinho, com o
@@ -45,23 +41,29 @@ public class AppContexto {
     private final ProdutoService produtoService;
     private final PedidoService pedidoService;
     private final FiadoService fiadoService;
+    private final String mensagemInicial;
 
-    public AppContexto(Clock relogio) {
-        // Hoje os dados ficam na memória. Para usar o SQLite (próximo passo), falta:
-        //  - criar o PedidoRepositorySqlite (pedidos, itens e pagamentos);
-        //  - fazer o ClienteRepositorySqlite gravar também as movimentações do fiado;
-        //  - criar a ConexaoBanco, chamar criarTabelas() e trocar estas três linhas.
-        // Os services já salvam tudo o que muda (inclusive o cliente, quando há pagamento fiado).
-        ClienteRepository clientes = new ClienteRepositoryMemoria();
-        ProdutoRepository produtos = new ProdutoRepositoryMemoria();
-        PedidoRepository pedidos = new PedidoRepositoryMemoria();
-
+    /**
+     * @param repositorios      onde os dados ficam (SQLite no sistema de verdade)
+     * @param carregarExemplos  true para encher o sistema com os dados fictícios de DadosExemplo
+     * @param mensagemInicial   texto mostrado na barra de status quando o sistema abre
+     */
+    public AppContexto(Clock relogio, Repositorios repositorios, boolean carregarExemplos, String mensagemInicial) {
+        ClienteRepository clientes = repositorios.clientes();
         clienteService = new ClienteService(clientes);
-        produtoService = new ProdutoService(produtos);
-        pedidoService = new PedidoService(pedidos, clientes, relogio);
+        produtoService = new ProdutoService(repositorios.produtos());
+        pedidoService = new PedidoService(repositorios.pedidos(), clientes, relogio);
         fiadoService = new FiadoService(clientes);
+        this.mensagemInicial = mensagemInicial;
 
-        DadosExemplo.carregar(clienteService, produtoService, pedidoService, fiadoService, relogio);
+        if (carregarExemplos) {
+            DadosExemplo.carregar(clienteService, produtoService, pedidoService, fiadoService, relogio);
+        }
+    }
+
+    /** Texto para a barra de status na abertura (ex.: de onde os dados foram lidos). */
+    public String getMensagemInicial() {
+        return mensagemInicial;
     }
 
     /**

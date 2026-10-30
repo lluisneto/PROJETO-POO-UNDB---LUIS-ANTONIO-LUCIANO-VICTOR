@@ -18,10 +18,15 @@ public abstract class Pagamento {
     private final BigDecimal valor;
     private final LocalDateTime data;
 
-    /** "protected": só as subclasses chamam, com super(valor). */
+    /** "protected": só as subclasses chamam, com super(valor). A data é a de agora. */
     protected Pagamento(BigDecimal valor) {
+        this(valor, LocalDateTime.now());
+    }
+
+    /** Usado ao remontar um pagamento salvo no banco, com a data em que ele foi feito. */
+    protected Pagamento(BigDecimal valor, LocalDateTime data) {
         this.valor = Dinheiro.positivo(valor, "O valor do pagamento precisa ser maior que zero.");
-        this.data = LocalDateTime.now();
+        this.data = data == null ? LocalDateTime.now() : data;
     }
 
     /** Valor pago, com 2 casas. */

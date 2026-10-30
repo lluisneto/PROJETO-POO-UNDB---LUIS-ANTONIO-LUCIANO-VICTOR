@@ -24,6 +24,14 @@ public class ItemPedido {
         this(produto, quantidade, produto == null ? null : produto.getPreco());
     }
 
+    /**
+     * REMONTA um item salvo no banco, com o preço da época que ficou gravado (e não o preço atual
+     * do produto). Só o repositório usa este método.
+     */
+    public static ItemPedido restaurar(Produto produto, int quantidade, BigDecimal precoUnitario) {
+        return new ItemPedido(produto, quantidade, Dinheiro.arredondar(precoUnitario));
+    }
+
     /** Construtor privado: só esta classe escolhe um preço diferente do preço atual do produto. */
     private ItemPedido(Produto produto, int quantidade, BigDecimal precoUnitario) {
         if (produto == null) {

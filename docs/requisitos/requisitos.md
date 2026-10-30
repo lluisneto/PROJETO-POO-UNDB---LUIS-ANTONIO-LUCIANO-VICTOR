@@ -13,7 +13,7 @@ Os problemas 1 e 2 formam a **Etapa 1 (MVP)**. O problema 3 fica para a **Etapa 
 
 ## Requisitos funcionais (RF)
 
-O que o sistema precisa fazer. "Situação" diz como está no **esqueleto da interface** (dados em memória).
+O que o sistema precisa fazer. "Situação" diz como está no sistema (MVP, com os dados salvos no SQLite).
 
 ### Clientes e produtos
 
@@ -95,7 +95,7 @@ Como o sistema precisa ser.
 | Código | Requisito |
 |--------|-----------|
 | RNF01 | Aplicação desktop em Java 21 com telas em JavaFX 21 |
-| RNF02 | Dados salvos localmente em SQLite, num único arquivo, sem servidor *(o esqueleto da interface ainda usa dados em memória; o SQLite é o próximo passo)* |
+| RNF02 | Dados salvos localmente em SQLite, num único arquivo (`controle-agil.db`), sem servidor e sem internet |
 | RNF03 | Valores em dinheiro com `BigDecimal` (2 casas, arredondamento HALF_EVEN), para não errar centavos |
 | RNF04 | Código separado em camadas: `model`, `repository`, `service`, `controller` e `view` |
 | RNF05 | Regras de negócio cobertas por testes automatizados com JUnit |

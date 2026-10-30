@@ -37,7 +37,7 @@ public class Pedido {
 
     /**
      * Cria um pedido informando quando ele foi anotado. Útil para quem controla o relógio
-     * (o PedidoService) e, no futuro, para carregar pedidos do banco.
+     * (o PedidoService) e para o banco de dados.
      */
     public Pedido(Cliente cliente, LocalDateTime dataHoraEntrega, LocalDateTime dataCriacao) {
         if (cliente == null) {
@@ -51,6 +51,23 @@ public class Pedido {
         this.dataHoraEntrega = dataHoraEntrega;
         this.dataCriacao = dataCriacao == null ? LocalDateTime.now() : dataCriacao;
         this.status = StatusPedido.PENDENTE;
+    }
+
+    /**
+     * REMONTA um pedido que já estava salvo no banco de dados. Só o repositório usa este método.
+     *
+     * Por que não usar adicionarItem(), alterarStatus() e registrarPagamento()? Porque essas regras
+     * já foram conferidas quando o pedido foi feito. Repeti-las agora daria errado: o fiado seria
+     * lançado de novo na conta do cliente, e um pedido ENTREGUE não poderia receber os itens.
+     */
+    public static Pedido restaurar(Long id, Cliente cliente, LocalDateTime dataHoraEntrega, LocalDateTime dataCriacao,
+                                   StatusPedido status, List<ItemPedido> itens, List<Pagamento> pagamentos) {
+        Pedido pedido = new Pedido(cliente, dataHoraEntrega, dataCriacao);
+        pedido.id = id;
+        pedido.status = status;
+        pedido.itens.addAll(itens);
+        pedido.pagamentos.addAll(pagamentos);
+        return pedido;
     }
 
     /**

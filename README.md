@@ -70,7 +70,7 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 
 ## ✅ Funcionalidades
 
-> Marcado = já funciona no **esqueleto da interface** (com dados em memória; o SQLite é o próximo passo).
+> Marcado = já funciona no sistema, com os dados salvos no banco SQLite (arquivo `controle-agil.db`).
 
 ### Etapa 1: Pedidos agendados
 - [x] Cadastro de clientes
@@ -103,7 +103,7 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 |------------|---------------------------|
 | **Java 21 (LTS)** | Linguagem principal do sistema, com módulos (`module-info.java`) |
 | **JavaFX 21** | Interface gráfica desktop (telas, botões, tabelas), com telas em FXML e visual em CSS |
-| **SQLite** | Banco de dados local em um único arquivo, sem servidor (próximo passo; hoje o sistema roda em memória) |
+| **SQLite** | Banco de dados local em um único arquivo (`controle-agil.db`), sem servidor e sem internet |
 | **Maven** (com Maven Wrapper) | Gerencia as dependências (bibliotecas) e o build. O `mvnw.cmd` baixa o Maven sozinho |
 | **JUnit 6** | Testes automatizados |
 | **Git + GitHub** | Controle de versão e trabalho em equipe |
@@ -154,8 +154,8 @@ PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR/
 │   │   │       ├── model/         # Domínio, igual ao diagrama (Cliente, Pedido, ContaFiado...)
 │   │   │       ├── exception/     # RegraNegocioException
 │   │   │       ├── repository/    # Interfaces de acesso aos dados
-│   │   │       │   ├── memoria/   # Implementação em memória (usada hoje)
-│   │   │       │   └── sqlite/    # Implementação SQLite (primeira versão, ainda não ligada)
+│   │   │       │   ├── memoria/   # Implementação em memória (usada nos testes)
+│   │   │       │   └── sqlite/    # Implementação SQLite (usada pelo sistema)
 │   │   │       ├── service/       # Casos de uso e regras que envolvem vários objetos + DadosExemplo
 │   │   │       ├── controller/    # Uma classe por tela (finas: só chamam os services)
 │   │   │       └── util/          # AppContexto (monta tudo), Formatador (R$, datas), Dialogos
@@ -170,7 +170,7 @@ PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR/
 └── README.md                      # Este arquivo
 ```
 
-**Por que separar assim?** Cada pasta tem uma responsabilidade só. A tela (`controller`/`view`) não acessa os dados diretamente: ela pede ao `service`, que aplica as regras e usa o `repository` pela **interface**. Por isso, quando os repositórios SQLite estiverem completos (pedidos, pagamentos e histórico do fiado), a troca acontece no `AppContexto`, que monta o sistema, sem mexer nos services nem nas telas.
+**Por que separar assim?** Cada pasta tem uma responsabilidade só. A tela (`controller`/`view`) não acessa os dados diretamente: ela pede ao `service`, que aplica as regras e usa o `repository` pela **interface**. Por isso os mesmos services e as mesmas telas funcionam com o banco SQLite (no sistema) e com a memória (nos testes): quem escolhe é só o `App`, que monta o sistema.
 
 ---
 
@@ -205,8 +205,14 @@ cd PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR
 .\mvnw.cmd javafx:run
 ```
 
-A janela abre com **dados de exemplo fictícios** (produtos, clientes, pedidos de hoje e de amanhã, contas fiado).
-Tudo fica na memória: o que você cadastrar some quando fechar o sistema. O banco SQLite é o próximo passo.
+A janela abre na tela **Início**.
+
+Na **primeira vez**, o sistema pergunta se você quer carregar os **dados de exemplo** (fictícios, para conhecer as telas) ou **começar vazio** (para usar com os dados de verdade da distribuidora).
+
+Tudo fica salvo no arquivo **`controle-agil.db`**, na pasta do projeto (o arquivo fica fora do Git). Fechou e abriu de novo, os dados continuam lá.
+
+- **Fazer cópia de segurança:** com o sistema fechado, copie o `controle-agil.db` para outro lugar (pendrive, nuvem).
+- **Recomeçar do zero:** com o sistema fechado, apague o `controle-agil.db`. Na próxima vez, a pergunta da primeira vez aparece de novo.
 
 ### 4. Rodar os testes automatizados
 
@@ -240,7 +246,7 @@ O passo a passo para testar cada tela está em [`docs/interface/telas.md`](docs/
 - [x] Módulo de pedidos agendados (Novo pedido, Agenda do dia, alertas "Em breve" e "Atrasado")
 - [x] Módulo de conta fiado (contas, limite, histórico, pagamentos, total a receber)
 - [x] Testes automatizados das regras de negócio (model, services e formatação)
-- [ ] Banco de dados SQLite: ligar os repositórios SQLite (clientes e produtos já existem; faltam pedidos, pagamentos e movimentações do fiado)
+- [x] Banco de dados SQLite: clientes, produtos, pedidos (itens e pagamentos) e histórico do fiado salvos no `controle-agil.db`
 - [ ] Validar com o cliente as perguntas pendentes (limite do fiado bloqueia ou avisa? antecedência do alerta? cartão?)
 - [ ] Apresentação ao cliente
 - [ ] Etapa 2: módulo de entregas

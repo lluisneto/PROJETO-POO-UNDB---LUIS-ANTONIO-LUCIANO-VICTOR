@@ -19,7 +19,12 @@ public class MovimentacaoFiado {
     private final Pedido pedido;
 
     MovimentacaoFiado(BigDecimal valor, TipoMovimentacao tipo, Pedido pedido) {
-        this.data = LocalDateTime.now();
+        this(valor, tipo, pedido, LocalDateTime.now());
+    }
+
+    /** Com a data informada: usado ao remontar o histórico salvo no banco. */
+    MovimentacaoFiado(BigDecimal valor, TipoMovimentacao tipo, Pedido pedido, LocalDateTime data) {
+        this.data = data;
         this.valor = valor;
         this.tipo = tipo;
         this.pedido = pedido;

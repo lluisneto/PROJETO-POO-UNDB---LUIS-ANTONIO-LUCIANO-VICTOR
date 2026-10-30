@@ -8,8 +8,8 @@ import java.util.Optional;
 /*
  * Responsabilidade: contrato para guardar e buscar produtos.
  *
- * Conceito de POO: INTERFACE. Mesma ideia do ClienteRepository: hoje a implementação é em
- * memória; amanhã, SQLite. Quem usa (o ProdutoService) não percebe a troca.
+ * Conceito de POO: INTERFACE. Mesma ideia do ClienteRepository: no sistema a implementação é a do
+ * SQLite; nos testes, a da memória. Quem usa (o ProdutoService) não percebe a diferença.
  */
 public interface ProdutoRepository {
 

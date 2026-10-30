@@ -72,7 +72,7 @@ public class PrincipalController implements Navegacao {
         mensagemStatus.setOpacity(0);
         iniciarRelogio();
         abrir(Tela.INICIO);
-        mostrarMensagem("Dados de exemplo carregados. Tudo o que você cadastrar fica na memória até fechar o sistema.");
+        mostrarMensagem(contexto.getMensagemInicial());
     }
 
     @Override

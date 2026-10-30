@@ -3,6 +3,7 @@ package br.com.controleagil.model;
 import br.com.controleagil.exception.RegraNegocioException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /*
  * Responsabilidade: "pagar" deixando na conta: lança o valor como COMPRA na conta fiado do cliente.
@@ -16,6 +17,14 @@ public class PagamentoFiado extends Pagamento {
 
     public PagamentoFiado(BigDecimal valor) {
         super(valor);
+    }
+
+    /**
+     * Usado ao remontar um pagamento salvo no banco. Remontar NÃO chama processar(): a compra já
+     * está no histórico da conta fiado, e lançar de novo dobraria a dívida.
+     */
+    public PagamentoFiado(BigDecimal valor, LocalDateTime data) {
+        super(valor, data);
     }
 
     /** Fiado: o cliente precisa ter conta fiado, e a compra precisa caber no limite (RN03). */

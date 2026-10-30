@@ -71,7 +71,7 @@
             </Button>
 
             <Region VBox.vgrow="ALWAYS"/>
-            <Label text="Etapa 1 · dados de exemplo em memória" styleClass="menu-rodape" wrapText="true"/>
+            <Label text="Etapa 1 (MVP) · pedidos agendados e fiado" styleClass="menu-rodape" wrapText="true"/>
         </VBox>
     </left>
 

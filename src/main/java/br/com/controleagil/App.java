@@ -1,5 +1,8 @@
 package br.com.controleagil;
 
+import br.com.controleagil.repository.Repositorios;
+import br.com.controleagil.repository.sqlite.BancoSqlite;
+import br.com.controleagil.repository.sqlite.ConexaoBanco;
 import br.com.controleagil.util.AppContexto;
 import br.com.controleagil.util.Dialogos;
 import javafx.application.Application;
@@ -10,12 +13,14 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Clock;
 import java.util.Objects;
 
 /*
- * Responsabilidade: ponto de entrada do sistema. Monta o AppContexto (services + dados de exemplo),
- * abre a janela principal e aplica o CSS.
+ * Responsabilidade: ponto de entrada do sistema. Abre o banco SQLite (arquivo controle-agil.db),
+ * monta o AppContexto (services), abre a janela principal e aplica o CSS.
  *
  * Conceito de POO: HERANÇA. "extends Application" faz desta classe um aplicativo JavaFX:
  * o JavaFX chama start() quando a janela está pronta para ser montada.
@@ -37,7 +42,14 @@ public class App extends Application {
         String folhaDeEstilo = Objects.requireNonNull(App.class.getResource(ESTILO), ESTILO).toExternalForm();
         Dialogos.configurar(janela, folhaDeEstilo);
 
-        AppContexto contexto = new AppContexto(Clock.systemDefaultZone());
+        AppContexto contexto;
+        try {
+            contexto = abrirDados();
+        } catch (RuntimeException e) {
+            Dialogos.erroInesperado(e); // ex.: o arquivo do banco está aberto em outro programa
+            Platform.exit();
+            return;
+        }
 
         FXMLLoader carregador = new FXMLLoader(App.class.getResource("/view/principal.fxml"));
         // Em vez de o FXMLLoader criar o controller sozinho, ele pede ao AppContexto (injeção de dependência).
@@ -52,6 +64,27 @@ public class App extends Application {
         janela.setMinHeight(700);
         janela.setScene(cena);
         janela.show();
+    }
+
+    /**
+     * Abre o banco controle-agil.db (na pasta onde o sistema foi aberto). Se o arquivo ainda não
+     * existe, é a primeira vez: o sistema pergunta se quer começar com os dados de exemplo.
+     */
+    private AppContexto abrirDados() {
+        Path arquivo = Path.of(ConexaoBanco.ARQUIVO_PADRAO).toAbsolutePath();
+        boolean primeiraVez = Files.notExists(arquivo);
+        Repositorios repositorios = BancoSqlite.abrir(new ConexaoBanco(arquivo));
+
+        boolean carregarExemplos = primeiraVez && Dialogos.escolher("Primeira vez no Controle Ágil",
+                "Ainda não há nada salvo. Quer carregar os dados de EXEMPLO (fictícios) para conhecer o sistema?\n\n"
+                        + "Para usar com os dados de verdade da distribuidora, escolha \"Começar vazio\".\n"
+                        + "Os dados ficam salvos no arquivo:\n" + arquivo,
+                "Carregar exemplos", "Começar vazio");
+
+        String mensagem = carregarExemplos
+                ? "Dados de exemplo (fictícios) carregados e salvos em " + arquivo.getFileName() + "."
+                : "Dados salvos em " + arquivo.getFileName() + ". Tudo o que você cadastrar fica guardado.";
+        return new AppContexto(Clock.systemDefaultZone(), repositorios, carregarExemplos, mensagem);
     }
 
     public static void main(String[] args) {

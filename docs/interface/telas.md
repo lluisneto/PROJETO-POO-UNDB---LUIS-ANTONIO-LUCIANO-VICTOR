@@ -1,11 +1,11 @@
 # Telas do Controle Ágil (esqueleto da interface)
 
-Esta é a **primeira versão navegável** do sistema. Todas as telas funcionam de verdade, com as regras
-de negócio aplicadas, mas os dados ficam **na memória**: tudo o que for cadastrado some ao fechar o
-sistema. O banco SQLite entra no próximo passo, trocando só a camada `repository`.
+Todas as telas funcionam de verdade, com as regras de negócio aplicadas, e os dados ficam salvos no
+banco SQLite (arquivo `controle-agil.db`): fechou e abriu de novo, está tudo lá.
 
-Ao abrir, o sistema carrega **dados fictícios** (classe `DadosExemplo`), com horários calculados a partir
-da hora em que ele abre. Assim a agenda sempre tem um pedido atrasado, um "em breve" e outros mais tarde.
+Na primeira vez (quando ainda não existe o `controle-agil.db`), o sistema pergunta se quer carregar
+os **dados fictícios** de exemplo (classe `DadosExemplo`) ou começar vazio. Os exemplos têm horários
+calculados a partir da hora em que o sistema abriu pela primeira vez. Assim a agenda sempre tem um pedido atrasado, um "em breve" e outros mais tarde.
 Em horário de expediente tudo fica no dia de hoje; de madrugada, os pedidos já entregues e o atrasado
 ficam na noite anterior, e à noite os pedidos "mais tarde" vão para a manhã seguinte.
 
@@ -103,7 +103,7 @@ Regras usadas: RN04, RC08, RF08 a RF13.
 
 ## Roteiro rápido de teste manual
 
-1. Abra o sistema (`.\mvnw.cmd javafx:run`). O **Início** mostra os cartões e as próximas entregas.
+1. Abra o sistema (`.\mvnw.cmd javafx:run`). Na primeira vez, escolha **Carregar exemplos**. O **Início** mostra os cartões e as próximas entregas.
 2. Clique em cada item do menu: as 6 telas abrem e o item ativo fica laranja.
 3. **Agenda do dia**: confira um pedido "Atrasado" e um "Em breve" (linha destacada).
 4. Selecione um pedido pendente e clique em **Avançar para Em produção** até **Entregue**. Depois disso, os botões de avançar e cancelar ficam desabilitados.
@@ -111,3 +111,4 @@ Regras usadas: RN04, RC08, RF08 a RF13.
 6. **Fiado**: selecione a **Lanchonete Sabor da Praça** (deve R$ 30,00), digite 50 e registre: recusado (maior que o saldo). Digite 10 e registre: o saldo cai para R$ 20,00 e o pagamento aparece no histórico.
 7. **Produtos**: mude o preço da coxinha para 6,00. Na Agenda, o pedido nº 1 continua com o total antigo (R$ 100,00).
 8. **Clientes**: busque por "pao" (sem acento) e por "0104"; abra a conta fiado de um cliente sem conta.
+9. Feche o sistema e abra de novo: tudo o que você fez nos passos anteriores continua lá (está no `controle-agil.db`).

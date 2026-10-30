@@ -91,13 +91,22 @@ public final class Dialogos {
      * @return true se o usuário confirmou
      */
     public static boolean confirmar(String titulo, String mensagem, String textoConfirmar) {
-        ButtonType sim = new ButtonType(textoConfirmar, ButtonBar.ButtonData.OK_DONE);
-        ButtonType nao = new ButtonType("Voltar", ButtonBar.ButtonData.CANCEL_CLOSE);
+        return escolher(titulo, mensagem, textoConfirmar, "Voltar");
+    }
+
+    /**
+     * Pergunta com duas opções, cada uma com o seu texto.
+     * O botão padrão (Enter) é o do "não": a opção do "sim" exige um clique de propósito.
+     *
+     * @return true se o usuário escolheu textoSim
+     */
+    public static boolean escolher(String titulo, String mensagem, String textoSim, String textoNao) {
+        ButtonType sim = new ButtonType(textoSim, ButtonBar.ButtonData.OK_DONE);
+        ButtonType nao = new ButtonType(textoNao, ButtonBar.ButtonData.CANCEL_CLOSE);
         Alert alerta = new Alert(Alert.AlertType.CONFIRMATION, mensagem, sim, nao);
         alerta.setTitle(titulo);
         alerta.setHeaderText(titulo);
         preparar(alerta);
-        // O botão padrão (Enter) é o "Voltar": confirmar algo sem volta exige um clique de propósito.
         ((Button) alerta.getDialogPane().lookupButton(sim)).setDefaultButton(false);
         ((Button) alerta.getDialogPane().lookupButton(nao)).setDefaultButton(true);
         return alerta.showAndWait().filter(sim::equals).isPresent();
@@ -127,7 +136,8 @@ public final class Dialogos {
 
     /** Aplica dono (para centralizar na janela) e CSS a qualquer diálogo, inclusive os montados nas telas. */
     public static void preparar(Dialog<?> dialogo) {
-        if (janelaPrincipal != null) {
+        // Só usa a janela principal como "dona" se ela já está aberta (na abertura do sistema ainda não está).
+        if (janelaPrincipal != null && janelaPrincipal.isShowing()) {
             dialogo.initOwner(janelaPrincipal);
         }
         if (folhaDeEstilo != null) {
