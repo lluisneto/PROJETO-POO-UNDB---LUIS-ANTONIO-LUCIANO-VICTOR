@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -25,11 +26,14 @@ public class InicioController implements TelaAtualizavel {
     /** Quantas entregas aparecem na lista. */
     private static final int LIMITE_DA_LISTA = 5;
     private static final int HORAS_DO_CARTAO = 2;
+    /** Abaixo desta largura por cartão, os números grandes não cabem: os cartões passam para 2 por linha. */
+    private static final double LARGURA_MINIMA_DO_CARTAO = 220;
 
     private final PedidoService pedidoService;
     private final FiadoService fiadoService;
     private final Navegacao navegacao;
 
+    @FXML private TilePane cartoes;
     @FXML private Label numeroPedidosHoje;
     @FXML private Label detalhePedidosHoje;
     @FXML private Label numeroProximasHoras;
@@ -49,7 +53,16 @@ public class InicioController implements TelaAtualizavel {
 
     @FXML
     private void initialize() {
+        cartoes.widthProperty().addListener((obs, antes, largura) -> ajustarCartoes(largura.doubleValue()));
         atualizar();
+    }
+
+    /** 4 cartões por linha quando cabem; senão, 2 por linha. Cada cartão ocupa a largura da sua coluna. */
+    private void ajustarCartoes(double largura) {
+        double espaco = cartoes.getHgap();
+        int colunas = largura >= 4 * LARGURA_MINIMA_DO_CARTAO + 3 * espaco ? 4 : 2;
+        cartoes.setPrefColumns(colunas);
+        cartoes.setPrefTileWidth(Math.floor((largura - (colunas - 1) * espaco) / colunas));
     }
 
     @Override
@@ -112,7 +125,7 @@ public class InicioController implements TelaAtualizavel {
         total.setAlignment(Pos.CENTER_RIGHT);
 
         // As etiquetas ficam numa caixa de largura fixa, para os valores ficarem alinhados na coluna.
-        HBox etiquetas = new HBox(6);
+        HBox etiquetas = new HBox(8);
         etiquetas.setAlignment(Pos.CENTER_RIGHT);
         etiquetas.setMinWidth(240);
         if (pedidoService.estaAtrasado(pedido)) {
@@ -122,7 +135,7 @@ public class InicioController implements TelaAtualizavel {
         }
         etiquetas.getChildren().add(Etiquetas.status(pedido.getStatus()));
 
-        HBox linha = new HBox(12, hora, cliente, numero, espaco, total, etiquetas);
+        HBox linha = new HBox(16, hora, cliente, numero, espaco, total, etiquetas);
         linha.getStyleClass().add("linha-entrega");
         linha.setAlignment(Pos.CENTER_LEFT);
         linha.setOnMouseClicked(evento -> navegacao.abrir(Tela.AGENDA));

@@ -1,6 +1,7 @@
 package br.com.controleagil.util;
 
 import br.com.controleagil.exception.RegraNegocioException;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -58,7 +59,7 @@ public final class Dialogos {
         alerta.setTitle("Atenção");
         alerta.setHeaderText("Não foi possível concluir");
         preparar(alerta);
-        alerta.showAndWait();
+        exibir(alerta);
     }
 
     /** Erro que não era para acontecer: aviso genérico na tela e detalhes no console. */
@@ -71,7 +72,7 @@ public final class Dialogos {
         alerta.setTitle("Erro inesperado");
         alerta.setHeaderText("Algo deu errado");
         preparar(alerta);
-        alerta.showAndWait();
+        exibir(alerta);
     }
 
     /** Mensagem de sucesso que precisa de atenção (para as comuns, use a barra de status). */
@@ -80,7 +81,7 @@ public final class Dialogos {
         alerta.setTitle("Pronto");
         alerta.setHeaderText(null);
         preparar(alerta);
-        alerta.showAndWait();
+        exibir(alerta);
     }
 
     /**
@@ -110,6 +111,18 @@ public final class Dialogos {
         dialogo.setContentText(pergunta);
         preparar(dialogo);
         return dialogo.showAndWait();
+    }
+
+    /**
+     * Mostra o aviso e espera o OK. Se o JavaFX estiver no meio de uma animação ou de um desenho de tela
+     * (quando não dá para esperar), só mostra, sem esperar: melhor do que o aviso não aparecer.
+     */
+    private static void exibir(Alert alerta) {
+        if (Platform.canStartNestedEventLoop()) {
+            alerta.showAndWait();
+        } else {
+            alerta.show();
+        }
     }
 
     /** Aplica dono (para centralizar na janela) e CSS a qualquer diálogo, inclusive os montados nas telas. */

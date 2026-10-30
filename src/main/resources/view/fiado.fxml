@@ -23,8 +23,8 @@
 
     <HBox spacing="16" VBox.vgrow="ALWAYS">
         <!-- ===== Contas ===== -->
-        <VBox spacing="12" HBox.hgrow="ALWAYS">
-            <HBox spacing="12" alignment="CENTER_LEFT">
+        <VBox spacing="16" HBox.hgrow="ALWAYS">
+            <HBox spacing="16" alignment="CENTER_LEFT">
                 <CheckBox fx:id="somenteQuemDeve" text="Mostrar só quem deve"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="resumoLista" styleClass="dica"/>
@@ -33,10 +33,10 @@
             <TableView fx:id="tabelaContas" VBox.vgrow="ALWAYS" styleClass="cabecalho-duplo">
                 <columns>
                     <TableColumn fx:id="colunaCliente" text="Cliente" prefWidth="170"/>
-                    <TableColumn fx:id="colunaLimite" text="Limite" prefWidth="90" styleClass="coluna-numero"/>
-                    <TableColumn fx:id="colunaSaldo" text="Saldo&#10;devedor" prefWidth="100" styleClass="coluna-numero"/>
-                    <TableColumn fx:id="colunaCredito" text="Crédito&#10;disponível" prefWidth="100" styleClass="coluna-numero"/>
-                    <TableColumn fx:id="colunaUltimaCompra" text="Última&#10;compra" prefWidth="100"/>
+                    <TableColumn fx:id="colunaLimite" text="Limite" prefWidth="90" minWidth="88" styleClass="coluna-numero"/>
+                    <TableColumn fx:id="colunaSaldo" text="Saldo&#10;devedor" prefWidth="100" minWidth="88" styleClass="coluna-numero"/>
+                    <TableColumn fx:id="colunaCredito" text="Crédito&#10;disponível" prefWidth="100" minWidth="88" styleClass="coluna-numero"/>
+                    <TableColumn fx:id="colunaUltimaCompra" text="Última&#10;compra" prefWidth="100" minWidth="92"/>
                 </columns>
                 <placeholder>
                     <Label text="Nenhuma conta fiado. Abra uma conta na tela Clientes." styleClass="dica"/>
@@ -45,12 +45,12 @@
         </VBox>
 
         <!-- ===== Conta selecionada ===== -->
-        <VBox styleClass="painel" spacing="10" prefWidth="400" minWidth="360">
+        <VBox styleClass="painel" spacing="8" prefWidth="380" minWidth="320">
             <Label fx:id="nomeCliente" styleClass="secao-titulo" wrapText="true" minHeight="-Infinity"/>
             <Label fx:id="semSelecao" styleClass="dica" wrapText="true"
                    text="Selecione uma conta na tabela para ver o saldo, o histórico e registrar pagamentos."/>
 
-            <VBox fx:id="detalhesConta" spacing="10" VBox.vgrow="ALWAYS">
+            <VBox fx:id="detalhesConta" spacing="8" VBox.vgrow="ALWAYS">
                 <Label text="Saldo devedor" styleClass="rotulo"/>
                 <Label fx:id="saldoDevedor" styleClass="valor-destaque"/>
                 <Label fx:id="devendoDesde" styleClass="dica"/>
@@ -62,9 +62,9 @@
                 <TableView fx:id="tabelaHistorico" VBox.vgrow="ALWAYS" minHeight="120" prefHeight="160"
                            styleClass="cabecalho-duplo">
                     <columns>
-                        <TableColumn fx:id="colunaData" text="Data" prefWidth="96"/>
+                        <TableColumn fx:id="colunaData" text="Data" prefWidth="96" minWidth="88"/>
                         <TableColumn fx:id="colunaTipo" text="Tipo" prefWidth="96"/>
-                        <TableColumn fx:id="colunaValor" text="Valor" prefWidth="90" styleClass="coluna-numero"/>
+                        <TableColumn fx:id="colunaValor" text="Valor" prefWidth="90" minWidth="84" styleClass="coluna-numero"/>
                         <TableColumn fx:id="colunaPedido" text="Pedido&#10;nº" prefWidth="72"/>
                     </columns>
                     <placeholder>
@@ -83,7 +83,7 @@
     </HBox>
 
     <!-- ===== Total a receber ===== -->
-    <HBox styleClass="rodape-total" spacing="12" alignment="CENTER_LEFT">
+    <HBox styleClass="rodape-total" spacing="16" alignment="CENTER_LEFT">
         <Label text="Total a receber no fiado" styleClass="rotulo"/>
         <Label fx:id="totalAReceber" styleClass="valor-grande"/>
         <Region HBox.hgrow="ALWAYS"/>

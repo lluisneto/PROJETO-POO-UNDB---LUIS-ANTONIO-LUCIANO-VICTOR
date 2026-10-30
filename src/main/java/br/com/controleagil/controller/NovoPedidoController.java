@@ -28,7 +28,9 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
+import javafx.util.StringConverter;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
@@ -104,7 +106,7 @@ public class NovoPedidoController {
 
         campoProduto.setItems(FXCollections.observableArrayList(produtoService.listarTodos()));
         campoProduto.setConverter(Formatador.conversor(p -> p.getNome() + " · " + Formatador.moeda(p.getPreco())));
-        campoQuantidade.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 1));
+        configurarQuantidade();
         mostrarAjudaQuandoVazio(campoCliente);
         mostrarAjudaQuandoVazio(campoProduto);
 
@@ -184,6 +186,7 @@ public class NovoPedidoController {
             }
         });
         tabelaItens.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        Tabelas.travarColunas(tabelaItens);
     }
 
     private void removerItem(ItemPedido item) {
@@ -306,12 +309,37 @@ public class NovoPedidoController {
         return campoData.getValue().atTime(Formatador.lerHora(campoHora.getEditor().getText()));
     }
 
+    /**
+     * Configura o campo de quantidade para nunca dar erro inesperado:
+     *  - só aceita dígitos (no máximo 4), então o Spinner nunca recebe um texto que ele não entende;
+     *  - a faixa vai de 0 a 9999, então o Spinner não "corrige" o número em silêncio. Quem recusa
+     *    quantidade menor que 1 é o próprio ItemPedido, com uma mensagem clara.
+     */
+    private void configurarQuantidade() {
+        SpinnerValueFactory.IntegerSpinnerValueFactory fabrica =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 9999, 1);
+        fabrica.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Integer valor) {
+                return valor == null ? "" : valor.toString();
+            }
+
+            @Override
+            public Integer fromString(String texto) {
+                // Campo vazio não vira "null" (que quebraria as setinhas): mantém o valor que já estava.
+                return texto == null || texto.isBlank() ? fabrica.getValue() : Integer.valueOf(texto.strip());
+            }
+        });
+        campoQuantidade.setValueFactory(fabrica);
+        campoQuantidade.getEditor().setTextFormatter(new TextFormatter<String>(
+                mudanca -> mudanca.getControlNewText().matches("\\d{0,4}") ? mudanca : null));
+    }
+
     private int lerQuantidade() {
-        try {
-            campoQuantidade.commitValue(); // aceita o número digitado mesmo sem apertar Enter
-        } catch (NumberFormatException e) {
-            throw new RegraNegocioException("Quantidade inválida. Digite um número inteiro, por exemplo 10.");
+        if (campoQuantidade.getEditor().getText().isBlank()) {
+            throw new RegraNegocioException("Informe a quantidade, por exemplo 10.");
         }
+        campoQuantidade.commitValue(); // aceita o número digitado mesmo sem apertar Enter
         return campoQuantidade.getValue();
     }
 

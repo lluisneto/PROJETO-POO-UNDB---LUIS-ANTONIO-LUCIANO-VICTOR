@@ -117,10 +117,7 @@ public class FiadoController {
                         .map(data -> Formatador.data(data.toLocalDate()))
                         .orElse("–")));
         // A ordem (quem deve mais primeiro) vem do FiadoService; clicar no cabeçalho não reordena.
-        for (TableColumn<Cliente, ?> coluna : tabelaContas.getColumns()) {
-            coluna.setSortable(false);
-            coluna.setReorderable(false);
-        }
+        Tabelas.travarColunas(tabelaContas);
     }
 
     /** Recarrega as contas e o total a receber; se pedido, mantém um cliente selecionado. */
@@ -179,6 +176,7 @@ public class FiadoController {
 
     private void configurarHistorico() {
         tabelaHistorico.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        Tabelas.travarColunas(tabelaHistorico);
         colunaData.setCellValueFactory(c -> new SimpleStringProperty(Formatador.data(c.getValue().getData().toLocalDate())));
         colunaTipo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTipo().getDescricao()));
         colunaValor.setCellValueFactory(c -> new SimpleStringProperty(Formatador.moeda(c.getValue().getValor())));

@@ -3,6 +3,7 @@
 <!--
   Tela Agenda do dia: filtros em cima, a tabela de pedidos por horário no meio
   e as ações para o pedido selecionado embaixo.
+  minWidth="-Infinity" nos botões = "nunca fique menor que o texto" (o texto não é cortado).
 -->
 
 <?import javafx.geometry.Insets?>
@@ -12,6 +13,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -21,12 +23,12 @@
       styleClass="tela" spacing="16">
 
     <!-- ===== Filtros ===== -->
-    <HBox spacing="12" alignment="CENTER_LEFT">
+    <HBox spacing="8" alignment="CENTER_LEFT">
         <Label text="Dia" styleClass="rotulo"/>
         <DatePicker fx:id="filtroData" prefWidth="160" editable="false"/>
-        <Button text="Hoje" onAction="#irParaHoje"/>
+        <Button text="Hoje" onAction="#irParaHoje" minWidth="-Infinity"/>
         <Label text="Status" styleClass="rotulo">
-            <padding><Insets left="12"/></padding>
+            <padding><Insets left="16"/></padding>
         </Label>
         <ComboBox fx:id="filtroStatus" prefWidth="200"/>
         <Region HBox.hgrow="ALWAYS"/>
@@ -35,19 +37,22 @@
 
     <!-- ===== Pedidos do dia ===== -->
     <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+        <tooltip>
+            <Tooltip text="Dois cliques no pedido abrem os detalhes."/>
+        </tooltip>
         <columns>
-            <TableColumn fx:id="colunaHora" text="Hora" prefWidth="64"/>
-            <TableColumn fx:id="colunaNumero" text="Nº" prefWidth="48"/>
+            <TableColumn fx:id="colunaHora" text="Hora" prefWidth="64" minWidth="60"/>
+            <TableColumn fx:id="colunaNumero" text="Nº" prefWidth="48" minWidth="44"/>
             <TableColumn fx:id="colunaCliente" text="Cliente" prefWidth="180"/>
             <TableColumn fx:id="colunaItens" text="Itens" prefWidth="240"/>
-            <TableColumn fx:id="colunaTotal" text="Total" prefWidth="100" styleClass="coluna-numero"/>
-            <TableColumn fx:id="colunaPago" text="Pago" prefWidth="100" styleClass="coluna-numero"/>
-            <TableColumn fx:id="colunaStatus" text="Status" prefWidth="240"/>
+            <TableColumn fx:id="colunaTotal" text="Total" prefWidth="100" minWidth="96" styleClass="coluna-numero"/>
+            <TableColumn fx:id="colunaPago" text="Pago" prefWidth="100" minWidth="96" styleClass="coluna-numero"/>
+            <TableColumn fx:id="colunaStatus" text="Status" prefWidth="240" minWidth="230"/>
         </columns>
         <!-- O "placeholder" aparece no lugar da tabela quando não há nenhum pedido -->
         <placeholder>
-            <VBox alignment="CENTER" spacing="12">
-                <Label text="Nenhum pedido para este dia" styleClass="estado-vazio-titulo"/>
+            <VBox alignment="CENTER" spacing="16">
+                <Label fx:id="textoVazio" text="Nenhum pedido para este dia" styleClass="estado-vazio-titulo"/>
                 <Label text="Os pedidos agendados aparecem aqui, por horário de entrega." styleClass="dica"/>
                 <Button text="Novo pedido" onAction="#abrirNovoPedido" styleClass="botao-primario"/>
             </VBox>
@@ -55,12 +60,13 @@
     </TableView>
 
     <!-- ===== Ações para o pedido selecionado ===== -->
-    <HBox spacing="12" alignment="CENTER_LEFT">
-        <Button fx:id="botaoAvancar" text="Avançar status" onAction="#avancarStatus" styleClass="botao-primario"/>
-        <Button fx:id="botaoPagamento" text="Registrar pagamento" onAction="#registrarPagamento"/>
-        <Button fx:id="botaoDetalhes" text="Ver detalhes" onAction="#verDetalhes"/>
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Button fx:id="botaoAvancar" text="Avançar status" onAction="#avancarStatus" styleClass="botao-primario"
+                minWidth="-Infinity"/>
+        <Button fx:id="botaoPagamento" text="Registrar pagamento" onAction="#registrarPagamento" minWidth="-Infinity"/>
+        <Button fx:id="botaoDetalhes" text="Ver detalhes" onAction="#verDetalhes" minWidth="-Infinity"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Label text="Dica: dois cliques no pedido abrem os detalhes." styleClass="dica"/>
-        <Button fx:id="botaoCancelar" text="Cancelar pedido" onAction="#cancelarPedido" styleClass="botao-perigo"/>
+        <Button fx:id="botaoCancelar" text="Cancelar pedido" onAction="#cancelarPedido" styleClass="botao-perigo"
+                minWidth="-Infinity"/>
     </HBox>
 </VBox>

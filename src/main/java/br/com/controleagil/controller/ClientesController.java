@@ -22,8 +22,9 @@ import java.util.Optional;
 /*
  * Responsabilidade: a tela Clientes (RF01): buscar, cadastrar, editar e abrir conta fiado.
  *
- * O mesmo formulário serve para cadastrar e para editar: se há um cliente selecionado na
- * tabela, "Salvar" atualiza esse cliente; se não há, cadastra um novo.
+ * O mesmo formulário serve para cadastrar e para editar. O cliente em edição fica guardado no
+ * campo "emEdicao" (e não só na seleção da tabela): assim, se a pessoa usar a busca no meio da
+ * edição, o que ela já digitou no formulário não se perde.
  */
 public class ClientesController {
 
@@ -31,6 +32,12 @@ public class ClientesController {
 
     private final ClienteService clienteService;
     private final Navegacao navegacao;
+
+    /** Cliente que está no formulário; null quando o formulário é de cadastro ("Novo cliente"). */
+    private Cliente emEdicao;
+
+    /** Fica true enquanto a tabela é recarregada, para a troca de seleção não reescrever o formulário. */
+    private boolean recarregando;
 
     @FXML private TextField campoBusca;
     @FXML private Label resumoLista;
@@ -64,27 +71,35 @@ public class ClientesController {
         colunaSaldo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().temContaFiado()
                 ? Formatador.moeda(c.getValue().getContaFiado().getSaldoDevedor()) : "–"));
 
-        // Filtra enquanto digita: cada letra nova refaz a busca.
-        campoBusca.textProperty().addListener((obs, antes, agora) -> carregarLista(null));
-        tabela.getSelectionModel().selectedItemProperty().addListener((obs, antes, agora) -> mostrarNoFormulario(agora));
-        carregarLista(null);
-        mostrarNoFormulario(null);
+        Tabelas.travarColunas(tabela);
+
+        // Filtra enquanto digita: cada letra nova refaz a busca (o formulário continua como está).
+        campoBusca.textProperty().addListener((obs, antes, agora) -> carregarLista());
+        // Clicar num cliente da tabela leva ele para o formulário.
+        tabela.getSelectionModel().selectedItemProperty().addListener((obs, antes, agora) -> {
+            if (!recarregando && agora != null) {
+                editar(agora);
+            }
+        });
+        carregarLista();
+        editar(null);
     }
 
     // ------------------------------------------------------------------ ações
 
-    /** Cadastra (nenhum cliente selecionado) ou atualiza (cliente selecionado). */
+    /** Cadastra (formulário de "Novo cliente") ou atualiza o cliente em edição. */
     @FXML
     private void salvar() {
         mensagemErro.setText("");
-        Cliente selecionado = tabela.getSelectionModel().getSelectedItem();
+        boolean novo = emEdicao == null;
         try {
-            Cliente salvo = selecionado == null
+            Cliente salvo = novo
                     ? clienteService.cadastrar(campoNome.getText(), campoTelefone.getText(), campoEndereco.getText())
-                    : clienteService.atualizar(selecionado, campoNome.getText(), campoTelefone.getText(), campoEndereco.getText());
-            navegacao.mostrarMensagem("Cliente " + salvo.getNome() + (selecionado == null ? " cadastrado." : " atualizado."));
+                    : clienteService.atualizar(emEdicao, campoNome.getText(), campoTelefone.getText(), campoEndereco.getText());
+            navegacao.mostrarMensagem("Cliente " + salvo.getNome() + (novo ? " cadastrado." : " atualizado."));
             campoBusca.clear();
-            carregarLista(salvo);
+            editar(salvo); // o cliente salvo continua no formulário (dá para abrir a conta fiado em seguida)
+            carregarLista();
         } catch (RegraNegocioException e) {
             mensagemErro.setText(e.getMessage()); // perto dos campos
         } catch (RuntimeException e) {
@@ -95,15 +110,17 @@ public class ClientesController {
     /** Limpa o formulário para cadastrar outro cliente. */
     @FXML
     private void novoCliente() {
+        recarregando = true;
         tabela.getSelectionModel().clearSelection();
-        mostrarNoFormulario(null);
+        recarregando = false;
+        editar(null);
         campoNome.requestFocus();
     }
 
-    /** Pede o limite e abre a conta fiado do cliente selecionado. */
+    /** Pede o limite e abre a conta fiado do cliente em edição. */
     @FXML
     private void abrirContaFiado() {
-        Cliente cliente = tabela.getSelectionModel().getSelectedItem();
+        Cliente cliente = emEdicao;
         if (cliente == null) {
             return;
         }
@@ -117,27 +134,35 @@ public class ClientesController {
             if (deuCerto) {
                 navegacao.mostrarMensagem("Conta fiado aberta para " + cliente.getNome() + " com limite de "
                         + Formatador.moeda(cliente.getContaFiado().getLimiteCredito()) + ".");
-                carregarLista(cliente);
+                textoContaFiado.setText(textoDaConta(cliente));
+                botaoAbrirFiado.setDisable(true);
+                carregarLista();
             }
         });
     }
 
     // ------------------------------------------------------------------ apoio
 
-    /** Recarrega a tabela com a busca atual e, se pedido, deixa um cliente selecionado. */
-    private void carregarLista(Cliente selecionar) {
+    /**
+     * Recarrega a tabela com a busca atual. Se o cliente em edição aparece na lista, ele fica
+     * selecionado; o formulário NÃO é reescrito (o que já foi digitado continua lá).
+     */
+    private void carregarLista() {
         List<Cliente> clientes = clienteService.buscar(campoBusca.getText());
+        recarregando = true;
         tabela.setItems(FXCollections.observableArrayList(clientes));
         tabela.refresh(); // os objetos são os mesmos, mas os dados mudaram (ex.: abriu conta fiado): redesenha
-        resumoLista.setText(clientes.size() == 1 ? "1 cliente" : clientes.size() + " clientes");
-        if (selecionar != null && clientes.contains(selecionar)) {
-            tabela.getSelectionModel().select(selecionar);
-            tabela.scrollTo(selecionar);
+        if (emEdicao != null && clientes.contains(emEdicao)) {
+            tabela.getSelectionModel().select(emEdicao);
+            tabela.scrollTo(emEdicao);
         }
+        recarregando = false;
+        resumoLista.setText(clientes.size() == 1 ? "1 cliente" : clientes.size() + " clientes");
     }
 
-    /** Preenche o formulário com o cliente (edição) ou limpa (cadastro). */
-    private void mostrarNoFormulario(Cliente cliente) {
+    /** Coloca o cliente no formulário (edição) ou limpa o formulário (cadastro, quando null). */
+    private void editar(Cliente cliente) {
+        emEdicao = cliente;
         mensagemErro.setText("");
         boolean editando = cliente != null;
         tituloFormulario.setText(editando ? "Editar cliente" : "Novo cliente");

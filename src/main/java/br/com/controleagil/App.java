@@ -3,6 +3,7 @@ package br.com.controleagil;
 import br.com.controleagil.util.AppContexto;
 import br.com.controleagil.util.Dialogos;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -28,7 +29,10 @@ public class App extends Application {
     @Override
     public void start(Stage janela) throws IOException {
         // Rede de segurança: qualquer erro que escapar de uma tela vira um aviso (e o detalhe vai para o console).
-        Thread.currentThread().setUncaughtExceptionHandler((thread, erro) -> Dialogos.erroInesperado(erro));
+        // runLater: o erro pode acontecer no meio de uma animação ou de um desenho de tela, quando o
+        // JavaFX não deixa abrir diálogos; então o aviso é mostrado logo em seguida.
+        Thread.currentThread().setUncaughtExceptionHandler(
+                (thread, erro) -> Platform.runLater(() -> Dialogos.erroInesperado(erro)));
 
         String folhaDeEstilo = Objects.requireNonNull(App.class.getResource(ESTILO), ESTILO).toExternalForm();
         Dialogos.configurar(janela, folhaDeEstilo);

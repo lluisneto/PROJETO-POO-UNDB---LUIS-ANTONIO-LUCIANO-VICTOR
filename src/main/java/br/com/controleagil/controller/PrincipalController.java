@@ -8,6 +8,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -129,8 +130,11 @@ public class PrincipalController implements Navegacao {
     private void iniciarRelogio() {
         Timeline relogio = new Timeline(new KeyFrame(Duration.seconds(30), evento -> {
             atualizarData();
-            if (telaAberta != null) {
-                Dialogos.tentar(telaAberta::atualizar);
+            TelaAtualizavel tela = telaAberta;
+            if (tela != null) {
+                // runLater: roda logo DEPOIS da animação. Durante uma animação o JavaFX não deixa abrir
+                // diálogos que esperam resposta, e o Dialogos.tentar pode precisar mostrar um aviso.
+                Platform.runLater(() -> Dialogos.tentar(tela::atualizar));
             }
         }));
         relogio.setCycleCount(Timeline.INDEFINITE);

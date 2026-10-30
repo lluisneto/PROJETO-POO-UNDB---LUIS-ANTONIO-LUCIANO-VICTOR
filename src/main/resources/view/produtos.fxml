@@ -18,7 +18,7 @@
       styleClass="tela" spacing="16">
 
     <!-- ===== Lista ===== -->
-    <VBox spacing="12" HBox.hgrow="ALWAYS">
+    <VBox spacing="16" HBox.hgrow="ALWAYS">
         <Label fx:id="resumoLista" styleClass="dica"/>
         <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
             <columns>
@@ -32,21 +32,21 @@
     </VBox>
 
     <!-- ===== Formulário ===== -->
-    <VBox styleClass="painel" spacing="10" prefWidth="320" minWidth="290">
+    <VBox styleClass="painel" spacing="8" prefWidth="320" minWidth="290">
         <Label fx:id="tituloFormulario" styleClass="secao-titulo"/>
         <Label text="Nome *" styleClass="rotulo"/>
         <TextField fx:id="campoNome" promptText="ex.: Coxinha de frango"/>
         <Label text="Preço (R$) *" styleClass="rotulo"/>
         <TextField fx:id="campoPreco" promptText="ex.: 5,50"/>
         <Label fx:id="textoPrecoAtual" styleClass="dica"/>
-        <Label fx:id="mensagemErro" styleClass="erro-campo" wrapText="true"/>
+        <Label fx:id="mensagemErro" styleClass="erro-campo" wrapText="true" minHeight="-Infinity"/>
         <Button fx:id="botaoSalvar" text="Cadastrar" onAction="#salvar" styleClass="botao-primario" maxWidth="Infinity"/>
         <Button text="Novo produto" onAction="#novoProduto" maxWidth="Infinity"/>
 
         <!-- Explica a decisão do "preço da época" (ItemPedido guarda o seu próprio preço) -->
-        <VBox styleClass="dica-caixa" spacing="4">
+        <VBox styleClass="dica-caixa" spacing="8">
             <Label text="Mudou o preço?" style="-fx-font-weight: bold;"/>
-            <Label wrapText="true"
+            <Label wrapText="true" minHeight="-Infinity"
                    text="O preço novo vale para os próximos pedidos. Os pedidos antigos mantêm o preço da época: cada item guardou o preço do dia em que foi vendido."/>
         </VBox>
         <Region VBox.vgrow="ALWAYS"/>

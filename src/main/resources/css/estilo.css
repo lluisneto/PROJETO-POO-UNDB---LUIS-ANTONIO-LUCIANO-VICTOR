@@ -1,20 +1,22 @@
 /*
  * Identidade visual do Controle Ágil (a mesma dos slides do projeto).
  *
- * Como funciona: as cores ficam definidas UMA vez no .root, como "looked-up colors"
+ * Como funciona: TODAS as cores ficam definidas uma vez no .root, como "looked-up colors"
  * (variáveis do CSS do JavaFX, os nomes que começam com "-cor-"). O resto do arquivo só usa
  * esses nomes. Para mudar uma cor no sistema inteiro, mude aqui em cima.
  *
- * Contraste: todas as combinações de texto/fundo usadas abaixo têm contraste de pelo menos 4,5:1.
+ * Regras do visual: cantos arredondados de 8 a 12px; espaçamentos em múltiplos de 8;
+ * texto com contraste de pelo menos 4,5:1 sobre o fundo onde aparece.
  */
 
 /* ===================================================================== CORES E BASE */
 
 .root {
+    /* Paleta do projeto */
     -cor-fundo-escuro: #2B1D14;     /* menu lateral */
     -cor-fundo: #FBF6EE;            /* fundo do conteúdo */
     -cor-fundo-2: #F3E9DA;          /* cabeçalhos de tabela, barra de status */
-    -cor-superficie: #FFFDF9;       /* cartões e campos */
+    -cor-superficie: #FFFDF9;       /* cartões e campos; também o texto claro sobre fundos escuros */
     -cor-destaque: #C2410C;         /* botão principal, item ativo */
     -cor-destaque-escuro: #A93A0B;  /* hover / pressionado */
     -cor-destaque-claro: #F0A35E;   /* texto de destaque sobre fundo escuro */
@@ -22,21 +24,46 @@
     -cor-texto-2: #4A3B30;          /* texto secundário */
     -cor-texto-apagado: #6B5A4C;    /* rótulos, dicas */
     -cor-borda: #E8DCCB;
+
+    /* Tons de apoio (derivados da paleta) */
     -cor-sucesso: #1F6B3A;          /* verde escuro */
     -cor-erro: #9B1C1C;             /* vermelho escuro */
+    -cor-erro-fundo: #FBE4E4;
+    -cor-menu-subtitulo: #CDBBA6;
+    -cor-menu-apagado: #A89580;
+    -cor-menu-icone: #D9C8B4;
+    -cor-borda-campo: #D9C8B2;
+    -cor-linha-alternada: #FAF3E8;
+    -cor-linha-selecionada: #F6D3B8;
+    -cor-linha-em-breve: #FDE3CC;
+    -cor-linha-em-breve-selecionada: #F6C9A6;
+    -cor-botao-hover: #FBEADC;
+    -cor-botao-pressionado: #F6D6BD;
+    -cor-dica-fundo: #FFF3E4;
+    -cor-dica-borda: #F0C79E;
+
+    /* Etiquetas de status: fundo e texto de cada uma */
+    -cor-pendente-fundo: #EADFCF;
+    -cor-pendente-texto: #5A4636;
+    -cor-producao-fundo: #F6B985;
+    -cor-producao-texto: #7A2E06;
+    -cor-saiu-fundo: #C4D8F2;
+    -cor-saiu-texto: #1B4378;
+    -cor-cancelado-fundo: #E4E1DD;
+    -cor-cancelado-texto: #5F5A55;
 
     /* Cores que o tema padrão do JavaFX (Modena) usa para desenhar os controles */
     -fx-base: #F6EEE2;
     -fx-background: -cor-fundo;
     -fx-control-inner-background: -cor-superficie;
-    -fx-control-inner-background-alt: #FDF8F1;
+    -fx-control-inner-background-alt: -cor-linha-alternada;
     -fx-accent: -cor-destaque;
     -fx-focus-color: -cor-destaque;
     -fx-faint-focus-color: #C2410C33;
-    -fx-text-box-border: #D9C8B2;
-    -fx-box-border: #D9C8B2;
+    -fx-text-box-border: -cor-borda-campo;
+    -fx-box-border: -cor-borda-campo;
     -fx-text-background-color: -cor-texto;
-    -fx-selection-bar-text: #FFFDF9;
+    -fx-selection-bar-text: -cor-superficie;
 
     /* Fonte padrão do sistema (Segoe UI no Windows), tamanho base 14px */
     -fx-font-size: 14px;
@@ -51,11 +78,11 @@
 
 .menu-lateral {
     -fx-background-color: -cor-fundo-escuro;
-    -fx-padding: 24 12 16 12;
+    -fx-padding: 24 16 16 16;
 }
 
 .marca {
-    -fx-padding: 0 12 16 12;
+    -fx-padding: 0 16 16 16;
 }
 
 .marca-nome {
@@ -65,27 +92,27 @@
 }
 
 .marca-cliente {
-    -fx-text-fill: #CDBBA6;
+    -fx-text-fill: -cor-menu-subtitulo;
     -fx-font-size: 12px;
 }
 
 .menu-secao {
-    -fx-text-fill: #A89580;
+    -fx-text-fill: -cor-menu-apagado;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-padding: 16 12 4 12;
+    -fx-padding: 16 16 0 16;
 }
 
 /* ".menu-lateral .botao-menu" (duas classes) ganha do estilo geral ".button", que vem depois no arquivo */
 .menu-lateral .botao-menu {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-text-fill: #F3E9DA;
+    -fx-text-fill: -cor-fundo-2;
     -fx-font-weight: normal;
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 10 12 10 12;
+    -fx-padding: 8 16 8 16;
     -fx-background-radius: 8;
-    -fx-graphic-text-gap: 12;
+    -fx-graphic-text-gap: 16;
     -fx-cursor: hand;
 }
 
@@ -102,28 +129,28 @@
     -fx-border-color: -cor-destaque-claro;
     -fx-border-width: 1;
     -fx-border-radius: 8;
-    -fx-padding: 10 12 10 12;
+    -fx-padding: 8 16 8 16;
 }
 
 /* A tela aberta fica destacada no menu */
 .menu-lateral .botao-menu.ativo {
     -fx-background-color: -cor-destaque;
-    -fx-text-fill: #FFFDF9;
+    -fx-text-fill: -cor-superficie;
     -fx-font-weight: bold;
 }
 
 .icone-menu {
-    -fx-fill: #D9C8B4;
+    -fx-fill: -cor-menu-icone;
 }
 
 .menu-lateral .botao-menu.ativo .icone-menu {
-    -fx-fill: #FFFDF9;
+    -fx-fill: -cor-superficie;
 }
 
 .menu-rodape {
-    -fx-text-fill: #A89580;
+    -fx-text-fill: -cor-menu-apagado;
     -fx-font-size: 11px;
-    -fx-padding: 0 12 0 12;
+    -fx-padding: 0 16 0 16;
 }
 
 /* ===================================================================== CABEÇALHO E BARRA DE STATUS */
@@ -149,7 +176,7 @@
     -fx-background-color: -cor-fundo-2;
     -fx-border-color: -cor-borda transparent transparent transparent;
     -fx-padding: 8 32 8 32;
-    -fx-min-height: 38;
+    -fx-min-height: 40;
 }
 
 .mensagem-status {
@@ -168,7 +195,7 @@
     -fx-border-color: -cor-borda;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
-    -fx-padding: 20;
+    -fx-padding: 16;
 }
 
 .secao-titulo {
@@ -189,11 +216,11 @@
 
 /* Caixa de explicação (ex.: "pedidos antigos mantêm o preço da época") */
 .dica-caixa {
-    -fx-background-color: #FFF3E4;
-    -fx-border-color: #F0C79E;
+    -fx-background-color: -cor-dica-fundo;
+    -fx-border-color: -cor-dica-borda;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-padding: 10 12 10 12;
+    -fx-padding: 8 16 8 16;
 }
 
 .dica-caixa .label {
@@ -238,7 +265,7 @@
     -fx-border-color: -cor-borda;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
-    -fx-padding: 16 20 16 20;
+    -fx-padding: 16;
 }
 
 .cartao-titulo {
@@ -266,12 +293,12 @@
 .cartao-destaque .cartao-titulo,
 .cartao-destaque .cartao-numero,
 .cartao-destaque .cartao-detalhe {
-    -fx-text-fill: #FFFDF9;
+    -fx-text-fill: -cor-superficie;
 }
 
 /* Linhas clicáveis da lista "Próximas entregas" */
 .linha-entrega {
-    -fx-padding: 10 12 10 12;
+    -fx-padding: 8 16 8 16;
     -fx-background-radius: 8;
     -fx-cursor: hand;
 }
@@ -299,14 +326,18 @@
     -fx-cursor: hand;
 }
 
+/* No hover e no clique o fundo escurece; o texto escurece junto para manter o contraste */
 .button:hover {
-    -fx-background-color: #FBEADC;
+    -fx-background-color: -cor-botao-hover;
+    -fx-text-fill: -cor-destaque-escuro;
 }
 
 .button:pressed {
-    -fx-background-color: #F6D6BD;
+    -fx-background-color: -cor-botao-pressionado;
+    -fx-text-fill: -cor-destaque-escuro;
 }
 
+/* Borda de 2px no foco (teclado); o espaçamento diminui 1px para o botão não "pular" */
 .button:focused {
     -fx-border-width: 2;
     -fx-padding: 7 15 7 15;
@@ -320,13 +351,14 @@
 .botao-primario {
     -fx-background-color: -cor-destaque;
     -fx-border-color: -cor-destaque;
-    -fx-text-fill: #FFFDF9;
+    -fx-text-fill: -cor-superficie;
 }
 
 .botao-primario:hover,
 .botao-primario:pressed {
     -fx-background-color: -cor-destaque-escuro;
     -fx-border-color: -cor-destaque-escuro;
+    -fx-text-fill: -cor-superficie;
 }
 
 .botao-primario:focused {
@@ -339,8 +371,10 @@
     -fx-text-fill: -cor-erro;
 }
 
-.botao-perigo:hover {
-    -fx-background-color: #FBE4E4;
+.botao-perigo:hover,
+.botao-perigo:pressed {
+    -fx-background-color: -cor-erro-fundo;
+    -fx-text-fill: -cor-erro;
 }
 
 /* Botão discreto dentro das tabelas (ex.: remover item) */
@@ -348,12 +382,14 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-text-fill: -cor-erro;
-    -fx-padding: 2 8 2 8;
+    -fx-padding: 0 8 0 8;
     -fx-font-size: 13px;
 }
 
-.botao-texto:hover {
-    -fx-background-color: #FBE4E4;
+.botao-texto:hover,
+.botao-texto:pressed {
+    -fx-background-color: -cor-erro-fundo;
+    -fx-text-fill: -cor-erro;
 }
 
 /* ===================================================================== CAMPOS */
@@ -366,24 +402,17 @@
 }
 
 .text-field {
-    -fx-padding: 7 10 7 10;
-    -fx-prompt-text-fill: #8A7A6C;
-}
-
-/* Campo com erro de validação */
-.campo-invalido,
-.campo-invalido:focused {
-    -fx-background-color: -cor-erro, -cor-superficie;
-    -fx-background-insets: 0, 2;
+    -fx-padding: 8;
+    -fx-prompt-text-fill: -cor-texto-apagado; /* texto de ajuda dentro do campo (ex.: "ex.: 100,00") */
 }
 
 .radio-button {
-    -fx-padding: 4 0 4 0;
+    -fx-padding: 0;
 }
 
 /* Campos que aparecem embaixo da opção de pagamento escolhida (tela Novo pedido) */
 .sub-opcao {
-    -fx-padding: 0 0 4 28;
+    -fx-padding: 0 0 8 32;
 }
 
 /* ===================================================================== TABELAS */
@@ -412,7 +441,7 @@
 .table-view .filler {
     -fx-background-color: transparent;
     -fx-border-color: transparent transparent -cor-borda transparent;
-    -fx-size: 38px;
+    -fx-size: 40px;
 }
 
 /* Tabelas com títulos de coluna em duas linhas (tela Fiado) */
@@ -431,13 +460,13 @@
 
 .table-row-cell {
     -fx-background-color: -cor-superficie;
-    -fx-cell-size: 42px;
+    -fx-cell-size: 40px;
     -fx-border-color: transparent;
 }
 
 /* Linhas alternadas suaves */
 .table-row-cell:odd {
-    -fx-background-color: #FAF3E8;
+    -fx-background-color: -cor-linha-alternada;
 }
 
 .table-cell {
@@ -449,7 +478,7 @@
 
 /* Seleção visível, com texto escuro (contraste alto) */
 .table-row-cell:selected {
-    -fx-background-color: #F6D3B8;
+    -fx-background-color: -cor-linha-selecionada;
 }
 
 .table-row-cell:selected .table-cell {
@@ -460,15 +489,15 @@
     -fx-background-color: transparent;
 }
 
-/* Pedido "Em breve" na Agenda: linha destacada */
+/* Pedido "Em breve" na Agenda: linha destacada, com uma faixa laranja à esquerda */
 .table-row-cell:em-breve {
-    -fx-background-color: #FDE3CC;
+    -fx-background-color: -cor-linha-em-breve;
     -fx-border-color: transparent transparent transparent -cor-destaque;
     -fx-border-width: 0 0 0 4;
 }
 
 .table-row-cell:em-breve:selected {
-    -fx-background-color: #F6C9A6;
+    -fx-background-color: -cor-linha-em-breve-selecionada;
 }
 
 .table-view .placeholder .label {
@@ -491,35 +520,35 @@
  * também entende). Os fundos variam de claridade, não só de tom.
  */
 .etiqueta {
-    -fx-background-radius: 999;
-    -fx-padding: 3 10 3 10;
+    -fx-background-radius: 12;
+    -fx-padding: 4 8 4 8;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
 
 .status-pendente {
-    -fx-background-color: #EADFCF;
-    -fx-text-fill: #5A4636;
+    -fx-background-color: -cor-pendente-fundo;
+    -fx-text-fill: -cor-pendente-texto;
 }
 
 .status-em-producao {
-    -fx-background-color: #F6B985;
-    -fx-text-fill: #7A2E06;
+    -fx-background-color: -cor-producao-fundo;
+    -fx-text-fill: -cor-producao-texto;
 }
 
 .status-saiu-para-entrega {
-    -fx-background-color: #C4D8F2;
-    -fx-text-fill: #1B4378;
+    -fx-background-color: -cor-saiu-fundo;
+    -fx-text-fill: -cor-saiu-texto;
 }
 
 .status-entregue {
     -fx-background-color: -cor-sucesso;
-    -fx-text-fill: #FFFDF9;
+    -fx-text-fill: -cor-superficie;
 }
 
 .status-cancelado {
-    -fx-background-color: #E4E1DD;
-    -fx-text-fill: #5F5A55;
+    -fx-background-color: -cor-cancelado-fundo;
+    -fx-text-fill: -cor-cancelado-texto;
 }
 
 /* O texto "Cancelado" aparece riscado */
@@ -529,32 +558,32 @@
 
 .etiqueta-em-breve {
     -fx-background-color: -cor-destaque;
-    -fx-text-fill: #FFFDF9;
+    -fx-text-fill: -cor-superficie;
 }
 
 .etiqueta-atrasado {
     -fx-background-color: -cor-erro;
-    -fx-text-fill: #FFFDF9;
+    -fx-text-fill: -cor-superficie;
 }
 
 /* ===================================================================== FIADO */
 
 .barra-limite {
-    -fx-min-height: 14;
-    -fx-pref-height: 14;
+    -fx-min-height: 16;
+    -fx-pref-height: 16;
 }
 
 .barra-limite .track {
     -fx-background-color: -cor-fundo-2;
-    -fx-background-radius: 7;
+    -fx-background-radius: 8;
     -fx-background-insets: 0;
 }
 
 .barra-limite .bar {
     -fx-background-color: -cor-destaque;
-    -fx-background-radius: 7;
+    -fx-background-radius: 8;
     -fx-background-insets: 0;
-    -fx-padding: 7;
+    -fx-padding: 8;
 }
 
 /* Uso do limite acima de 90%: barra vermelha */
@@ -565,7 +594,7 @@
 .rodape-total {
     -fx-background-color: -cor-fundo-2;
     -fx-background-radius: 12;
-    -fx-padding: 12 20 12 20;
+    -fx-padding: 16 24 16 24;
 }
 
 /* ===================================================================== DIÁLOGOS */
@@ -577,7 +606,7 @@
 
 .dialog-pane > .header-panel {
     -fx-background-color: -cor-fundo-2;
-    -fx-padding: 16 20 16 20;
+    -fx-padding: 16 24 16 24;
 }
 
 .dialog-pane > .header-panel .label {
@@ -586,11 +615,11 @@
 }
 
 .dialog-pane > .content {
-    -fx-padding: 20;
+    -fx-padding: 24;
 }
 
 .dialog-pane > .button-bar > .container {
-    -fx-padding: 0 20 16 20;
+    -fx-padding: 0 24 16 24;
 }
 
 /* ===================================================================== DIVERSOS */
@@ -606,7 +635,7 @@
 
 .tooltip {
     -fx-background-color: -cor-fundo-escuro;
-    -fx-text-fill: #F3E9DA;
+    -fx-text-fill: -cor-fundo-2;
     -fx-font-size: 13px;
-    -fx-background-radius: 6;
+    -fx-background-radius: 8;
 }

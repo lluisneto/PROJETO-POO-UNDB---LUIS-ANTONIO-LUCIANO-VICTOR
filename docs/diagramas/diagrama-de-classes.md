@@ -174,7 +174,7 @@ camadas, entraram também as classes abaixo. Elas não mudam o diagrama: ficam e
 |--------|--------|----------------|
 | `ClienteRepository`, `ProdutoRepository`, `PedidoRepository` | `repository` | **Interfaces**: dizem *o que* dá para fazer (salvar, buscar, listar), sem dizer *como*. Os services só conhecem as interfaces. |
 | `ClienteRepositoryMemoria`, `ProdutoRepositoryMemoria`, `PedidoRepositoryMemoria` | `repository.memoria` | Guardam os objetos na memória (somem ao fechar). É o que o esqueleto da interface usa. Geram os ids com `AtomicLong`; o id do pedido é o número do pedido. |
-| `ClienteRepositorySqlite`, `ProdutoRepositorySqlite`, `ConexaoBanco`, `RepositorioException` | `repository.sqlite` | Primeira versão com SQLite (já testada). Cumpre as mesmas interfaces; para usar, basta trocar no `AppContexto`. Falta o `PedidoRepository` e as movimentações do fiado. |
+| `ClienteRepositorySqlite`, `ProdutoRepositorySqlite`, `ConexaoBanco`, `RepositorioException` | `repository.sqlite` | Primeira versão com SQLite (já testada), implementando as mesmas interfaces. **Ainda não é usada**: falta o `PedidoRepositorySqlite` (pedidos, itens e pagamentos) e gravar as movimentações do fiado. Depois disso, a troca é feita no `AppContexto`. |
 
 ### Services (os casos de uso)
 
@@ -182,7 +182,7 @@ camadas, entraram também as classes abaixo. Elas não mudam o diagrama: ficam e
 |--------|----------------|
 | `ClienteService` | Cadastrar, editar, buscar (sem ligar para acentos) e abrir conta fiado. |
 | `ProdutoService` | Cadastrar e editar produtos; confere nome e preço antes de mudar, para o produto nunca ficar "pela metade". |
-| `PedidoService` | Registrar pedido (RN02, entrega no passado), pagamentos, avanço de status e as consultas da agenda ("Em breve", "Atrasado"). Recebe um `Clock` (relógio) para os testes controlarem "que horas são". |
+| `PedidoService` | Registrar pedido (RN02, entrega no passado), pagamentos, avanço de status e as consultas da agenda ("Em breve", "Atrasado"). Recebe um `Clock` (relógio) para os testes controlarem "que horas são". Quando há pagamento, salva também o cliente (no fiado, a conta dele muda). |
 | `FiadoService` | O que olha para várias contas: lista de contas, total a receber, relatório de devedores e pagamento da dívida. |
 | `FormaPagamento` *(enum)* | As opções de pagamento que a tela mostra. O `PedidoService.criarPagamento()` transforma a opção na subclasse certa de `Pagamento` (o único lugar com esse "if"). |
 | `Devedor` *(record)* | Uma linha do relatório de devedores: cliente, saldo e desde quando deve. |
@@ -197,7 +197,7 @@ camadas, entraram também as classes abaixo. Elas não mudam o diagrama: ficam e
 | `Dialogos` | `util` | Avisos padronizados e o tratamento de erros das telas (`tentar()`). |
 | `PrincipalController`, `Tela`, `Navegacao`, `TelaAtualizavel` | `controller` | Menu lateral e troca de telas. `Navegacao` e `TelaAtualizavel` são interfaces: as telas pedem "abra a Agenda" sem conhecer a janela principal, e a Agenda/Início se atualizam com o relógio. |
 | `InicioController`, `AgendaController`, `NovoPedidoController`, `ClientesController`, `ProdutosController`, `FiadoController` | `controller` | Uma por tela. São "finas": só chamam os services e mostram o resultado. |
-| `PagamentoDialogo`, `DetalhesPedidoDialogo`, `Etiquetas` | `controller` | Diálogos da Agenda e as etiquetas coloridas de status (sempre com texto). |
+| `PagamentoDialogo`, `DetalhesPedidoDialogo`, `Etiquetas`, `Tabelas` | `controller` | Diálogos da Agenda, as etiquetas coloridas de status (sempre com texto) e o ajuste comum das tabelas (sem ordenar por clique no cabeçalho). |
 
 ### Métodos que não estão no diagrama
 

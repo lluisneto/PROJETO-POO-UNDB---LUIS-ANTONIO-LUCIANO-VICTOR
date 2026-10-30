@@ -47,7 +47,7 @@ public class PagamentoDialogo {
     private final TextField campoCodigoPix = new TextField();
     private final Label textoTroco = new Label();
     private final Label rotuloRecebido = rotulo("Valor recebido");
-    private final HBox caixaRecebido = new HBox(12, campoRecebido, textoTroco);
+    private final HBox caixaRecebido = new HBox(16, campoRecebido, textoTroco);
     private final Label rotuloCodigoPix = rotulo("Código do Pix");
     private final Label textoFiado = new Label();
     private final Label mensagemErro = new Label();
@@ -91,7 +91,7 @@ public class PagamentoDialogo {
     private GridPane montarFormulario() {
         BigDecimal falta = pedidoService.calcularValorRestante(pedido);
         formulario.setHgap(16);
-        formulario.setVgap(10);
+        formulario.setVgap(8);
         formulario.setMinWidth(460);
 
         int linha = 0;

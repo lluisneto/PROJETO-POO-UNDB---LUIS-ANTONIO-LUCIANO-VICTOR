@@ -6,6 +6,11 @@ sistema. O banco SQLite entra no próximo passo, trocando só a camada `reposito
 
 Ao abrir, o sistema carrega **dados fictícios** (classe `DadosExemplo`), com horários calculados a partir
 da hora em que ele abre. Assim a agenda sempre tem um pedido atrasado, um "em breve" e outros mais tarde.
+Em horário de expediente tudo fica no dia de hoje; de madrugada, os pedidos já entregues e o atrasado
+ficam na noite anterior, e à noite os pedidos "mais tarde" vão para a manhã seguinte.
+
+As tabelas não reordenam ao clicar no cabeçalho: a ordem de cada lista é a do negócio (agenda por
+horário, fiado de quem deve mais para quem deve menos, cadastros por nome).
 
 Os códigos de regra (RN, RC) e de requisito (RF) são os de [`docs/requisitos/requisitos.md`](../requisitos/requisitos.md).
 
@@ -69,7 +74,7 @@ Regras usadas: RN01, RN02, RN03 (fiado acima do limite **bloqueia** o pedido int
 |----------|-----------|
 | Busca | Filtra enquanto digita, por nome (sem ligar para acentos e maiúsculas) ou por pedaço do telefone. |
 | Tabela | Nome · Telefone · Endereço · Conta fiado (Sim/Não) · Saldo devedor. |
-| Formulário | Com um cliente selecionado, edita; sem seleção (botão **Novo cliente**), cadastra. Nome obrigatório. |
+| Formulário | Clicar num cliente da tabela leva ele para o formulário (edição); o botão **Novo cliente** limpa o formulário (cadastro). Usar a busca no meio da edição não apaga o que já foi digitado. Nome obrigatório. |
 | Abrir conta fiado | Pede o limite de crédito. Desabilitado se o cliente já tiver conta. |
 
 Regras usadas: RC14, RC13 (limite ≥ 0), RC15, RF01, RF11.

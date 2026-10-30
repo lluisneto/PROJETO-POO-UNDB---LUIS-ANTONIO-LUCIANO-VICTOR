@@ -19,18 +19,18 @@
       styleClass="tela" spacing="16">
 
     <!-- ===== Busca e lista ===== -->
-    <VBox spacing="12" HBox.hgrow="ALWAYS">
-        <HBox spacing="12" alignment="CENTER_LEFT">
+    <VBox spacing="16" HBox.hgrow="ALWAYS">
+        <HBox spacing="16" alignment="CENTER_LEFT">
             <TextField fx:id="campoBusca" promptText="Buscar por nome ou telefone" HBox.hgrow="ALWAYS"/>
             <Label fx:id="resumoLista" styleClass="dica"/>
         </HBox>
-        <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+        <TableView fx:id="tabela" VBox.vgrow="ALWAYS" styleClass="cabecalho-duplo">
             <columns>
                 <TableColumn fx:id="colunaNome" text="Nome" prefWidth="160"/>
-                <TableColumn fx:id="colunaTelefone" text="Telefone" prefWidth="140"/>
+                <TableColumn fx:id="colunaTelefone" text="Telefone" prefWidth="140" minWidth="132"/>
                 <TableColumn fx:id="colunaEndereco" text="Endereço" prefWidth="115"/>
-                <TableColumn fx:id="colunaFiado" text="Conta fiado" prefWidth="110"/>
-                <TableColumn fx:id="colunaSaldo" text="Saldo devedor" prefWidth="130" styleClass="coluna-numero"/>
+                <TableColumn fx:id="colunaFiado" text="Conta&#10;fiado" prefWidth="80" minWidth="72"/>
+                <TableColumn fx:id="colunaSaldo" text="Saldo&#10;devedor" prefWidth="110" minWidth="96" styleClass="coluna-numero"/>
             </columns>
             <placeholder>
                 <Label text="Nenhum cliente encontrado." styleClass="dica"/>
@@ -39,7 +39,7 @@
     </VBox>
 
     <!-- ===== Formulário ===== -->
-    <VBox styleClass="painel" spacing="10" prefWidth="290" minWidth="270">
+    <VBox styleClass="painel" spacing="8" prefWidth="290" minWidth="270">
         <Label fx:id="tituloFormulario" styleClass="secao-titulo"/>
         <Label text="Nome *" styleClass="rotulo"/>
         <TextField fx:id="campoNome" promptText="ex.: Padaria Pão Quente"/>
@@ -47,13 +47,13 @@
         <TextField fx:id="campoTelefone" promptText="ex.: (98) 99999-0000"/>
         <Label text="Endereço" styleClass="rotulo"/>
         <TextField fx:id="campoEndereco" promptText="Rua, número, bairro"/>
-        <Label fx:id="mensagemErro" styleClass="erro-campo" wrapText="true"/>
+        <Label fx:id="mensagemErro" styleClass="erro-campo" wrapText="true" minHeight="-Infinity"/>
         <Button fx:id="botaoSalvar" text="Cadastrar" onAction="#salvar" styleClass="botao-primario" maxWidth="Infinity"/>
         <Button text="Novo cliente" onAction="#novoCliente" maxWidth="Infinity"/>
 
         <Separator/>
         <Label text="Conta fiado" styleClass="secao-titulo"/>
-        <Label fx:id="textoContaFiado" styleClass="dica" wrapText="true"/>
+        <Label fx:id="textoContaFiado" styleClass="dica" wrapText="true" minHeight="-Infinity"/>
         <Button fx:id="botaoAbrirFiado" text="Abrir conta fiado" onAction="#abrirContaFiado" maxWidth="Infinity"/>
         <Region VBox.vgrow="ALWAYS"/>
         <Label text="* campo obrigatório" styleClass="dica"/>

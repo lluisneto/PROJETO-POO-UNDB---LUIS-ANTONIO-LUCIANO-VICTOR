@@ -43,7 +43,7 @@ public class DetalhesPedidoDialogo {
         Dialogos.preparar(dialogo);
         dialogo.getDialogPane().getButtonTypes().add(new ButtonType("Fechar", ButtonBar.ButtonData.CANCEL_CLOSE));
 
-        VBox conteudo = new VBox(14, dadosGerais(), new Separator(), titulo("Itens"), itens(),
+        VBox conteudo = new VBox(16, dadosGerais(), new Separator(), titulo("Itens"), itens(),
                 new Separator(), titulo("Pagamentos"), pagamentos(), new Separator(), totais());
         conteudo.setMinWidth(540);
         dialogo.getDialogPane().setContent(conteudo);
@@ -52,7 +52,7 @@ public class DetalhesPedidoDialogo {
 
     private GridPane dadosGerais() {
         Cliente cliente = pedido.getCliente();
-        HBox etiquetas = new HBox(6, Etiquetas.status(pedido.getStatus()));
+        HBox etiquetas = new HBox(8, Etiquetas.status(pedido.getStatus()));
         if (pedidoService.estaAtrasado(pedido)) {
             etiquetas.getChildren().add(Etiquetas.atrasado());
         } else if (pedidoService.estaEmBreve(pedido)) {
@@ -85,7 +85,7 @@ public class DetalhesPedidoDialogo {
     }
 
     private VBox pagamentos() {
-        VBox lista = new VBox(6);
+        VBox lista = new VBox(8);
         if (pedido.getPagamentos().isEmpty()) {
             Label nenhum = new Label("Nenhum pagamento registrado.");
             nenhum.getStyleClass().add("dica");
@@ -97,7 +97,7 @@ public class DetalhesPedidoDialogo {
             data.setMinWidth(140);
             Label forma = new Label(pagamento.getDescricao());
             forma.setMinWidth(260);
-            lista.getChildren().add(new HBox(12, data, forma, new Label(Formatador.moeda(pagamento.getValor()))));
+            lista.getChildren().add(new HBox(16, data, forma, new Label(Formatador.moeda(pagamento.getValor()))));
         }
         return lista;
     }
@@ -115,7 +115,7 @@ public class DetalhesPedidoDialogo {
     private static GridPane grade() {
         GridPane grade = new GridPane();
         grade.setHgap(16);
-        grade.setVgap(6);
+        grade.setVgap(8);
         grade.setAlignment(Pos.TOP_LEFT);
         return grade;
     }

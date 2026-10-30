@@ -48,6 +48,7 @@ public class AgendaController implements TelaAtualizavel {
     @FXML private DatePicker filtroData;
     @FXML private ComboBox<String> filtroStatus;
     @FXML private Label resumoDia;
+    @FXML private Label textoVazio;
     @FXML private TableView<Pedido> tabela;
     @FXML private TableColumn<Pedido, String> colunaHora;
     @FXML private TableColumn<Pedido, String> colunaNumero;
@@ -85,7 +86,12 @@ public class AgendaController implements TelaAtualizavel {
         if (selecionado != null && pedidos.contains(selecionado)) {
             tabela.getSelectionModel().select(selecionado);
         }
-        resumoDia.setText(pedidos.size() == 1 ? "1 pedido" : pedidos.size() + " pedidos");
+        resumoDia.setText((pedidos.size() == 1 ? "1 pedido" : pedidos.size() + " pedidos")
+                + " · dois cliques abrem os detalhes");
+        // Com filtro de status, a mensagem de lista vazia diz que é o filtro que escondeu os pedidos.
+        StatusPedido filtro = statusDoFiltro();
+        textoVazio.setText(filtro == null ? "Nenhum pedido para este dia"
+                : "Nenhum pedido \"" + filtro.getDescricao() + "\" neste dia");
         atualizarBotoes();
     }
 
@@ -200,9 +206,7 @@ public class AgendaController implements TelaAtualizavel {
                 setGraphic(vazia || pedido == null ? null : criarEtiquetas(pedido));
             }
         });
-        for (TableColumn<Pedido, ?> coluna : tabela.getColumns()) {
-            coluna.setReorderable(false);
-        }
+        Tabelas.travarColunas(tabela);
     }
 
     /** Linha destacada para pedido "Em breve" e dois cliques para ver os detalhes. */
@@ -226,7 +230,7 @@ public class AgendaController implements TelaAtualizavel {
     }
 
     private HBox criarEtiquetas(Pedido pedido) {
-        HBox etiquetas = new HBox(6, Etiquetas.status(pedido.getStatus()));
+        HBox etiquetas = new HBox(8, Etiquetas.status(pedido.getStatus()));
         etiquetas.setAlignment(Pos.CENTER_LEFT);
         if (pedidoService.estaAtrasado(pedido)) {
             etiquetas.getChildren().add(Etiquetas.atrasado());

@@ -48,6 +48,7 @@ public class ProdutosController {
     @FXML
     private void initialize() {
         tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        Tabelas.travarColunas(tabela);
         colunaNome.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNome()));
         colunaPreco.setCellValueFactory(c -> new SimpleStringProperty(Formatador.moeda(c.getValue().getPreco())));
         tabela.getSelectionModel().selectedItemProperty().addListener((obs, antes, agora) -> mostrarNoFormulario(agora));

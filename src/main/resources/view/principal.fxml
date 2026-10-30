@@ -24,8 +24,8 @@
 
     <!-- ===== Menu lateral ===== -->
     <left>
-        <VBox styleClass="menu-lateral" prefWidth="230" minWidth="230" spacing="4">
-            <VBox styleClass="marca" spacing="2">
+        <VBox styleClass="menu-lateral" prefWidth="230" minWidth="230" spacing="8">
+            <VBox styleClass="marca" spacing="0">
                 <Label text="Controle Ágil" styleClass="marca-nome"/>
                 <Label text="A L Salgados Distribuidora" styleClass="marca-cliente"/>
             </VBox>

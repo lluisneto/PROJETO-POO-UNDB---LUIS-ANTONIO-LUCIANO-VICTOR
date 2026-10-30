@@ -170,7 +170,7 @@ PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR/
 └── README.md                      # Este arquivo
 ```
 
-**Por que separar assim?** Cada pasta tem uma responsabilidade só. A tela (`controller`/`view`) não acessa os dados diretamente: ela pede ao `service`, que aplica as regras e usa o `repository` pela **interface**. Por isso, trocar a memória pelo SQLite não muda nenhuma linha dos services nem das telas: só o `AppContexto`, que monta o sistema.
+**Por que separar assim?** Cada pasta tem uma responsabilidade só. A tela (`controller`/`view`) não acessa os dados diretamente: ela pede ao `service`, que aplica as regras e usa o `repository` pela **interface**. Por isso, quando os repositórios SQLite estiverem completos (pedidos, pagamentos e histórico do fiado), a troca acontece no `AppContexto`, que monta o sistema, sem mexer nos services nem nas telas.
 
 ---
 
