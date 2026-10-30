@@ -25,7 +25,7 @@ Os códigos de regra (RN, RC) e de requisito (RF) são os de [`docs/requisitos/r
 | Falha ao gravar | Se o banco não aceitar uma gravação (ex.: arquivo travado por outro programa), aparece o motivo, nada é salvo pela metade e o sistema **recarrega os dados do banco**: a tela nunca mostra algo que não está gravado. |
 | Uma janela só | O sistema não abre duas vezes no mesmo banco (duas janelas apagariam o que a outra gravou). A segunda tentativa mostra "O Controle Ágil já está aberto". |
 
-Tamanho inicial 1280×800, mínimo 1100×700. A Agenda e o Início se atualizam sozinhos a cada 30 segundos,
+A janela abre maximizada (ocupando a tela toda); **F11** liga e desliga a tela cheia. Tamanho mínimo 1100×700. A Agenda e o Início se atualizam sozinhos a cada 30 segundos,
 para um pedido "Em breve" virar "Atrasado" quando a hora passar.
 
 ## Início (painel)

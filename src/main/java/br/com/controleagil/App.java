@@ -12,6 +12,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -94,6 +96,15 @@ public class App extends Application {
         janela.setTitle("Controle Ágil · L Salgados Distribuidora");
         janela.setMinWidth(1100);
         janela.setMinHeight(700);
+        // Abre ocupando a tela toda (maximizada). F11 liga e desliga a tela cheia, sem a barra do Windows.
+        janela.setMaximized(true);
+        janela.setFullScreenExitHint("Tela cheia: aperte F11 ou Esc para sair.");
+        janela.getScene().addEventFilter(KeyEvent.KEY_PRESSED, tecla -> {
+            if (tecla.getCode() == KeyCode.F11) {
+                janela.setFullScreen(!janela.isFullScreen());
+                tecla.consume();
+            }
+        });
         janela.show();
     }
 
