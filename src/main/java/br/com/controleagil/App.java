@@ -42,7 +42,13 @@ public class App extends Application {
 
     private static final String ESTILO = "/css/estilo.css";
 
-    private final Path arquivo = Path.of(ConexaoBanco.ARQUIVO_PADRAO).toAbsolutePath();
+    /**
+     * Onde fica o banco. Normalmente é o controle-agil.db na pasta onde o sistema foi aberto.
+     * O aplicativo para Windows (jpackage) informa outro lugar com -Dcontroleagil.banco=...
+     * (a pasta "dados", ao lado do .exe).
+     */
+    private final Path arquivo = Path.of(System.getProperty("controleagil.banco", ConexaoBanco.ARQUIVO_PADRAO))
+            .toAbsolutePath().normalize();
     private Stage janela;
     private String folhaDeEstilo;
     private PrincipalController principal;
@@ -85,7 +91,7 @@ public class App extends Application {
         }
         mostrarJanela(contexto);
 
-        janela.setTitle("Controle Ágil · A L Salgados Distribuidora");
+        janela.setTitle("Controle Ágil · L Salgados Distribuidora");
         janela.setMinWidth(1100);
         janela.setMinHeight(700);
         janela.show();
@@ -96,6 +102,7 @@ public class App extends Application {
      * a trava, devolve false.
      */
     private boolean travarParaUsoExclusivo() throws IOException {
+        Files.createDirectories(arquivo.getParent()); // a pasta do banco pode ainda não existir
         Path arquivoDaTrava = arquivo.resolveSibling(arquivo.getFileName() + ".lock");
         canalDaTrava = FileChannel.open(arquivoDaTrava, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         trava = canalDaTrava.tryLock();

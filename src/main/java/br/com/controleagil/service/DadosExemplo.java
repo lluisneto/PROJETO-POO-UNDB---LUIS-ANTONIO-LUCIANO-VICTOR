@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * ============================================================================================
  *   DADOS FICTÍCIOS, SÓ PARA DEMONSTRAÇÃO. SUBSTITUIR PELOS DADOS REAIS DO CLIENTE.
  *   Os nomes, telefones, endereços e PREÇOS abaixo são inventados.
- *   Os preços NÃO são os preços da A L Salgados Distribuidora.
+ *   Os preços NÃO são os preços da L Salgados Distribuidora.
  * ============================================================================================
  *
  * Responsabilidade: encher o sistema com produtos, clientes e pedidos de exemplo quando ele abre,

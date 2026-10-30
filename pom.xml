@@ -8,7 +8,7 @@
     <artifactId>controle-agil</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <name>Controle Ágil</name>
-    <description>Gestão de pedidos agendados e controle de fiado para a A L Salgados Distribuidora</description>
+    <description>Gestão de pedidos agendados e controle de fiado para a L Salgados Distribuidora</description>
 
     <properties>
         <!-- Compila para o Java 21 (LTS), mesmo que a máquina tenha um JDK mais novo -->

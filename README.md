@@ -1,6 +1,6 @@
 # 🥟 Controle Ágil
 
-> Sistema desktop de **gestão de pedidos agendados** e **controle de fiado** para a **A L Salgados Distribuidora**.
+> Sistema desktop de **gestão de pedidos agendados** e **controle de fiado** para a **L Salgados Distribuidora**.
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 ![Java](https://img.shields.io/badge/Java-21%2B-orange)
@@ -36,7 +36,7 @@ O **Controle Ágil** é um projeto desenvolvido ao longo do semestre na discipli
 
 | Campo | Informação |
 |-------|------------|
-| **Razão social** | A L Salgados Distribuidora |
+| **Razão social** | L Salgados Distribuidora |
 | **CNPJ** | 65.738.200/0001-91 |
 | **Ramo** | Distribuição de salgados |
 

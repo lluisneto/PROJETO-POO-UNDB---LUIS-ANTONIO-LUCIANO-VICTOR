@@ -1,6 +1,6 @@
 # Requisitos do Controle Ágil
 
-Levantamento feito com a **A L Salgados Distribuidora** a partir de três problemas da operação:
+Levantamento feito com a **L Salgados Distribuidora** a partir de três problemas da operação:
 
 1. Pedidos chegam pelo WhatsApp e, pelo volume de mensagens, alguns não são agendados e perdem o horário.
 2. O fiado (venda a prazo) é anotado em caderno: não se sabe direito quem deve, quanto e desde quando.
