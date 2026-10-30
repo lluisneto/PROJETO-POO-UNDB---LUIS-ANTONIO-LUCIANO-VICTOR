@@ -64,4 +64,13 @@ class ClienteServiceTest {
         assertTrue(joao.temContaFiado());
         assertThrows(RegraNegocioException.class, () -> service.abrirContaFiado(joao, reais("200")));
     }
+
+    @Test
+    @DisplayName("Alterar o limite só vale para quem já tem conta fiado")
+    void alterarLimiteFiado() {
+        assertThrows(RegraNegocioException.class, () -> service.alterarLimiteFiado(joao, reais("100")));
+        service.abrirContaFiado(joao, reais("20"));
+        service.alterarLimiteFiado(joao, reais("200"));
+        assertEquals(0, reais("200").compareTo(joao.getContaFiado().getLimiteCredito()));
+    }
 }

@@ -1,5 +1,6 @@
 package br.com.controleagil.service;
 
+import br.com.controleagil.exception.RegraNegocioException;
 import br.com.controleagil.model.Cliente;
 import br.com.controleagil.repository.ClienteRepository;
 
@@ -64,6 +65,15 @@ public class ClienteService {
     /** Abre a conta fiado do cliente com o limite informado (zero ou mais). */
     public void abrirContaFiado(Cliente cliente, BigDecimal limite) {
         cliente.abrirContaFiado(limite);
+        repositorio.salvar(cliente);
+    }
+
+    /** Muda o limite da conta fiado que o cliente já tem. */
+    public void alterarLimiteFiado(Cliente cliente, BigDecimal novoLimite) {
+        if (!cliente.temContaFiado()) {
+            throw new RegraNegocioException("O cliente " + cliente.getNome() + " ainda não tem conta fiado.");
+        }
+        cliente.getContaFiado().alterarLimite(novoLimite);
         repositorio.salvar(cliente);
     }
 

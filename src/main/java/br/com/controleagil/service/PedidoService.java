@@ -10,7 +10,6 @@ import br.com.controleagil.model.PagamentoPix;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
-import br.com.controleagil.repository.ClienteRepository;
 import br.com.controleagil.repository.PedidoRepository;
 
 import java.math.BigDecimal;
@@ -38,25 +37,23 @@ public class PedidoService {
     public static final int MINUTOS_EM_BREVE = 60;
 
     private final PedidoRepository repositorio;
-    private final ClienteRepository clientes;
     private final Clock relogio;
 
     /**
-     * @param clientes também é salvo quando o pedido recebe pagamento: no fiado, a compra é anotada
-     *                 na conta do CLIENTE, e no banco de dados essa mudança precisa ser gravada
+     * @param repositorio onde os pedidos ficam. Ao salvar um pedido, ele grava junto o que o pedido
+     *                    mudou na conta fiado do cliente (compra no fiado, estorno ao cancelar).
      */
-    public PedidoService(PedidoRepository repositorio, ClienteRepository clientes, Clock relogio) {
+    public PedidoService(PedidoRepository repositorio, Clock relogio) {
         this.repositorio = repositorio;
-        this.clientes = clientes;
         this.relogio = relogio;
     }
 
     /**
-     * Um PedidoService igual a este (mesmos repositórios), mas com outro relógio.
+     * Um PedidoService igual a este (mesmo repositório), mas com outro relógio.
      * Usado pelos DadosExemplo para anotar, "antes do expediente", pedidos que já foram entregues.
      */
     public PedidoService comRelogio(Clock outroRelogio) {
-        return new PedidoService(repositorio, clientes, outroRelogio);
+        return new PedidoService(repositorio, outroRelogio);
     }
 
     /** Data de hoje, segundo o relógio do service. */
@@ -92,11 +89,7 @@ public class PedidoService {
             // Polimorfismo: dinheiro, Pix ou fiado. No fiado, a RN03 (limite) é conferida aqui dentro.
             pedido.registrarPagamento(pagamento);
         }
-        repositorio.salvar(pedido);
-        if (pagamento != null) {
-            clientes.salvar(cliente); // no fiado, a conta do cliente mudou
-        }
-        return pedido;
+        return repositorio.salvar(pedido); // grava o pedido e, se foi no fiado, a compra na conta do cliente
     }
 
     /**
@@ -158,8 +151,7 @@ public class PedidoService {
     /** Registra um pagamento (total ou parcial) num pedido que já existe. */
     public void registrarPagamento(Pedido pedido, Pagamento pagamento) {
         pedido.registrarPagamento(pagamento);
-        repositorio.salvar(pedido);
-        clientes.salvar(pedido.getCliente()); // no fiado, a conta do cliente mudou
+        repositorio.salvar(pedido); // no fiado, a compra na conta do cliente é gravada junto
     }
 
     // ------------------------------------------------------------------ status
@@ -214,11 +206,30 @@ public class PedidoService {
                 .toList();
     }
 
-    /** Painel "Próximas entregas": até "limite" pedidos de hoje ainda não finalizados, por horário. */
-    public List<Pedido> proximasEntregasDeHoje(int limite) {
-        return agendaDoDia(hoje()).stream()
+    /**
+     * Painel "Próximas entregas": primeiro os atrasados de dias anteriores (os mais urgentes),
+     * depois os pedidos de hoje ainda não finalizados, por horário. No máximo "limite" pedidos.
+     */
+    public List<Pedido> proximasEntregas(int limite) {
+        List<Pedido> lista = new ArrayList<>(atrasadosDeOutrosDias());
+        agendaDoDia(hoje()).stream()
                 .filter(pedido -> !pedido.getStatus().isFinal())
-                .limit(limite)
+                .forEach(lista::add);
+        return lista.stream().limit(limite).toList();
+    }
+
+    /** Todos os pedidos atrasados (de qualquer dia), do mais antigo para o mais novo. */
+    public List<Pedido> atrasados() {
+        return repositorio.listarTodos().stream().filter(this::estaAtrasado).toList();
+    }
+
+    /**
+     * Atrasados de DIAS ANTERIORES: pedidos que ninguém marcou como entregues (ou cancelados).
+     * Eles não aparecem na agenda de hoje, por isso as telas avisam que existem.
+     */
+    public List<Pedido> atrasadosDeOutrosDias() {
+        return atrasados().stream()
+                .filter(pedido -> pedido.getDataHoraEntrega().toLocalDate().isBefore(hoje()))
                 .toList();
     }
 
@@ -238,9 +249,9 @@ public class PedidoService {
                 .count();
     }
 
-    /** Quantos pedidos em aberto já passaram do horário de entrega. */
+    /** Quantos pedidos em aberto já passaram do horário de entrega (de qualquer dia). */
     public long contarAtrasados() {
-        return repositorio.listarTodos().stream().filter(this::estaAtrasado).count();
+        return atrasados().size();
     }
 
     /** "Atrasado": ainda não finalizado e o horário de entrega já passou. */

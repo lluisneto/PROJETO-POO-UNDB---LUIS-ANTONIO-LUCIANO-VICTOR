@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class ContaFiado {
 
-    private final BigDecimal limiteCredito;
+    private BigDecimal limiteCredito;
     private final List<MovimentacaoFiado> movimentacoes = new ArrayList<>();
 
     /** @param limiteCredito quanto o cliente pode ficar devendo; zero ou mais */
@@ -70,6 +70,22 @@ public class ContaFiado {
     }
 
     /**
+     * Desfaz (estorna) a compra de um pedido que foi cancelado: a dívida diminui.
+     * Se o cliente já pagou parte da dívida, só dá para estornar até o saldo devedor; o que passar
+     * disso o cliente já pagou e precisa ser devolvido por fora do sistema.
+     *
+     * @return quanto foi estornado (pode ser zero, se o cliente não deve nada)
+     */
+    public BigDecimal registrarEstorno(BigDecimal valor, Pedido pedido) {
+        BigDecimal estorno = exigirValorPositivo(valor, "O valor do estorno precisa ser maior que zero.")
+                .min(getSaldoDevedor());
+        if (estorno.signum() > 0) {
+            movimentacoes.add(new MovimentacaoFiado(estorno, TipoMovimentacao.ESTORNO, pedido));
+        }
+        return estorno;
+    }
+
+    /**
      * REMONTA uma linha do histórico que já estava salva no banco. Só o repositório usa este método.
      *
      * Atenção: aqui as regras RN03 e RN04 NÃO são conferidas de novo, porque já foram conferidas no
@@ -89,7 +105,7 @@ public class ContaFiado {
         for (MovimentacaoFiado movimentacao : movimentacoes) {
             if (movimentacao.getTipo() == TipoMovimentacao.COMPRA) {
                 saldo = saldo.add(movimentacao.getValor());
-            } else {
+            } else { // PAGAMENTO ou ESTORNO: a dívida diminui
                 saldo = saldo.subtract(movimentacao.getValor());
             }
         }
@@ -105,6 +121,20 @@ public class ContaFiado {
     public boolean podeComprar(BigDecimal valor) {
         // compareTo, e não equals: para o BigDecimal, 5.0 e 5.00 são "diferentes" no equals.
         return valor != null && valor.compareTo(getCreditoDisponivel()) <= 0;
+    }
+
+    /**
+     * Muda o limite de crédito (ex.: o cliente ganhou mais crédito, ou o limite foi digitado errado).
+     * Pode ficar MENOR que a dívida atual: nesse caso o histórico não muda, mas o cliente não
+     * consegue comprar mais fiado até pagar (RN03).
+     *
+     * @param novoLimite zero ou mais
+     */
+    public void alterarLimite(BigDecimal novoLimite) {
+        if (novoLimite == null || novoLimite.signum() < 0) {
+            throw new RegraNegocioException("O limite de crédito não pode ser negativo.");
+        }
+        this.limiteCredito = Dinheiro.arredondar(novoLimite);
     }
 
     /** Quanto o cliente pode ficar devendo no máximo. */

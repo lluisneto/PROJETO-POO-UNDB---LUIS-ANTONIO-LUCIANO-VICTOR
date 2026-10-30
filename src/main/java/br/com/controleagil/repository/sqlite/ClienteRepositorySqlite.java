@@ -53,7 +53,7 @@ public class ClienteRepositorySqlite implements ClienteRepository {
     public Cliente salvar(Cliente cliente) {
         long id = banco.emTransacao("Não foi possível salvar o cliente " + cliente.getNome() + ".", conexao -> {
             long idGravado = gravarCliente(conexao, cliente);
-            gravarHistoricoDoFiado(conexao, idGravado, cliente);
+            gravarHistoricoDoFiado(conexao, idGravado, cliente, null, 0);
             return idGravado;
         });
         // Só depois que o banco confirmou (commit) o cliente ganha o id e entra no cache.
@@ -145,11 +145,28 @@ public class ClienteRepositorySqlite implements ClienteRepository {
     }
 
     /**
+     * Grava o histórico do fiado de um cliente DENTRO da transação de outro repositório.
+     * O PedidoRepositorySqlite usa isto: o pedido pago no fiado e a compra na conta do cliente
+     * são gravados juntos, numa transação só (ou fica tudo salvo, ou nada fica).
+     *
+     * @param pedidoNovo   pedido que está sendo gravado na mesma transação (ainda sem id no objeto)
+     * @param idPedidoNovo o id que esse pedido acabou de receber no banco
+     */
+    void gravarHistoricoNaTransacao(Connection conexao, Cliente cliente, Pedido pedidoNovo, long idPedidoNovo)
+            throws SQLException {
+        if (cliente.getId() == null) {
+            throw new SQLException("O cliente " + cliente.getNome() + " precisa ser salvo antes do pedido.");
+        }
+        gravarHistoricoDoFiado(conexao, cliente.getId(), cliente, pedidoNovo, idPedidoNovo);
+    }
+
+    /**
      * Regrava o histórico do fiado do cliente: apaga as linhas dele e grava todas de novo, na ordem.
      * É o jeito mais simples de o banco ficar sempre igual ao que está na memória (os históricos
      * são pequenos, então isso é rápido).
      */
-    private void gravarHistoricoDoFiado(Connection conexao, long idCliente, Cliente cliente) throws SQLException {
+    private void gravarHistoricoDoFiado(Connection conexao, long idCliente, Cliente cliente,
+                                        Pedido pedidoNovo, long idPedidoNovo) throws SQLException {
         try (PreparedStatement sql = conexao.prepareStatement("DELETE FROM movimentacao_fiado WHERE cliente_id = ?")) {
             sql.setLong(1, idCliente);
             sql.executeUpdate();
@@ -165,10 +182,15 @@ public class ClienteRepositorySqlite implements ClienteRepository {
                 sql.setString(3, movimentacao.getValor().toPlainString());
                 sql.setString(4, movimentacao.getData().toString());
                 Pedido pedido = movimentacao.getPedido();
-                if (pedido == null || pedido.getId() == null) {
-                    sql.setNull(5, Types.INTEGER);
-                } else {
+                if (pedido == null) {
+                    sql.setNull(5, Types.INTEGER); // pagamento da dívida: não vem de pedido nenhum
+                } else if (pedido == pedidoNovo) {
+                    sql.setLong(5, idPedidoNovo);
+                } else if (pedido.getId() != null) {
                     sql.setLong(5, pedido.getId());
+                } else {
+                    // Uma compra de um pedido que não está no banco: gravar seria criar dívida "fantasma".
+                    throw new SQLException("O histórico do fiado tem uma compra de um pedido que não foi salvo.");
                 }
                 sql.executeUpdate();
             }

@@ -103,7 +103,7 @@ public class InicioController implements TelaAtualizavel {
     }
 
     private void preencherProximasEntregas() {
-        List<Pedido> proximas = pedidoService.proximasEntregasDeHoje(LIMITE_DA_LISTA);
+        List<Pedido> proximas = pedidoService.proximasEntregas(LIMITE_DA_LISTA);
         listaEntregas.getChildren().setAll(proximas.stream().map(this::criarLinha).toList());
         semEntregas.setVisible(proximas.isEmpty());
         semEntregas.setManaged(proximas.isEmpty());
@@ -111,9 +111,10 @@ public class InicioController implements TelaAtualizavel {
 
     /** Uma linha da lista: hora · cliente · total · status (e "Em breve"/"Atrasado", se for o caso). */
     private HBox criarLinha(Pedido pedido) {
-        Label hora = new Label(Formatador.hora(pedido.getDataHoraEntrega()));
+        // Atrasado de outro dia aparece com a data na frente (ex.: "28/10 15:30").
+        Label hora = new Label(Formatador.horaNoDia(pedido.getDataHoraEntrega(), pedidoService.hoje()));
         hora.getStyleClass().add("linha-entrega-hora");
-        hora.setMinWidth(64);
+        hora.setMinWidth(Label.USE_PREF_SIZE);
 
         Label cliente = new Label(pedido.getCliente().getNome());
         Label numero = new Label("nº " + pedido.getId());

@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS pagamento (
 CREATE TABLE IF NOT EXISTS movimentacao_fiado (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     cliente_id  INTEGER NOT NULL REFERENCES cliente (id),
-    tipo        TEXT    NOT NULL CHECK (tipo IN ('COMPRA', 'PAGAMENTO')),
+    tipo        TEXT    NOT NULL CHECK (tipo IN ('COMPRA', 'PAGAMENTO', 'ESTORNO')),
     valor       TEXT    NOT NULL,
     data        TEXT    NOT NULL,
     pedido_id   INTEGER REFERENCES pedido (id)   -- só nas compras

@@ -1,4 +1,4 @@
-# Telas do Controle Ágil (esqueleto da interface)
+# Telas do Controle Ágil
 
 Todas as telas funcionam de verdade, com as regras de negócio aplicadas, e os dados ficam salvos no
 banco SQLite (arquivo `controle-agil.db`): fechou e abriu de novo, está tudo lá.
@@ -22,6 +22,8 @@ Os códigos de regra (RN, RC) e de requisito (RF) são os de [`docs/requisitos/r
 | Cabeçalho | Título da tela e a data de hoje por extenso (ex.: "quinta-feira, 29 de outubro de 2026"). |
 | Barra de status | Mensagens de sucesso (ex.: "Pedido nº 12 salvo para hoje às 15:30.") que somem depois de alguns segundos. |
 | Avisos | Regra de negócio quebrada vira um aviso com a mensagem da regra. Erro inesperado vira um aviso genérico e o detalhe técnico vai para o console. |
+| Falha ao gravar | Se o banco não aceitar uma gravação (ex.: arquivo travado por outro programa), aparece o motivo, nada é salvo pela metade e o sistema **recarrega os dados do banco**: a tela nunca mostra algo que não está gravado. |
+| Uma janela só | O sistema não abre duas vezes no mesmo banco (duas janelas apagariam o que a outra gravou). A segunda tentativa mostra "O Controle Ágil já está aberto". |
 
 Tamanho inicial 1280×800, mínimo 1100×700. A Agenda e o Início se atualizam sozinhos a cada 30 segundos,
 para um pedido "Em breve" virar "Atrasado" quando a hora passar.
@@ -50,7 +52,8 @@ Regras usadas: RF06, RF07.
 | Avançar status | Mostra para onde vai (ex.: "Avançar para Em produção"). Desabilitado para pedido entregue ou cancelado. |
 | Registrar pagamento | Diálogo com total, já pago, falta pagar, forma (dinheiro com troco, Pix, fiado com crédito disponível) e valor (total ou parcial). Se a regra recusar, a mensagem aparece dentro do diálogo. |
 | Ver detalhes | Diálogo com cliente, entrega, itens com o preço da época, pagamentos, total, pago e falta pagar. Também abre com dois cliques na linha. |
-| Cancelar pedido | Pede confirmação. Avisa se o pedido já tem pagamentos registrados. |
+| Cancelar pedido | Pede confirmação. O que foi pago no **fiado é estornado** (sai da dívida do cliente, e o histórico mostra "Estorno"); dinheiro e Pix são devolvidos por fora, e o aviso lembra disso. |
+| Atrasados de outros dias | Pedidos de dias anteriores que ninguém marcou como entregues aparecem num aviso no topo ("Há N pedidos atrasados de dias anteriores") com o botão **Ver atrasados**, que também está no filtro de status: "Atrasados (todos os dias)". |
 | Estado vazio | "Nenhum pedido para este dia" com o botão **Novo pedido**. |
 
 Regras usadas: RN05, RC02, RC03, RC07, RN03 e RN04 (pagamento fiado), RF05, RF06, RF07, RF14.
@@ -65,6 +68,7 @@ Regras usadas: RN05, RC02, RC03, RC07, RN03 e RN04 (pagamento fiado), RF05, RF06
 | Total | Em destaque, atualizado na hora. |
 | Pagamento | **Pagar depois** (padrão), **Dinheiro** (valor recebido e troco calculado na hora), **Pix** (código opcional) ou **Fiado** (mostra o crédito disponível e avisa se o total passa do limite; desabilitado, com explicação, se o cliente não tiver conta fiado). |
 | Salvar / Limpar | Salvar registra o pedido e mostra o número na barra de status. Erros aparecem logo acima do botão Salvar. |
+| Rascunho guardado | Dá para ir até **Clientes** (cadastrar um cliente novo) ou **Produtos** e voltar: o pedido que estava sendo montado continua lá, e o cliente novo já aparece na lista. Com a lista vazia, o campo diz onde cadastrar. |
 
 Regras usadas: RN01, RN02, RN03 (fiado acima do limite **bloqueia** o pedido inteiro), RC06, RC10, RC11, RC12, RF03, RF04, RF08, RF14.
 
@@ -75,7 +79,7 @@ Regras usadas: RN01, RN02, RN03 (fiado acima do limite **bloqueia** o pedido int
 | Busca | Filtra enquanto digita, por nome (sem ligar para acentos e maiúsculas) ou por pedaço do telefone. |
 | Tabela | Nome · Telefone · Endereço · Conta fiado (Sim/Não) · Saldo devedor. |
 | Formulário | Clicar num cliente da tabela leva ele para o formulário (edição); o botão **Novo cliente** limpa o formulário (cadastro). Usar a busca no meio da edição não apaga o que já foi digitado. Nome obrigatório. |
-| Abrir conta fiado | Pede o limite de crédito. Desabilitado se o cliente já tiver conta. |
+| Abrir conta fiado / Alterar limite | Sem conta: pede o limite e abre a conta. Com conta: o mesmo botão vira **Alterar limite do fiado** (ex.: limite digitado errado, cliente ganhou mais crédito). Limite abaixo da dívida bloqueia novas compras fiado até o cliente pagar. |
 
 Regras usadas: RC14, RC13 (limite ≥ 0), RC15, RF01, RF11.
 
@@ -95,7 +99,7 @@ Regras usadas: RC05, RC13 (preço > 0), RC14, RF02.
 |----------|-----------|
 | Contas | Cliente · Limite · Saldo devedor · Crédito disponível · Última compra, de quem deve mais para quem deve menos. Opção **Mostrar só quem deve**. |
 | Conta selecionada | Saldo devedor em destaque, "devendo desde", barra de uso do limite com texto (ex.: "R$ 120,00 de R$ 200,00 usados"; fica vermelha a partir de 90%). |
-| Histórico | Data · Tipo (Compra/Pagamento) · Valor · Pedido nº, do mais novo para o mais antigo. |
+| Histórico | Data · Tipo (Compra, Pagamento ou Estorno) · Valor · Pedido nº, do mais novo para o mais antigo. |
 | Registrar pagamento | Valor + botão. Pagamento válido reduz o saldo e entra no histórico. |
 | Rodapé | Total a receber somando todas as contas e quantos clientes estão devendo. |
 
@@ -105,7 +109,7 @@ Regras usadas: RN04, RC08, RF08 a RF13.
 
 1. Abra o sistema (`.\mvnw.cmd javafx:run`). Na primeira vez, escolha **Carregar exemplos**. O **Início** mostra os cartões e as próximas entregas.
 2. Clique em cada item do menu: as 6 telas abrem e o item ativo fica laranja.
-3. **Agenda do dia**: confira um pedido "Atrasado" e um "Em breve" (linha destacada).
+3. **Agenda do dia**: confira um pedido "Atrasado" e um "Em breve" (linha destacada). Isso vale no dia em que os exemplos foram carregados; nos dias seguintes, os pedidos de exemplo que ficaram em aberto aparecem no aviso "atrasados de dias anteriores" (para refazer o roteiro do zero, feche o sistema e apague o `controle-agil.db`).
 4. Selecione um pedido pendente e clique em **Avançar para Em produção** até **Entregue**. Depois disso, os botões de avançar e cancelar ficam desabilitados.
 5. **Novo pedido**: escolha **Mercadinho Bom Preço** (crédito de R$ 45,00), adicione 10 coxinhas, escolha **Fiado** e salve: o pedido é **bloqueado** com mensagem. Troque para **Pagar depois**, adicione mais um item e salve: o pedido aparece na Agenda.
 6. **Fiado**: selecione a **Lanchonete Sabor da Praça** (deve R$ 30,00), digite 50 e registre: recusado (maior que o saldo). Digite 10 e registre: o saldo cai para R$ 20,00 e o pagamento aparece no histórico.

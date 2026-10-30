@@ -45,6 +45,16 @@ public abstract class Pagamento {
      */
     public abstract void processar(Pedido pedido);
 
+    /**
+     * Chamado quando o pedido é CANCELADO. Por padrão não faz nada no sistema: dinheiro e Pix são
+     * devolvidos ao cliente por fora. O PagamentoFiado sobrescreve (override) este método para
+     * estornar a compra na conta fiado. Polimorfismo de novo: o Pedido chama cancelar() em todos
+     * os pagamentos sem perguntar o tipo de cada um.
+     */
+    public void cancelar(Pedido pedido) {
+        // nada a fazer no sistema para esta forma de pagamento
+    }
+
     /** Texto para a tela, ex.: "Dinheiro (troco R$ 6,00)". Também é polimórfico: cada forma se descreve. */
     public abstract String getDescricao();
 }

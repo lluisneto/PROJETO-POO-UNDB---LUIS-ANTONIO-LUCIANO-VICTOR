@@ -94,6 +94,42 @@ class PagamentoTest {
     }
 
     @Test
+    @DisplayName("Cancelar pedido pago no fiado estorna a compra: a dívida volta ao que era")
+    void cancelarPedidoFiadoEstornaACompra() {
+        cliente.abrirContaFiado(reais("100.00"));
+        pedido.registrarPagamento(new PagamentoFiado(reais("64.00")));
+
+        pedido.alterarStatus(StatusPedido.CANCELADO);
+
+        ContaFiado conta = cliente.getContaFiado();
+        assertValor("0", conta.getSaldoDevedor());
+        assertEquals(TipoMovimentacao.ESTORNO, conta.getMovimentacoes().get(1).getTipo());
+        assertSame(pedido, conta.getMovimentacoes().get(1).getPedido());
+    }
+
+    @Test
+    @DisplayName("Estorno não passa da dívida: o que o cliente já pagou é devolvido por fora")
+    void estornoLimitadoAoSaldo() {
+        cliente.abrirContaFiado(reais("100.00"));
+        pedido.registrarPagamento(new PagamentoFiado(reais("64.00")));
+        cliente.getContaFiado().registrarPagamento(reais("50.00")); // deve 14
+
+        pedido.alterarStatus(StatusPedido.CANCELADO);
+
+        assertValor("0", cliente.getContaFiado().getSaldoDevedor());
+        assertValor("14.00", cliente.getContaFiado().getMovimentacoes().get(2).getValor());
+    }
+
+    @Test
+    @DisplayName("Cancelar pedido pago em dinheiro não mexe no fiado")
+    void cancelarPedidoEmDinheiroNaoMexeNoFiado() {
+        cliente.abrirContaFiado(reais("100.00"));
+        pedido.registrarPagamento(new PagamentoDinheiro(reais("64.00"), reais("64.00")));
+        pedido.alterarStatus(StatusPedido.CANCELADO);
+        assertTrue(cliente.getContaFiado().getMovimentacoes().isEmpty());
+    }
+
+    @Test
     @DisplayName("Dá para dividir o pagamento em formas diferentes")
     void pagamentoDividido() {
         cliente.abrirContaFiado(reais("100.00"));

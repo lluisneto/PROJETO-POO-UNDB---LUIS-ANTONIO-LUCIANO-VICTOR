@@ -9,7 +9,6 @@ import br.com.controleagil.model.PagamentoPix;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
-import br.com.controleagil.repository.ClienteRepository;
 import br.com.controleagil.repository.PedidoRepository;
 import br.com.controleagil.repository.ProdutoRepository;
 
@@ -37,6 +36,9 @@ import java.util.Optional;
  *
  * Para remontar um pedido, ele precisa do Cliente e dos Produtos: por isso recebe os outros dois
  * repositórios, que já estão carregados quando este é criado (veja BancoSqlite).
+ *
+ * salvar() grava o pedido E a conta fiado do cliente numa transação só: se o pedido foi pago no
+ * fiado, a compra entra na conta junto; se algo falhar, nem o pedido nem a compra ficam no banco.
  */
 public class PedidoRepositorySqlite implements PedidoRepository {
 
@@ -44,12 +46,12 @@ public class PedidoRepositorySqlite implements PedidoRepository {
             Comparator.comparing(Pedido::getDataHoraEntrega).thenComparing(Pedido::getId);
 
     private final ConexaoBanco banco;
-    private final ClienteRepository clientes;
+    private final ClienteRepositorySqlite clientes;
     private final ProdutoRepository produtos;
     private final Map<Long, Pedido> pedidos = new LinkedHashMap<>();
 
     /** Lê todos os pedidos do banco, com itens e pagamentos. */
-    public PedidoRepositorySqlite(ConexaoBanco banco, ClienteRepository clientes, ProdutoRepository produtos) {
+    public PedidoRepositorySqlite(ConexaoBanco banco, ClienteRepositorySqlite clientes, ProdutoRepository produtos) {
         this.banco = banco;
         this.clientes = clientes;
         this.produtos = produtos;
@@ -63,6 +65,8 @@ public class PedidoRepositorySqlite implements PedidoRepository {
             long idGravado = gravarPedido(conexao, pedido);
             gravarItens(conexao, idGravado, pedido);
             gravarPagamentos(conexao, idGravado, pedido);
+            // Na MESMA transação: a conta fiado do cliente (o pedido pode ter lançado uma compra ou um estorno).
+            clientes.gravarHistoricoNaTransacao(conexao, pedido.getCliente(), pedido, idGravado);
             return idGravado;
         });
         pedido.setId(id);

@@ -88,6 +88,8 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 - [x] Limite de crédito por cliente
 - [x] Relatório de devedores (quem deve, quanto e há quanto tempo)
 - [x] Histórico de movimentações
+- [x] Alterar o limite de crédito
+- [x] Estorno automático do fiado quando um pedido é cancelado
 
 ### Etapa 2: Entregas (futuro)
 - [ ] Cadastro de entregadores (fixos e avulsos)
@@ -213,6 +215,7 @@ Tudo fica salvo no arquivo **`controle-agil.db`**, na pasta do projeto (o arquiv
 
 - **Fazer cópia de segurança:** com o sistema fechado, copie o `controle-agil.db` para outro lugar (pendrive, nuvem).
 - **Recomeçar do zero:** com o sistema fechado, apague o `controle-agil.db`. Na próxima vez, a pergunta da primeira vez aparece de novo.
+- **Uma janela só:** o sistema não abre duas vezes ao mesmo tempo (duas janelas no mesmo banco apagariam o que a outra gravou). Se aparecer "O Controle Ágil já está aberto", use a janela que já está aberta.
 
 ### 4. Rodar os testes automatizados
 

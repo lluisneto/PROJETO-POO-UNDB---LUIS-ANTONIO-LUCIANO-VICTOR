@@ -6,7 +6,6 @@ import br.com.controleagil.model.ItemPedido;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
-import br.com.controleagil.repository.memoria.ClienteRepositoryMemoria;
 import br.com.controleagil.repository.memoria.PedidoRepositoryMemoria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,7 +43,7 @@ class PedidoServiceTest {
     @BeforeEach
     void criarService() {
         Clock relogio = Clock.fixed(AGORA.atZone(FUSO).toInstant(), FUSO);
-        service = new PedidoService(new PedidoRepositoryMemoria(), new ClienteRepositoryMemoria(), relogio);
+        service = new PedidoService(new PedidoRepositoryMemoria(), relogio);
         cliente = new Cliente("Maria", "(98) 90000-0000", "Rua A, 10");
         coxinha = new Produto("Coxinha", reais("5.00"));
     }
@@ -147,6 +146,23 @@ class PedidoServiceTest {
         assertFalse(service.estaEmBreve(jaPassou), "atrasado não é \"em breve\"");
         assertEquals(1, service.contarAtrasados());
         assertEquals(2, service.contarEntregasNasProximasHoras(3));
+    }
+
+    @Test
+    @DisplayName("Atrasados de dias anteriores aparecem primeiro nas próximas entregas")
+    void atrasadosDeOutrosDias() {
+        PedidoService ontem = service.comRelogio(Clock.fixed(AGORA.minusDays(1).minusHours(2).atZone(FUSO).toInstant(), FUSO));
+        Pedido esquecido = ontem.registrarPedido(cliente, AGORA.minusDays(1), List.of(new ItemPedido(coxinha, 1)), null);
+        Pedido deHoje = service.registrarPedido(cliente, AGORA.plusHours(1), List.of(new ItemPedido(coxinha, 1)), null);
+
+        assertEquals(List.of(esquecido), service.atrasadosDeOutrosDias());
+        assertEquals(List.of(esquecido, deHoje), service.proximasEntregas(5));
+        assertEquals(List.of(esquecido), service.atrasados());
+
+        service.avancarStatus(esquecido);
+        assertEquals(List.of(esquecido), service.atrasados(), "em produção continua atrasado");
+        service.cancelar(esquecido);
+        assertTrue(service.atrasados().isEmpty(), "cancelado não está mais atrasado");
     }
 
     @Test

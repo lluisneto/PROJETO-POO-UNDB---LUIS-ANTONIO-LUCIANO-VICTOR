@@ -38,6 +38,15 @@ public class PagamentoFiado extends Pagamento {
         cliente.getContaFiado().registrarCompra(getValor(), pedido);
     }
 
+    /** Pedido cancelado: a compra lançada no fiado é estornada (sai da dívida do cliente). */
+    @Override
+    public void cancelar(Pedido pedido) {
+        Cliente cliente = pedido.getCliente();
+        if (cliente.temContaFiado()) {
+            cliente.getContaFiado().registrarEstorno(getValor(), pedido);
+        }
+    }
+
     /** Sempre "Fiado". */
     @Override
     public String getDescricao() {

@@ -52,7 +52,7 @@ public class AppContexto {
         ClienteRepository clientes = repositorios.clientes();
         clienteService = new ClienteService(clientes);
         produtoService = new ProdutoService(repositorios.produtos());
-        pedidoService = new PedidoService(repositorios.pedidos(), clientes, relogio);
+        pedidoService = new PedidoService(repositorios.pedidos(), relogio);
         fiadoService = new FiadoService(clientes);
         this.mensagemInicial = mensagemInicial;
 

@@ -1,5 +1,6 @@
 package br.com.controleagil.repository.sqlite;
 
+import br.com.controleagil.exception.RepositorioException;
 import br.com.controleagil.model.Cliente;
 import br.com.controleagil.model.ContaFiado;
 import br.com.controleagil.model.ItemPedido;
@@ -112,7 +113,7 @@ class RepositorioSqliteTest {
         Repositorios repositorios = reabrir();
         ClienteService clientes = new ClienteService(repositorios.clientes());
         ProdutoService produtos = new ProdutoService(repositorios.produtos());
-        PedidoService pedidos = new PedidoService(repositorios.pedidos(), repositorios.clientes(), RELOGIO);
+        PedidoService pedidos = new PedidoService(repositorios.pedidos(), RELOGIO);
         FiadoService fiado = new FiadoService(repositorios.clientes());
 
         Produto coxinha = produtos.cadastrar("Coxinha", reais("5.00"));
@@ -183,15 +184,87 @@ class RepositorioSqliteTest {
     }
 
     @Test
+    @DisplayName("Pedido no fiado e a compra na conta são gravados juntos: se um falha, nenhum fica")
+    void pedidoEFiadoNaMesmaTransacao() throws Exception {
+        Repositorios repositorios = reabrir();
+        ClienteService clientes = new ClienteService(repositorios.clientes());
+        Produto coxinha = new ProdutoService(repositorios.produtos()).cadastrar("Coxinha", reais("5.00"));
+        Cliente bar = clientes.cadastrar("Bar do Zé", null, null);
+        clientes.abrirContaFiado(bar, reais("300.00"));
+        PedidoService pedidos = new PedidoService(repositorios.pedidos(), RELOGIO);
+
+        // Faz o banco recusar qualquer linha nova no histórico do fiado (simula uma falha no meio).
+        executar("CREATE TRIGGER falha_de_teste BEFORE INSERT ON movimentacao_fiado BEGIN SELECT RAISE(ABORT, 'falha de teste'); END");
+        List<ItemPedido> itens = List.of(new ItemPedido(coxinha, 10));
+        assertThrows(RepositorioException.class, () -> pedidos.registrarPedido(bar, AGORA.plusHours(1), itens,
+                pedidos.criarPagamento(FormaPagamento.FIADO, reais("50.00"), null, null)));
+        executar("DROP TRIGGER falha_de_teste");
+
+        Repositorios depois = reabrir();
+        assertTrue(depois.pedidos().listarTodos().isEmpty(), "o pedido não pode ficar salvo sem a compra");
+        assertValor("0", depois.clientes().buscarPorId(bar.getId()).orElseThrow().getContaFiado().getSaldoDevedor());
+    }
+
+    @Test
+    @DisplayName("Cancelamento com estorno e limite alterado voltam iguais do banco")
+    void estornoELimiteVoltamIguais() {
+        Repositorios repositorios = reabrir();
+        ClienteService clientes = new ClienteService(repositorios.clientes());
+        Produto coxinha = new ProdutoService(repositorios.produtos()).cadastrar("Coxinha", reais("5.00"));
+        Cliente bar = clientes.cadastrar("Bar do Zé", null, null);
+        clientes.abrirContaFiado(bar, reais("100.00"));
+        PedidoService pedidos = new PedidoService(repositorios.pedidos(), RELOGIO);
+        Pedido pedido = pedidos.registrarPedido(bar, AGORA.plusHours(1), List.of(new ItemPedido(coxinha, 4)),
+                pedidos.criarPagamento(FormaPagamento.FIADO, reais("20.00"), null, null));
+        pedidos.cancelar(pedido);
+        clientes.alterarLimiteFiado(bar, reais("250.00"));
+
+        Cliente lido = reabrir().clientes().buscarPorId(bar.getId()).orElseThrow();
+        assertValor("0", lido.getContaFiado().getSaldoDevedor());
+        assertEquals(TipoMovimentacao.ESTORNO, lido.getContaFiado().getMovimentacoes().get(1).getTipo());
+        assertValor("250.00", lido.getContaFiado().getLimiteCredito());
+    }
+
+    @Test
+    @DisplayName("Banco de uma versão antiga (sem estorno) é atualizado sozinho, sem perder dados")
+    void migraBancoAntigo() throws Exception {
+        // Monta um banco "da versão antiga": a tabela do fiado só aceita COMPRA e PAGAMENTO.
+        executar("CREATE TABLE cliente (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, telefone TEXT,"
+                + " endereco TEXT, limite_fiado TEXT)");
+        executar("CREATE TABLE pedido (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente_id INTEGER NOT NULL REFERENCES cliente (id),"
+                + " data_criacao TEXT NOT NULL, data_hora_entrega TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'PENDENTE')");
+        executar("CREATE TABLE movimentacao_fiado (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + " cliente_id INTEGER NOT NULL REFERENCES cliente (id),"
+                + " tipo TEXT NOT NULL CHECK (tipo IN ('COMPRA', 'PAGAMENTO')), valor TEXT NOT NULL, data TEXT NOT NULL,"
+                + " pedido_id INTEGER REFERENCES pedido (id))");
+        executar("INSERT INTO cliente (nome, limite_fiado) VALUES ('Maria', '100.00')");
+        executar("INSERT INTO movimentacao_fiado (cliente_id, tipo, valor, data) VALUES (1, 'COMPRA', '30.00', '2026-10-28T10:00')");
+
+        Repositorios repositorios = reabrir(); // aqui acontece a migração
+        Cliente maria = repositorios.clientes().buscarPorId(1).orElseThrow();
+        assertValor("30.00", maria.getContaFiado().getSaldoDevedor(), "o histórico antigo continua lá");
+
+        maria.getContaFiado().registrarEstorno(reais("10.00"), null);
+        repositorios.clientes().salvar(maria); // na versão antiga, ESTORNO seria recusado pelo banco
+        assertValor("20.00", reabrir().clientes().buscarPorId(1).orElseThrow().getContaFiado().getSaldoDevedor());
+    }
+
+    private void executar(String sql) throws Exception {
+        try (var conexao = banco.abrir(); var comando = conexao.createStatement()) {
+            comando.execute(sql);
+        }
+    }
+
+    @Test
     @DisplayName("Os dados de exemplo inteiros sobrevivem a fechar e abrir o sistema")
     void dadosDeExemploVoltamIguais() {
         Repositorios repositorios = reabrir();
         DadosExemplo.carregar(new ClienteService(repositorios.clientes()), new ProdutoService(repositorios.produtos()),
-                new PedidoService(repositorios.pedidos(), repositorios.clientes(), RELOGIO),
+                new PedidoService(repositorios.pedidos(), RELOGIO),
                 new FiadoService(repositorios.clientes()), RELOGIO);
 
         Repositorios depois = reabrir();
-        PedidoService pedidos = new PedidoService(depois.pedidos(), depois.clientes(), RELOGIO);
+        PedidoService pedidos = new PedidoService(depois.pedidos(), RELOGIO);
         FiadoService fiado = new FiadoService(depois.clientes());
         assertEquals(8, depois.produtos().listarTodos().size());
         assertEquals(6, depois.clientes().listarTodos().size());

@@ -39,8 +39,11 @@ public class AgendaController implements TelaAtualizavel {
     /** Estado extra de CSS para a linha da tabela: no estilo.css vira ".table-row-cell:em-breve". */
     private static final PseudoClass EM_BREVE = PseudoClass.getPseudoClass("em-breve");
 
-    /** Opções do filtro: "Todos" + a descrição de cada status, na mesma ordem do enum. */
+    /** Opções do filtro: "Todos", "Atrasados (todos os dias)" e a descrição de cada status, na ordem do enum. */
     private static final String TODOS = "Todos";
+    private static final String ATRASADOS = "Atrasados (todos os dias)";
+    /** Quantas opções vêm antes dos status na lista do filtro. */
+    private static final int OPCOES_ANTES_DOS_STATUS = 2;
 
     private final PedidoService pedidoService;
     private final Navegacao navegacao;
@@ -49,6 +52,8 @@ public class AgendaController implements TelaAtualizavel {
     @FXML private ComboBox<String> filtroStatus;
     @FXML private Label resumoDia;
     @FXML private Label textoVazio;
+    @FXML private HBox avisoAtrasados;
+    @FXML private Label textoAtrasados;
     @FXML private TableView<Pedido> tabela;
     @FXML private TableColumn<Pedido, String> colunaHora;
     @FXML private TableColumn<Pedido, String> colunaNumero;
@@ -80,7 +85,10 @@ public class AgendaController implements TelaAtualizavel {
     @Override
     public void atualizar() {
         Pedido selecionado = tabela.getSelectionModel().getSelectedItem();
-        List<Pedido> pedidos = pedidoService.pedidosDoDia(filtroData.getValue(), statusDoFiltro());
+        boolean soAtrasados = ATRASADOS.equals(filtroStatus.getValue());
+        filtroData.setDisable(soAtrasados); // "Atrasados" mostra todos os dias, então o dia não vale
+        List<Pedido> pedidos = soAtrasados ? pedidoService.atrasados()
+                : pedidoService.pedidosDoDia(filtroData.getValue(), statusDoFiltro());
         tabela.setItems(FXCollections.observableArrayList(pedidos));
         tabela.refresh(); // redesenha as linhas: um pedido pode ter virado "Atrasado" com o passar do tempo
         if (selecionado != null && pedidos.contains(selecionado)) {
@@ -88,11 +96,36 @@ public class AgendaController implements TelaAtualizavel {
         }
         resumoDia.setText((pedidos.size() == 1 ? "1 pedido" : pedidos.size() + " pedidos")
                 + " · dois cliques abrem os detalhes");
-        // Com filtro de status, a mensagem de lista vazia diz que é o filtro que escondeu os pedidos.
-        StatusPedido filtro = statusDoFiltro();
-        textoVazio.setText(filtro == null ? "Nenhum pedido para este dia"
-                : "Nenhum pedido \"" + filtro.getDescricao() + "\" neste dia");
+        textoVazio.setText(textoDaListaVazia(soAtrasados));
+        mostrarAvisoDeAtrasados(soAtrasados);
         atualizarBotoes();
+    }
+
+    /** Com filtro, a mensagem de lista vazia diz que é o filtro que escondeu os pedidos. */
+    private String textoDaListaVazia(boolean soAtrasados) {
+        if (soAtrasados) {
+            return "Nenhum pedido atrasado";
+        }
+        StatusPedido filtro = statusDoFiltro();
+        return filtro == null ? "Nenhum pedido para este dia" : "Nenhum pedido \"" + filtro.getDescricao() + "\" neste dia";
+    }
+
+    /**
+     * Pedidos atrasados de DIAS ANTERIORES não aparecem na agenda de hoje. Este aviso mostra que
+     * eles existem e leva até eles (assim nenhum pedido esquecido fica escondido).
+     */
+    private void mostrarAvisoDeAtrasados(boolean soAtrasados) {
+        int quantos = pedidoService.atrasadosDeOutrosDias().size();
+        boolean mostrar = quantos > 0 && !soAtrasados;
+        avisoAtrasados.setVisible(mostrar);
+        avisoAtrasados.setManaged(mostrar);
+        textoAtrasados.setText(quantos == 1 ? "Há 1 pedido atrasado de dias anteriores (ainda não entregue nem cancelado)."
+                : "Há " + quantos + " pedidos atrasados de dias anteriores (ainda não entregues nem cancelados).");
+    }
+
+    @FXML
+    private void verAtrasados() {
+        filtroStatus.setValue(ATRASADOS);
     }
 
     // ------------------------------------------------------------------ ações
@@ -148,8 +181,9 @@ public class AgendaController implements TelaAtualizavel {
                 + " (entrega às " + Formatador.hora(pedido.getDataHoraEntrega()) + ")?\n\nDepois de cancelado, "
                 + "o pedido não muda mais de status.";
         if (pedido.calcularValorPago().signum() > 0) {
-            mensagem += "\n\nAtenção: este pedido já tem " + Formatador.moeda(pedido.calcularValorPago())
-                    + " em pagamentos registrados (inclusive fiado). O sistema não devolve esses valores sozinho.";
+            mensagem += "\n\nEste pedido já tem " + Formatador.moeda(pedido.calcularValorPago())
+                    + " em pagamentos. O que foi lançado no FIADO é estornado (sai da dívida do cliente). "
+                    + "O que foi pago em dinheiro ou Pix precisa ser devolvido ao cliente por fora do sistema.";
         }
         if (Dialogos.confirmar("Cancelar pedido", mensagem, "Cancelar pedido")
                 && Dialogos.tentar(() -> pedidoService.cancelar(pedido))) {
@@ -170,6 +204,7 @@ public class AgendaController implements TelaAtualizavel {
         });
 
         filtroStatus.getItems().add(TODOS);
+        filtroStatus.getItems().add(ATRASADOS);
         for (StatusPedido status : StatusPedido.values()) {
             filtroStatus.getItems().add(status.getDescricao());
         }
@@ -177,10 +212,10 @@ public class AgendaController implements TelaAtualizavel {
         filtroStatus.valueProperty().addListener((obs, antes, agora) -> atualizar());
     }
 
-    /** "Todos" vira null (sem filtro); as outras opções viram o StatusPedido da mesma posição. */
+    /** "Todos" e "Atrasados" viram null (sem filtro de status); as outras opções viram o StatusPedido correspondente. */
     private StatusPedido statusDoFiltro() {
         int posicao = filtroStatus.getSelectionModel().getSelectedIndex();
-        return posicao <= 0 ? null : StatusPedido.values()[posicao - 1];
+        return posicao < OPCOES_ANTES_DOS_STATUS ? null : StatusPedido.values()[posicao - OPCOES_ANTES_DOS_STATUS];
     }
 
     /**
@@ -189,7 +224,9 @@ public class AgendaController implements TelaAtualizavel {
      */
     private void configurarColunas() {
         tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-        colunaHora.setCellValueFactory(c -> new SimpleStringProperty(Formatador.hora(c.getValue().getDataHoraEntrega())));
+        // Na lista de atrasados aparecem outros dias: aí a hora vem com a data na frente ("28/10 15:30").
+        colunaHora.setCellValueFactory(c -> new SimpleStringProperty(
+                Formatador.horaNoDia(c.getValue().getDataHoraEntrega(), filtroData.getValue())));
         colunaNumero.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().getId())));
         colunaCliente.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCliente().getNome()));
         colunaItens.setCellValueFactory(c -> new SimpleStringProperty(Formatador.resumoItens(c.getValue())));

@@ -79,7 +79,7 @@ class DadosExemploTest {
         ClienteRepositoryMemoria repositorioClientes = new ClienteRepositoryMemoria();
         clientes = new ClienteService(repositorioClientes);
         produtos = new ProdutoService(new ProdutoRepositoryMemoria());
-        pedidos = new PedidoService(new PedidoRepositoryMemoria(), repositorioClientes, relogio);
+        pedidos = new PedidoService(new PedidoRepositoryMemoria(), relogio);
         fiado = new FiadoService(repositorioClientes);
 
         DadosExemplo.carregar(clientes, produtos, pedidos, fiado, relogio);

@@ -117,25 +117,33 @@ public class ClientesController {
         campoNome.requestFocus();
     }
 
-    /** Pede o limite e abre a conta fiado do cliente em edição. */
+    /**
+     * Pede o limite e abre a conta fiado do cliente em edição. Se ele já tem conta, o mesmo botão
+     * serve para ALTERAR o limite (ex.: limite digitado errado, cliente ganhou mais crédito).
+     */
     @FXML
     private void abrirContaFiado() {
         Cliente cliente = emEdicao;
         if (cliente == null) {
             return;
         }
-        Optional<String> limiteDigitado = Dialogos.pedirTexto("Abrir conta fiado",
-                "Limite de crédito de " + cliente.getNome() + " (R$):", LIMITE_SUGERIDO);
+        boolean jaTemConta = cliente.temContaFiado();
+        String limiteAtual = jaTemConta ? Formatador.numero(cliente.getContaFiado().getLimiteCredito()) : LIMITE_SUGERIDO;
+        Optional<String> limiteDigitado = Dialogos.pedirTexto(jaTemConta ? "Alterar limite do fiado" : "Abrir conta fiado",
+                "Limite de crédito de " + cliente.getNome() + " (R$):", limiteAtual);
         limiteDigitado.ifPresent(texto -> {
             boolean deuCerto = Dialogos.tentar(() -> {
                 BigDecimal limite = Formatador.lerValor(texto);
-                clienteService.abrirContaFiado(cliente, limite);
+                if (jaTemConta) {
+                    clienteService.alterarLimiteFiado(cliente, limite);
+                } else {
+                    clienteService.abrirContaFiado(cliente, limite);
+                }
             });
             if (deuCerto) {
-                navegacao.mostrarMensagem("Conta fiado aberta para " + cliente.getNome() + " com limite de "
-                        + Formatador.moeda(cliente.getContaFiado().getLimiteCredito()) + ".");
-                textoContaFiado.setText(textoDaConta(cliente));
-                botaoAbrirFiado.setDisable(true);
+                navegacao.mostrarMensagem((jaTemConta ? "Limite do fiado de " : "Conta fiado aberta para ")
+                        + cliente.getNome() + ": " + Formatador.moeda(cliente.getContaFiado().getLimiteCredito()) + ".");
+                editar(cliente);
                 carregarLista();
             }
         });
@@ -171,7 +179,8 @@ public class ClientesController {
         campoTelefone.setText(editando && cliente.getTelefone() != null ? cliente.getTelefone() : "");
         campoEndereco.setText(editando && cliente.getEndereco() != null ? cliente.getEndereco() : "");
 
-        botaoAbrirFiado.setDisable(!editando || cliente.temContaFiado());
+        botaoAbrirFiado.setDisable(!editando);
+        botaoAbrirFiado.setText(editando && cliente.temContaFiado() ? "Alterar limite do fiado" : "Abrir conta fiado");
         textoContaFiado.setText(textoDaConta(cliente));
     }
 

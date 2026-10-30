@@ -1,5 +1,6 @@
 package br.com.controleagil.repository.sqlite;
 
+import br.com.controleagil.exception.RepositorioException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -46,10 +47,14 @@ public class ConexaoBanco {
         return conexao;
     }
 
-    /** Roda o schema.sql. Pode ser chamado toda vez que o sistema abre: não apaga nada. */
+    /**
+     * Roda o schema.sql e atualiza bancos de versões antigas. Pode ser chamado toda vez que o
+     * sistema abre: não apaga nenhum dado.
+     */
     public void criarTabelas() {
         String script = lerScript();
         try (Connection conexao = abrir(); Statement comando = conexao.createStatement()) {
+            atualizarVersaoAntiga(conexao);
             for (String sql : script.split(";")) {
                 if (!sql.isBlank()) {
                     comando.execute(sql);
@@ -57,6 +62,46 @@ public class ConexaoBanco {
             }
         } catch (SQLException e) {
             throw new RepositorioException("Não foi possível criar as tabelas do banco.", e);
+        }
+    }
+
+    /**
+     * MIGRAÇÃO: bancos criados antes do estorno têm a tabela movimentacao_fiado aceitando só
+     * 'COMPRA' e 'PAGAMENTO'. O SQLite não deixa mudar essa regra (CHECK) direto, então a tabela
+     * antiga é renomeada, o schema.sql cria a nova e as linhas são copiadas de volta. Tudo numa
+     * transação: se der errado, o banco fica como estava.
+     */
+    private void atualizarVersaoAntiga(Connection conexao) throws SQLException {
+        String definicao = null;
+        try (Statement comando = conexao.createStatement();
+             ResultSet linha = comando.executeQuery(
+                     "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'movimentacao_fiado'")) {
+            if (linha.next()) {
+                definicao = linha.getString(1);
+            }
+        }
+        if (definicao == null || definicao.contains("ESTORNO")) {
+            return; // banco novo (a tabela ainda não existe) ou já atualizado
+        }
+        conexao.setAutoCommit(false);
+        try (Statement comando = conexao.createStatement()) {
+            comando.execute("ALTER TABLE movimentacao_fiado RENAME TO movimentacao_fiado_antiga");
+            comando.execute("CREATE TABLE movimentacao_fiado ("
+                    + " id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " cliente_id INTEGER NOT NULL REFERENCES cliente (id),"
+                    + " tipo TEXT NOT NULL CHECK (tipo IN ('COMPRA', 'PAGAMENTO', 'ESTORNO')),"
+                    + " valor TEXT NOT NULL,"
+                    + " data TEXT NOT NULL,"
+                    + " pedido_id INTEGER REFERENCES pedido (id))");
+            comando.execute("INSERT INTO movimentacao_fiado (id, cliente_id, tipo, valor, data, pedido_id)"
+                    + " SELECT id, cliente_id, tipo, valor, data, pedido_id FROM movimentacao_fiado_antiga");
+            comando.execute("DROP TABLE movimentacao_fiado_antiga");
+            conexao.commit();
+        } catch (SQLException e) {
+            conexao.rollback();
+            throw e;
+        } finally {
+            conexao.setAutoCommit(true);
         }
     }
 

@@ -30,9 +30,16 @@
         <Label text="Status" styleClass="rotulo">
             <padding><Insets left="16"/></padding>
         </Label>
-        <ComboBox fx:id="filtroStatus" prefWidth="200"/>
+        <ComboBox fx:id="filtroStatus" prefWidth="230"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Label fx:id="resumoDia" styleClass="dica"/>
+    </HBox>
+
+    <!-- Aviso de pedidos atrasados de dias anteriores (o AgendaController mostra só quando há algum) -->
+    <HBox fx:id="avisoAtrasados" styleClass="dica-caixa" spacing="16" alignment="CENTER_LEFT"
+          visible="false" managed="false">
+        <Label fx:id="textoAtrasados" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+        <Button text="Ver atrasados" onAction="#verAtrasados" minWidth="-Infinity"/>
     </HBox>
 
     <!-- ===== Pedidos do dia ===== -->

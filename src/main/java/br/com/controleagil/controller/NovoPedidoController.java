@@ -47,7 +47,7 @@ import java.util.stream.Stream;
  * Controller FINO: a lista de itens é só um RASCUNHO até salvar. Somar quantidades, calcular
  * total e troco e validar as regras (RN01, RN02, RN03...) é trabalho do PedidoService e do model.
  */
-public class NovoPedidoController {
+public class NovoPedidoController implements TelaAtualizavel {
 
     private static final LocalTime PRIMEIRO_HORARIO = LocalTime.of(6, 0);
     private static final LocalTime ULTIMO_HORARIO = LocalTime.of(22, 0);
@@ -97,14 +97,13 @@ public class NovoPedidoController {
 
     @FXML
     private void initialize() {
-        campoCliente.setItems(FXCollections.observableArrayList(clienteService.listarTodos()));
+        atualizarListas();
         campoCliente.setConverter(Formatador.conversor(Formatador::cliente));
         campoCliente.valueProperty().addListener((obs, antes, agora) -> atualizarFiado());
 
         campoData.setConverter(Formatador.conversorDeData());
         campoHora.setItems(FXCollections.observableArrayList(horariosDoDia()));
 
-        campoProduto.setItems(FXCollections.observableArrayList(produtoService.listarTodos()));
         campoProduto.setConverter(Formatador.conversor(p -> p.getNome() + " · " + Formatador.moeda(p.getPreco())));
         configurarQuantidade();
         mostrarAjudaQuandoVazio(campoCliente);
@@ -114,6 +113,39 @@ public class NovoPedidoController {
         formasPagamento.selectedToggleProperty().addListener((obs, antes, agora) -> atualizarPagamento());
         campoRecebido.textProperty().addListener((obs, antes, agora) -> atualizarTroco());
         limpar();
+    }
+
+    /**
+     * Esta tela é reaproveitada (guarda o rascunho). Ao voltar para ela, só as listas de clientes
+     * e produtos são lidas de novo: o cliente cadastrado agora há pouco já aparece, e os itens
+     * que estavam sendo montados continuam lá.
+     */
+    @Override
+    public void atualizar() {
+        atualizarListas();
+        atualizarFiado();
+    }
+
+    /** Recarrega clientes e produtos (só se mudaram, para não fechar uma lista aberta à toa). */
+    private void atualizarListas() {
+        List<Cliente> clientes = clienteService.listarTodos();
+        if (!clientes.equals(campoCliente.getItems())) {
+            Cliente escolhido = campoCliente.getValue();
+            campoCliente.setItems(FXCollections.observableArrayList(clientes));
+            // (a lista que vem do service não aceita contains(null), por isso o teste do null antes)
+            campoCliente.setValue(escolhido != null && clientes.contains(escolhido) ? escolhido : null);
+        }
+        List<Produto> produtos = produtoService.listarTodos();
+        if (!produtos.equals(campoProduto.getItems())) {
+            Produto escolhido = campoProduto.getValue();
+            campoProduto.setItems(FXCollections.observableArrayList(produtos));
+            campoProduto.setValue(escolhido != null && produtos.contains(escolhido) ? escolhido : null);
+        }
+        // Lista vazia: o texto de ajuda diz onde cadastrar.
+        campoCliente.setPromptText(clientes.isEmpty() ? "Nenhum cliente cadastrado: cadastre na tela Clientes"
+                : "Escolha o cliente");
+        campoProduto.setPromptText(produtos.isEmpty() ? "Nenhum produto cadastrado: cadastre na tela Produtos"
+                : "Escolha o produto");
     }
 
     // ------------------------------------------------------------------ ações
@@ -354,11 +386,18 @@ public class NovoPedidoController {
      * (promptText, ex.: "Escolha o cliente") não aparece mais. Esta célula mostra o texto sozinha.
      */
     private static <T> void mostrarAjudaQuandoVazio(ComboBox<T> combo) {
-        combo.setButtonCell(new ListCell<>() {
+        ListCell<T> celula = new ListCell<>() {
             @Override
             protected void updateItem(T item, boolean vazio) {
                 super.updateItem(item, vazio);
                 setText(vazio || item == null ? combo.getPromptText() : combo.getConverter().toString(item));
+            }
+        };
+        combo.setButtonCell(celula);
+        // Se o texto de ajuda mudar (ex.: "Nenhum cliente cadastrado..."), a célula vazia mostra o novo texto.
+        combo.promptTextProperty().addListener((obs, antes, agora) -> {
+            if (combo.getValue() == null) {
+                celula.setText(agora);
             }
         });
     }

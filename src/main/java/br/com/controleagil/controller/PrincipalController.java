@@ -40,6 +40,9 @@ public class PrincipalController implements Navegacao {
     private final Map<Tela, Button> botoesDoMenu = new EnumMap<>(Tela.class);
     private TelaAtualizavel telaAberta;
     private SequentialTransition sumirMensagem;
+    private Timeline relogio;
+    private final Map<Tela, TelaGuardada> telasGuardadas = new EnumMap<>(Tela.class);
+    private Object controllerMontado;
 
     @FXML private BorderPane areaConteudo;
     @FXML private Button botaoInicio;
@@ -85,6 +88,13 @@ public class PrincipalController implements Navegacao {
         });
     }
 
+    /** Para o relógio desta janela (usado quando o App remonta a janela depois de recarregar os dados). */
+    public void encerrar() {
+        if (relogio != null) {
+            relogio.stop();
+        }
+    }
+
     @Override
     public void mostrarMensagem(String mensagem) {
         if (sumirMensagem != null) {
@@ -98,8 +108,32 @@ public class PrincipalController implements Navegacao {
         sumirMensagem.play();
     }
 
-    /** Lê o FXML da tela e cria o controller dela pelo AppContexto (que entrega os services). */
+    /**
+     * Lê o FXML da tela e cria o controller dela pelo AppContexto (que entrega os services).
+     * A tela que guarda rascunho (Novo pedido) é montada uma vez só e reaproveitada: ao voltar
+     * para ela, só as listas são atualizadas (ex.: o cliente que acabou de ser cadastrado).
+     */
     private Parent carregar(Tela tela) {
+        TelaGuardada guardada = telasGuardadas.get(tela);
+        if (guardada != null) {
+            telaAberta = guardada.controller() instanceof TelaAtualizavel atualizavel ? atualizavel : null;
+            if (telaAberta != null) {
+                telaAberta.atualizar();
+            }
+            return guardada.conteudo();
+        }
+        Parent conteudo = montar(tela);
+        if (tela.isGuardaRascunho()) {
+            telasGuardadas.put(tela, new TelaGuardada(conteudo, controllerMontado));
+        }
+        return conteudo;
+    }
+
+    /** Uma tela já montada: o desenho (conteudo) e o controller dela. */
+    private record TelaGuardada(Parent conteudo, Object controller) {
+    }
+
+    private Parent montar(Tela tela) {
         URL arquivo = PrincipalController.class.getResource(tela.getArquivoFxml());
         if (arquivo == null) {
             throw new IllegalStateException("Arquivo da tela não encontrado: " + tela.getArquivoFxml());
@@ -108,8 +142,8 @@ public class PrincipalController implements Navegacao {
         carregador.setControllerFactory(tipo -> contexto.criarController(tipo, this));
         try {
             Parent conteudo = carregador.load();
-            Object controller = carregador.getController();
-            telaAberta = controller instanceof TelaAtualizavel atualizavel ? atualizavel : null;
+            controllerMontado = carregador.getController();
+            telaAberta = controllerMontado instanceof TelaAtualizavel atualizavel ? atualizavel : null;
             return conteudo;
         } catch (IOException e) {
             throw new IllegalStateException("Não foi possível abrir a tela " + tela.getTitulo() + ".", e);
@@ -128,7 +162,7 @@ public class PrincipalController implements Navegacao {
 
     /** A cada 30 segundos: atualiza a data do cabeçalho e a tela aberta (atrasados, "em breve"...). */
     private void iniciarRelogio() {
-        Timeline relogio = new Timeline(new KeyFrame(Duration.seconds(30), evento -> {
+        relogio = new Timeline(new KeyFrame(Duration.seconds(30), evento -> {
             atualizarData();
             TelaAtualizavel tela = telaAberta;
             if (tela != null) {

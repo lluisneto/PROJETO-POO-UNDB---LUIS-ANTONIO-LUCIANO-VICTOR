@@ -46,7 +46,7 @@
         <HBox alignment="CENTER_LEFT" spacing="16">
             <VBox spacing="8" HBox.hgrow="ALWAYS">
                 <Label text="Próximas entregas" styleClass="secao-titulo"/>
-                <Label text="Pedidos de hoje que ainda não foram finalizados, por horário. Clique para abrir a agenda."
+                <Label text="Atrasados de dias anteriores e pedidos de hoje que ainda não foram finalizados, por horário. Clique para abrir a agenda."
                        styleClass="dica" wrapText="true" minHeight="-Infinity"/>
             </VBox>
             <Button text="Abrir agenda do dia" onAction="#abrirAgenda" minWidth="-Infinity"/>

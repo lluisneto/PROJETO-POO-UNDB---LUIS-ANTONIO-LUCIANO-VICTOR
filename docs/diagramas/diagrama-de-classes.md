@@ -213,3 +213,15 @@ camadas, entraram também as classes abaixo. Elas não mudam o diagrama: ficam e
 | `Pedido(cliente, entrega, dataCriacao)` e `Pedido.estaProximoDaEntrega(minutos, agora)` | Permitem informar o "agora" (relógio do service e testes). |
 | `Pedido.restaurar(...)`, `ItemPedido.restaurar(...)`, `ContaFiado.restaurarMovimentacao(...)` e os construtores de pagamento com data | Só o repositório SQLite usa: remontam o que estava salvo **sem** repetir as regras (o fiado não é lançado de novo, um pedido entregue volta entregue, o item volta com o preço da época). |
 | `Dinheiro` (classe interna do pacote `model`) | Regra de dinheiro num lugar só: 2 casas e arredondamento HALF_EVEN. |
+| `Pagamento.cancelar(pedido)` e `PagamentoFiado.cancelar(pedido)` | Mais um exemplo de polimorfismo: ao cancelar o pedido, ele avisa cada pagamento; só o fiado faz algo (o estorno). |
+| `ContaFiado.registrarEstorno(valor, pedido)` e `TipoMovimentacao.ESTORNO` | O cancelamento de um pedido pago no fiado desfaz a compra no "caderno" (RC16). |
+| `ContaFiado.alterarLimite(novoLimite)` | Corrigir ou aumentar o limite do fiado (RC17). |
+
+### Proteções dos dados
+
+| Onde | O quê |
+|------|-------|
+| `PedidoRepositorySqlite.salvar()` | Grava o pedido e a conta fiado do cliente numa transação só. |
+| `Dialogos` + `App.recarregarDados()` | Se o banco recusar uma gravação (`RepositorioException`), mostra o motivo e relê tudo do banco: a tela nunca mostra algo que não está gravado. |
+| `App` (trava em `controle-agil.db.lock`) | Impede abrir o sistema duas vezes no mesmo banco. |
+| `ConexaoBanco.criarTabelas()` | Atualiza sozinho bancos de versões antigas (migração da tabela do fiado para aceitar "ESTORNO"). |

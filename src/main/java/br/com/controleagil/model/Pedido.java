@@ -139,7 +139,8 @@ public class Pedido {
     /**
      * Muda o status do pedido.
      * O status só avança UM passo por vez, na ordem (veja StatusPedido.proximo()).
-     * CANCELADO pode vir de qualquer status que ainda não seja final.
+     * CANCELADO pode vir de qualquer status que ainda não seja final; ao cancelar, cada pagamento
+     * é avisado (no fiado, a compra é estornada da conta do cliente).
      */
     public void alterarStatus(StatusPedido novoStatus) {
         if (novoStatus == null) {
@@ -155,6 +156,11 @@ public class Pedido {
                     + "\" e só pode avançar para \"" + status.proximo().getDescricao() + "\" (ou ser cancelado).");
         }
         this.status = novoStatus;
+        if (novoStatus == StatusPedido.CANCELADO) {
+            for (Pagamento pagamento : pagamentos) {
+                pagamento.cancelar(this); // polimorfismo: só o PagamentoFiado faz algo (o estorno)
+            }
+        }
     }
 
     /**

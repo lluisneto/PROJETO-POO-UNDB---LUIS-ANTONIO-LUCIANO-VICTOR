@@ -20,3 +20,6 @@ Thumbs.db
 
 # Pasta de contexto usada para orientar o Claude (não vai para o Git)
 contexto-claude/
+
+# Trava que impede abrir o sistema duas vezes no mesmo banco
+controle-agil.db.lock

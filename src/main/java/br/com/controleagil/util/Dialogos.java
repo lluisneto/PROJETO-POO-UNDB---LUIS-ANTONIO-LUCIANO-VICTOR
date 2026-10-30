@@ -1,6 +1,7 @@
 package br.com.controleagil.util;
 
 import br.com.controleagil.exception.RegraNegocioException;
+import br.com.controleagil.exception.RepositorioException;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -18,6 +19,9 @@ import java.util.Optional;
  *
  * Também concentra o TRATAMENTO DE ERROS das telas, em tentar():
  *  - RegraNegocioException: o usuário pediu algo que o negócio não permite. Mostra a mensagem dela.
+ *  - RepositorioException: o banco não aceitou a gravação (ex.: arquivo travado). Mostra o motivo
+ *    e manda o sistema RECARREGAR os dados do banco, porque o objeto na memória pode ter mudado
+ *    sem ter sido gravado. O banco é sempre quem manda.
  *  - Qualquer outra exceção: é um erro inesperado (bug). Mostra um aviso genérico e imprime o
  *    detalhe técnico (stack trace) no console, para quem for corrigir.
  */
@@ -25,15 +29,21 @@ public final class Dialogos {
 
     private static Window janelaPrincipal;
     private static String folhaDeEstilo;
+    private static Runnable recarregarDados;
 
     private Dialogos() {
         // Só métodos estáticos.
     }
 
-    /** Chamado uma vez pelo App: os diálogos abrem centralizados na janela e com o mesmo CSS. */
-    public static void configurar(Window janela, String urlFolhaDeEstilo) {
+    /**
+     * Chamado pelo App: os diálogos abrem centralizados na janela e com o mesmo CSS.
+     *
+     * @param recarregar o que fazer depois de uma falha de gravação (o App relê o banco)
+     */
+    public static void configurar(Window janela, String urlFolhaDeEstilo, Runnable recarregar) {
         janelaPrincipal = janela;
         folhaDeEstilo = urlFolhaDeEstilo;
+        recarregarDados = recarregar;
     }
 
     /**
@@ -64,6 +74,10 @@ public final class Dialogos {
 
     /** Erro que não era para acontecer: aviso genérico na tela e detalhes no console. */
     public static void erroInesperado(Throwable erro) {
+        if (erro instanceof RepositorioException erroDoBanco) {
+            falhaAoGravar(erroDoBanco);
+            return;
+        }
         erro.printStackTrace(); // vai para o console (terminal), com a linha exata do problema
         Alert alerta = new Alert(Alert.AlertType.ERROR,
                 "Aconteceu um erro inesperado. Os detalhes foram registrados no console.\n\n"
@@ -71,6 +85,43 @@ public final class Dialogos {
                 ButtonType.OK);
         alerta.setTitle("Erro inesperado");
         alerta.setHeaderText("Algo deu errado");
+        preparar(alerta);
+        exibir(alerta);
+    }
+
+    /**
+     * O banco não aceitou a gravação. Explica o motivo e, depois do OK, manda recarregar os dados:
+     * o que estava na tela e não foi gravado é descartado, e a tela volta a mostrar o que o banco tem.
+     */
+    private static void falhaAoGravar(RepositorioException erro) {
+        erro.printStackTrace();
+        Alert alerta = new Alert(Alert.AlertType.ERROR, erro.getMessage() + "\n\nMotivo: " + motivo(erro)
+                + "\n\nNada do que você acabou de fazer foi salvo. O sistema vai recarregar os dados gravados."
+                + "\nSe o problema continuar, feche outros programas que estejam usando o arquivo do banco.",
+                ButtonType.OK);
+        alerta.setTitle("Erro ao gravar");
+        alerta.setHeaderText("Não foi possível gravar no banco de dados");
+        preparar(alerta);
+        exibir(alerta);
+        if (recarregarDados != null) {
+            Platform.runLater(recarregarDados);
+        }
+    }
+
+    /** A mensagem técnica mais "de dentro" (a causa original), ex.: "database is locked". */
+    public static String motivo(Throwable erro) {
+        Throwable causa = erro;
+        while (causa.getCause() != null) {
+            causa = causa.getCause();
+        }
+        return causa.getMessage() == null ? causa.getClass().getSimpleName() : causa.getMessage();
+    }
+
+    /** Erro grave com título e texto próprios (ex.: não foi possível abrir o banco). */
+    public static void erro(String titulo, String mensagem) {
+        Alert alerta = new Alert(Alert.AlertType.ERROR, mensagem, ButtonType.OK);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(titulo);
         preparar(alerta);
         exibir(alerta);
     }

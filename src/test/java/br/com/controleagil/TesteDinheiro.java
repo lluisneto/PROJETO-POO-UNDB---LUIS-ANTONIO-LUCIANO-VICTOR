@@ -22,6 +22,12 @@ public final class TesteDinheiro {
 
     /** Confere se dois valores em dinheiro são iguais, usando compareTo. */
     public static void assertValor(String esperado, BigDecimal atual) {
-        assertEquals(0, new BigDecimal(esperado).compareTo(atual), "esperado R$ " + esperado + ", veio R$ " + atual);
+        assertValor(esperado, atual, "");
+    }
+
+    /** Igual ao de cima, com uma explicação extra se falhar. */
+    public static void assertValor(String esperado, BigDecimal atual, String explicacao) {
+        assertEquals(0, new BigDecimal(esperado).compareTo(atual),
+                "esperado R$ " + esperado + ", veio R$ " + atual + (explicacao.isEmpty() ? "" : " (" + explicacao + ")"));
     }
 }

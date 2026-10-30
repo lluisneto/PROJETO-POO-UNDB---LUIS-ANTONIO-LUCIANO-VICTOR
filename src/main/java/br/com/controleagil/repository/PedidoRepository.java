@@ -13,7 +13,11 @@ import java.util.Optional;
  */
 public interface PedidoRepository {
 
-    /** Pedido sem id é inserido e ganha o próximo número; pedido com id é atualizado. */
+    /**
+     * Pedido sem id é inserido e ganha o próximo número; pedido com id é atualizado.
+     * Grava JUNTO, de uma vez só, o que o pedido mudou na conta fiado do cliente (a compra de um
+     * pagamento no fiado, o estorno de um cancelamento): ou fica tudo salvo, ou nada fica.
+     */
     Pedido salvar(Pedido pedido);
 
     /** Busca pelo número do pedido. Optional vazio quando não existe. */

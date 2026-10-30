@@ -87,6 +87,8 @@ elas estão aqui (veja a coluna "Antes").
 | RC13 | Quantidade do item de pelo menos 1; preço do produto maior que zero; limite de crédito zero ou mais | `ItemPedido`, `Produto`, `ContaFiado` | – |
 | RC14 | Nome do cliente e do produto são obrigatórios | `Pessoa`, `Produto` | – |
 | RC15 | Cada cliente tem no máximo uma conta fiado | `Cliente.abrirContaFiado()` | – |
+| RC16 | Cancelar um pedido pago no fiado estorna a compra da conta do cliente (até o valor da dívida; o que o cliente já pagou é devolvido por fora) | `Pedido.alterarStatus()`, `PagamentoFiado.cancelar()`, `ContaFiado.registrarEstorno()` | – |
+| RC17 | O limite do fiado pode ser alterado; um limite menor que a dívida bloqueia novas compras fiado até o cliente pagar | `ContaFiado.alterarLimite()` | – |
 
 ## Requisitos não funcionais (RNF)
 
@@ -101,6 +103,7 @@ Como o sistema precisa ser.
 | RNF05 | Regras de negócio cobertas por testes automatizados com JUnit |
 | RNF06 | Mensagens de erro em português, dizendo o que corrigir |
 | RNF07 | Interface simples, usável por quem não tem experiência com sistemas; cor nunca é a única informação |
+| RNF08 | Dados íntegros: cada gravação é uma transação (o pedido e a conta fiado do cliente entram juntos ou não entram), uma falha recarrega os dados do banco, e o sistema não abre duas vezes no mesmo banco |
 
 ## Perguntas pendentes para o cliente 🔎
 
@@ -108,7 +111,7 @@ Como o sistema precisa ser.
 - Existe prazo para pagar o fiado? Cobram juros ou multa?
 - Com quanto tempo de antecedência querem ser avisados de um pedido? (hoje: 60 minutos)
 - Além de dinheiro, Pix e fiado, aceitam cartão?
-- Se um pedido pago no fiado for cancelado, o valor deve sair da conta automaticamente?
+- Se um pedido pago no fiado for cancelado, o valor deve sair da conta automaticamente? *(hoje: sai, com um "Estorno" no histórico)*
 - Os preços mudam com frequência? Existe preço diferente por cliente?
 - Quantos pedidos, em média, recebem por dia? Quem vai usar o sistema no dia a dia?
 - Quantos entregadores têm hoje? *(para a Etapa 2)*

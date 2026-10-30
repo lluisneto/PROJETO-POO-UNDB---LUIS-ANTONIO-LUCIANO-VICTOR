@@ -120,6 +120,20 @@ class ContaFiadoTest {
     }
 
     @Test
+    @DisplayName("Alterar o limite muda o crédito; limite abaixo da dívida bloqueia novas compras")
+    void alterarLimite() {
+        conta.registrarCompra(reais("80.00"), null);
+
+        conta.alterarLimite(reais("200.00"));
+        assertValor("120.00", conta.getCreditoDisponivel());
+
+        conta.alterarLimite(reais("50.00"));
+        assertFalse(conta.podeComprar(reais("0.01")));
+        assertValor("80.00", conta.getSaldoDevedor(), "o histórico não muda");
+        assertThrows(RegraNegocioException.class, () -> conta.alterarLimite(reais("-1")));
+    }
+
+    @Test
     @DisplayName("O histórico não pode ser alterado de fora da conta (encapsulamento)")
     void historicoEhSomenteLeitura() {
         conta.registrarCompra(reais("10.00"), null);

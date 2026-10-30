@@ -69,6 +69,14 @@ public final class Formatador {
         return dataHora == null ? "" : HORA.format(dataHora);
     }
 
+    /** "15:30" se for no dia informado; "28/10 15:30" se for em outro dia (ex.: um atrasado de ontem). */
+    public static String horaNoDia(LocalDateTime dataHora, LocalDate dia) {
+        if (dataHora.toLocalDate().equals(dia)) {
+            return hora(dataHora);
+        }
+        return DateTimeFormatter.ofPattern("dd/MM HH:mm").format(dataHora);
+    }
+
     /** 15:30 (só o horário, sem data) */
     public static String hora(LocalTime hora) {
         return hora == null ? "" : HORA.format(hora);
