@@ -136,7 +136,9 @@ public class FiadoController {
         }
         totalAReceber.setText(Formatador.moeda(fiadoService.totalAReceber()));
         long devedores = fiadoService.contarDevedores();
-        resumoDevedores.setText(devedores == 1 ? "1 cliente devendo" : devedores + " clientes devendo");
+        long acima = fiadoService.contarAcimaDoLimite();
+        resumoDevedores.setText((devedores == 1 ? "1 cliente devendo" : devedores + " clientes devendo")
+                + (acima == 0 ? "" : " · " + acima + " acima do limite"));
         mostrarConta(tabelaContas.getSelectionModel().getSelectedItem());
     }
 

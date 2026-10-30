@@ -35,8 +35,7 @@ para um pedido "Em breve" virar "Atrasado" quando a hora passar.
 | Resumo do dia | Uma frase ("5 pedidos hoje · 2 entregues · 1 atrasado") e o botão **Novo pedido**. |
 | Hoje *(cartão largo)* | Pedidos de hoje (sem contar os cancelados), quantos já foram entregues (com barra), entregas nas próximas 2 horas e atrasados. |
 | Próximas entregas | Até 5 pedidos (atrasados primeiro, depois os de hoje por horário), um bloco por pedido: hora, cliente, total, status e "Em breve"/"Atrasado". Clicar abre a Agenda do dia. |
-| A receber no fiado | Soma dos saldos devedores (centavos em tom mais claro), quantos clientes devem, quantos passaram do limite e os 2 que devem mais. |
-| Próximos 7 dias | Gráfico de barras com os pedidos de cada dia; a barra de hoje fica em laranja e cada barra mostra o número ao passar o mouse. |
+| Próximos 7 dias *(cartão largo)* | Gráfico de barras com os pedidos de cada dia; a barra de hoje fica em laranja e cada barra mostra o número ao passar o mouse. |
 
 Regras usadas: RF06, RF07.
 
@@ -101,13 +100,13 @@ Regras usadas: RC05, RC13 (preço > 0), RC14, RF02.
 | Conta selecionada | Saldo devedor em destaque, "devendo desde", barra de uso do limite com texto (ex.: "R$ 120,00 de R$ 200,00 usados. Ainda pode comprar R$ 80,00."; acima do limite: "Passou do limite em R$ 5,00."; fica vermelha a partir de 90%). |
 | Histórico | Data · Tipo (Compra, Pagamento ou Estorno) · Valor · Pedido nº, do mais novo para o mais antigo. |
 | Registrar pagamento | Valor + botão. Pagamento válido reduz o saldo e entra no histórico. |
-| Total a receber | Acima das contas: a soma de todas as contas e quantos clientes estão devendo. |
+| Total a receber | Acima das contas: a soma de todas as contas, quantos clientes estão devendo e quantos passaram do limite. É o único lugar do sistema que mostra os valores do fiado. |
 
 Regras usadas: RN03 (conta acima do limite só avisa), RN04, RC08, RC17, RF08 a RF13.
 
 ## Roteiro rápido de teste manual
 
-1. Abra o sistema (`.\mvnw.cmd javafx:run`). Na primeira vez, escolha **Carregar exemplos**. O **Início** mostra a saudação, os cartões do dia, as próximas entregas e o gráfico.
+1. Abra o sistema (`.\mvnw.cmd javafx:run`). Na primeira vez, escolha **Carregar exemplos**. O **Início** mostra a saudação, os números do dia, as próximas entregas e o gráfico (sem valores do fiado).
 2. Clique em cada pílula da navegação: as 6 telas abrem e a ativa fica em marrom café.
 3. **Agenda do dia**: confira um pedido "Atrasado" e um "Em breve" (linha destacada). Isso vale no dia em que os exemplos foram carregados; nos dias seguintes, os pedidos de exemplo que ficaram em aberto aparecem no aviso "atrasados de dias anteriores" (para refazer o roteiro do zero, feche o sistema e apague o `controle-agil.db`).
 4. Selecione um pedido pendente e clique em **Avançar para Em produção** até **Entregue**. Depois disso, os botões de avançar e cancelar ficam desabilitados.

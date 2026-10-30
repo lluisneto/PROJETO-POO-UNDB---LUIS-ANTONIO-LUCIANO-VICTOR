@@ -77,7 +77,7 @@ public class AppContexto {
             return new PrincipalController(this);
         }
         if (tipo == InicioController.class) {
-            return new InicioController(pedidoService, fiadoService, navegacao);
+            return new InicioController(pedidoService, navegacao);
         }
         if (tipo == AgendaController.class) {
             return new AgendaController(pedidoService, navegacao);

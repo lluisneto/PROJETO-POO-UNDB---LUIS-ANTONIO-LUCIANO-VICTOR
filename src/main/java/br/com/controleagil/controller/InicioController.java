@@ -1,8 +1,6 @@
 package br.com.controleagil.controller;
 
 import br.com.controleagil.model.Pedido;
-import br.com.controleagil.service.Devedor;
-import br.com.controleagil.service.FiadoService;
 import br.com.controleagil.service.PedidoService;
 import br.com.controleagil.util.Formatador;
 import javafx.css.PseudoClass;
@@ -24,8 +22,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /*
- * Responsabilidade: a tela Início (painel do dia): números de hoje, próximas entregas, fiado a
- * receber e o gráfico dos próximos 7 dias.
+ * Responsabilidade: a tela Início (painel do dia): números de hoje, próximas entregas e o gráfico
+ * dos próximos 7 dias. O fiado (valores a receber) fica só na tela Fiado, de propósito.
  *
  * Controller FINO: não calcula nada. Pede os números aos services e só coloca nos rótulos.
  * Implementa TelaAtualizavel: o painel se atualiza sozinho quando o relógio anda.
@@ -37,13 +35,10 @@ public class InicioController implements TelaAtualizavel {
     private static final int HORAS_DO_CARTAO = 2;
     private static final int DIAS_DO_GRAFICO = 7;
     private static final Locale PORTUGUES = Locale.of("pt", "BR");
-    /** Quantos devedores aparecem no cartão do fiado. */
-    private static final int DEVEDORES_NO_CARTAO = 2;
     /** A barra de hoje no gráfico (no CSS: .chart-bar:hoje). */
     private static final PseudoClass HOJE = PseudoClass.getPseudoClass("hoje");
 
     private final PedidoService pedidoService;
-    private final FiadoService fiadoService;
     private final Navegacao navegacao;
 
     @FXML private Label resumoDoDia;
@@ -53,19 +48,13 @@ public class InicioController implements TelaAtualizavel {
     @FXML private Label numeroProximasHoras;
     @FXML private Label numeroAtrasados;
     @FXML private Label detalheAtrasados;
-    @FXML private Label valorAReceber;
-    @FXML private Label centavosAReceber;
-    @FXML private Label detalheAReceber;
-    @FXML private Label acimaDoLimite;
-    @FXML private VBox listaDevedores;
     @FXML private Label resumoSemana;
     @FXML private BarChart<String, Number> grafico;
     @FXML private VBox listaEntregas;
     @FXML private Label semEntregas;
 
-    public InicioController(PedidoService pedidoService, FiadoService fiadoService, Navegacao navegacao) {
+    public InicioController(PedidoService pedidoService, Navegacao navegacao) {
         this.pedidoService = pedidoService;
-        this.fiadoService = fiadoService;
         this.navegacao = navegacao;
     }
 
@@ -77,7 +66,6 @@ public class InicioController implements TelaAtualizavel {
     @Override
     public void atualizar() {
         preencherHoje();
-        preencherFiado();
         preencherGrafico();
         preencherProximasEntregas();
     }
@@ -90,11 +78,6 @@ public class InicioController implements TelaAtualizavel {
     @FXML
     private void abrirNovoPedido() {
         navegacao.abrir(Tela.NOVO_PEDIDO);
-    }
-
-    @FXML
-    private void abrirFiado() {
-        navegacao.abrir(Tela.FIADO);
     }
 
     // ------------------------------------------------------------------ cartão "Hoje"
@@ -120,48 +103,6 @@ public class InicioController implements TelaAtualizavel {
         resumoDoDia.setText(hoje + (hoje == 1 ? " pedido hoje" : " pedidos hoje") + " · "
                 + entregues + (entregues == 1 ? " entregue" : " entregues") + " · "
                 + (atrasados == 0 ? "nada atrasado" : atrasados + (atrasados == 1 ? " atrasado" : " atrasados")));
-    }
-
-    // ------------------------------------------------------------------ cartão do fiado
-
-    private void preencherFiado() {
-        String[] partes = separarCentavos(Formatador.moeda(fiadoService.totalAReceber()));
-        valorAReceber.setText(partes[0]);
-        centavosAReceber.setText(partes[1]);
-
-        long devedores = fiadoService.contarDevedores();
-        detalheAReceber.setText(devedores == 0 ? "ninguém está devendo"
-                : devedores + (devedores == 1 ? " cliente devendo" : " clientes devendo"));
-
-        long acima = fiadoService.contarAcimaDoLimite();
-        acimaDoLimite.setText(acima == 1 ? "1 acima do limite" : acima + " acima do limite");
-        acimaDoLimite.setVisible(acima > 0);
-        acimaDoLimite.setManaged(acima > 0);
-
-        // Quem deve mais (o relatório já vem do maior saldo para o menor).
-        listaDevedores.getChildren().setAll(fiadoService.relatorioDevedores().stream()
-                .limit(DEVEDORES_NO_CARTAO)
-                .map(InicioController::criarLinhaDevedor)
-                .toList());
-    }
-
-    /** "Mercadinho Bom Preço ........ R$ 455,00" */
-    private static HBox criarLinhaDevedor(Devedor devedor) {
-        Label nome = new Label(devedor.cliente().getNome());
-        nome.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(nome, Priority.ALWAYS);
-        Label saldo = new Label(Formatador.moeda(devedor.saldo()));
-        saldo.setMinWidth(Label.USE_PREF_SIZE);
-        HBox linha = new HBox(8, nome, saldo);
-        linha.getStyleClass().add("bloco");
-        linha.setAlignment(Pos.CENTER_LEFT);
-        return linha;
-    }
-
-    /** "R$ 485,00" vira "R$ 485" e ",00": os centavos aparecem num tom mais claro. */
-    static String[] separarCentavos(String valor) {
-        int virgula = valor.lastIndexOf(',');
-        return virgula < 0 ? new String[] {valor, ""} : new String[] {valor.substring(0, virgula), valor.substring(virgula)};
     }
 
     // ------------------------------------------------------------------ gráfico dos próximos 7 dias

@@ -4,7 +4,8 @@
   Tela Início (painel do dia), em cartões de tamanhos diferentes:
    - "Hoje" (largo): pedidos do dia, quantos já foram entregues, próximas 2 horas e atrasados;
    - "Próximas entregas" (coluna da direita, alta): os próximos pedidos, um bloco por pedido;
-   - "A receber no fiado" e "Próximos 7 dias" (gráfico de barras, hoje em laranja).
+   - "Próximos 7 dias" (gráfico de barras, hoje em laranja).
+  Os valores do fiado ficam só na tela Fiado (não aparecem logo na abertura do sistema).
   Os textos com fx:id são preenchidos pelo InicioController.
 -->
 
@@ -78,35 +79,15 @@
                    wrapText="true" visible="false" managed="false"/>
         </VBox>
 
-        <!-- ===== A receber no fiado ===== -->
-        <VBox styleClass="cartao" spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1">
-            <HBox alignment="CENTER_LEFT" spacing="8">
-                <Label text="A receber no fiado" styleClass="cartao-titulo"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Ver fiado" onAction="#abrirFiado" styleClass="link" minWidth="-Infinity"/>
-            </HBox>
-            <HBox alignment="BASELINE_LEFT">
-                <Label fx:id="valorAReceber" styleClass="cartao-numero" minWidth="-Infinity"/>
-                <Label fx:id="centavosAReceber" styleClass="numero-centavos" minWidth="-Infinity"/>
-            </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="8">
-                <Label fx:id="detalheAReceber" styleClass="dica"/>
-                <Label fx:id="acimaDoLimite" styleClass="etiqueta, etiqueta-atrasado" visible="false" managed="false"
-                       minWidth="-Infinity"/>
-            </HBox>
-            <!-- Quem deve mais (até 2) -->
-            <VBox fx:id="listaDevedores" spacing="6"/>
-        </VBox>
-
         <!-- ===== Próximos 7 dias ===== -->
-        <VBox styleClass="cartao" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <VBox styleClass="cartao" spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2">
             <HBox alignment="CENTER_LEFT" spacing="8">
                 <Label text="Próximos 7 dias" styleClass="cartao-titulo"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="resumoSemana" styleClass="dica" minWidth="-Infinity"/>
             </HBox>
             <BarChart fx:id="grafico" styleClass="grafico" VBox.vgrow="ALWAYS" minHeight="90" prefHeight="160"
-                      legendVisible="false" animated="false" barGap="0" categoryGap="12"
+                      legendVisible="false" animated="false" barGap="0" categoryGap="48"
                       horizontalGridLinesVisible="false" verticalGridLinesVisible="false"
                       horizontalZeroLineVisible="false" verticalZeroLineVisible="false">
                 <xAxis>
