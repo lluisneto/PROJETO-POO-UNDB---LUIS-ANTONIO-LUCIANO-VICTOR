@@ -95,6 +95,7 @@ public class ContaFiado {
         return valor != null && valor.compareTo(getCreditoDisponivel()) <= 0;
     }
 
+    /** Quanto o cliente pode ficar devendo no máximo. */
     public BigDecimal getLimiteCredito() {
         return limiteCredito;
     }
@@ -104,10 +105,8 @@ public class ContaFiado {
         return Collections.unmodifiableList(movimentacoes);
     }
 
+    /** Arredonda para 2 casas e só depois confere se é maior que zero (0,004 vira 0,00 e é recusado). */
     private static BigDecimal exigirValorPositivo(BigDecimal valor, String mensagem) {
-        if (valor == null || valor.signum() <= 0) {
-            throw new RegraNegocioException(mensagem);
-        }
-        return Dinheiro.arredondar(valor);
+        return Dinheiro.positivo(valor, mensagem);
     }
 }

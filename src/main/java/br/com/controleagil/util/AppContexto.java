@@ -31,8 +31,8 @@ import java.time.Clock;
  * própria, ele RECEBE os services prontos no construtor. Vantagens:
  *  1. Todas as telas usam os MESMOS objetos: o pedido salvo no "Novo pedido" aparece na Agenda.
  *     (Se cada tela criasse o seu repositório em memória, cada uma teria uma lista diferente!)
- *  2. Para trocar a memória pelo SQLite, só as linhas marcadas abaixo mudam. Controllers,
- *     services e model continuam iguais.
+ *  2. Quem monta o sistema é só esta classe: quando o SQLite estiver pronto, a troca de qual
+ *     repositório usar acontece aqui, sem os controllers precisarem saber (veja o comentário abaixo).
  *  3. Nos testes, dá para montar um service com um repositório e um relógio de mentira.
  *
  * Como o controller chega até aqui? O FXMLLoader normalmente cria o controller sozinho, com o
@@ -47,14 +47,18 @@ public class AppContexto {
     private final FiadoService fiadoService;
 
     public AppContexto(Clock relogio) {
-        // >>> Para usar o SQLite no futuro, troque estas três linhas pelos repositórios de repository.sqlite <<<
+        // Hoje os dados ficam na memória. Para usar o SQLite (próximo passo), falta:
+        //  - criar o PedidoRepositorySqlite (pedidos, itens e pagamentos);
+        //  - fazer o ClienteRepositorySqlite gravar também as movimentações do fiado;
+        //  - criar a ConexaoBanco, chamar criarTabelas() e trocar estas três linhas.
+        // Os services já salvam tudo o que muda (inclusive o cliente, quando há pagamento fiado).
         ClienteRepository clientes = new ClienteRepositoryMemoria();
         ProdutoRepository produtos = new ProdutoRepositoryMemoria();
         PedidoRepository pedidos = new PedidoRepositoryMemoria();
 
         clienteService = new ClienteService(clientes);
         produtoService = new ProdutoService(produtos);
-        pedidoService = new PedidoService(pedidos, relogio);
+        pedidoService = new PedidoService(pedidos, clientes, relogio);
         fiadoService = new FiadoService(clientes);
 
         DadosExemplo.carregar(clienteService, produtoService, pedidoService, fiadoService, relogio);

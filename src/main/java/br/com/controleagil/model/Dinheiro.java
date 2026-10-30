@@ -1,5 +1,7 @@
 package br.com.controleagil.model;
 
+import br.com.controleagil.exception.RegraNegocioException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -26,6 +28,12 @@ final class Dinheiro {
 
     private static final Locale BRASIL = Locale.of("pt", "BR");
 
+    /**
+     * O Java separa "R$" do número com um espaço especial, que não quebra linha (código 160, U+00A0).
+     * Ele é invisível no editor, por isso fica numa constante com nome.
+     */
+    private static final char ESPACO_QUE_NAO_QUEBRA = (char) 160;
+
     private Dinheiro() {
         // Só tem métodos estáticos: ninguém precisa criar um objeto Dinheiro.
     }
@@ -35,9 +43,22 @@ final class Dinheiro {
         return valor == null ? null : valor.setScale(2, RoundingMode.HALF_EVEN);
     }
 
+    /**
+     * Arredonda e SÓ DEPOIS confere se é maior que zero. A ordem importa: 0,004 é maior que zero,
+     * mas com 2 casas vira 0,00, e um preço ou pagamento de R$ 0,00 não pode passar.
+     *
+     * @param mensagem texto do erro se o valor for nulo, zero ou negativo
+     */
+    static BigDecimal positivo(BigDecimal valor, String mensagem) {
+        BigDecimal arredondado = arredondar(valor);
+        if (arredondado == null || arredondado.signum() <= 0) {
+            throw new RegraNegocioException(mensagem);
+        }
+        return arredondado;
+    }
+
     /** Texto para as mensagens de erro, no padrão brasileiro: R$ 1.234,56 */
     static String formatar(BigDecimal valor) {
-        // O Java separa "R$" do número com um espaço especial (que não quebra linha); trocamos por espaço comum.
-        return NumberFormat.getCurrencyInstance(BRASIL).format(valor).replace(' ', ' ');
+        return NumberFormat.getCurrencyInstance(BRASIL).format(valor).replace(ESPACO_QUE_NAO_QUEBRA, ' ');
     }
 }

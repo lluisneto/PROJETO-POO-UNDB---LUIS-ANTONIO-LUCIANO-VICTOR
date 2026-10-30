@@ -43,6 +43,7 @@ public enum StatusPedido {
         };
     }
 
+    /** Nome para mostrar na tela, ex.: "Em produção". */
     public String getDescricao() {
         return descricao;
     }

@@ -17,6 +17,7 @@ public enum TipoMovimentacao {
         this.descricao = descricao;
     }
 
+    /** Nome para mostrar na tela: "Compra" ou "Pagamento". */
     public String getDescricao() {
         return descricao;
     }

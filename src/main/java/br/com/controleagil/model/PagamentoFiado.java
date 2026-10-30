@@ -29,6 +29,7 @@ public class PagamentoFiado extends Pagamento {
         cliente.getContaFiado().registrarCompra(getValor(), pedido);
     }
 
+    /** Sempre "Fiado". */
     @Override
     public String getDescricao() {
         return "Fiado";

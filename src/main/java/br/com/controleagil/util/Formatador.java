@@ -35,6 +35,9 @@ public final class Formatador {
     /** Ex.: "quinta-feira, 29 de outubro de 2026" (EEEE = dia da semana por extenso, MMMM = mês por extenso). */
     private static final DateTimeFormatter POR_EXTENSO = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy", BRASIL);
 
+    /** O Java separa "R$" do número com um espaço que não quebra linha (código 160, U+00A0), invisível no editor. */
+    private static final char ESPACO_QUE_NAO_QUEBRA = (char) 160;
+
     private Formatador() {
         // Só métodos estáticos.
     }
@@ -44,8 +47,7 @@ public final class Formatador {
         if (valor == null) {
             return "";
         }
-        // O Java separa "R$" do número com um espaço especial (que não quebra linha); trocamos por espaço comum.
-        return NumberFormat.getCurrencyInstance(BRASIL).format(valor).replace(' ', ' ');
+        return NumberFormat.getCurrencyInstance(BRASIL).format(valor).replace(ESPACO_QUE_NAO_QUEBRA, ' ');
     }
 
     /** Número com vírgula e 2 casas, sem "R$" e sem ponto de milhar, para preencher campos: 1234,50 */

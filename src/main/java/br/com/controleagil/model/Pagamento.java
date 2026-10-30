@@ -1,7 +1,5 @@
 package br.com.controleagil.model;
 
-import br.com.controleagil.exception.RegraNegocioException;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -22,17 +20,16 @@ public abstract class Pagamento {
 
     /** "protected": só as subclasses chamam, com super(valor). */
     protected Pagamento(BigDecimal valor) {
-        if (valor == null || valor.signum() <= 0) {
-            throw new RegraNegocioException("O valor do pagamento precisa ser maior que zero.");
-        }
-        this.valor = Dinheiro.arredondar(valor);
+        this.valor = Dinheiro.positivo(valor, "O valor do pagamento precisa ser maior que zero.");
         this.data = LocalDateTime.now();
     }
 
+    /** Valor pago, com 2 casas. */
     public BigDecimal getValor() {
         return valor;
     }
 
+    /** Quando o pagamento foi registrado. */
     public LocalDateTime getData() {
         return data;
     }

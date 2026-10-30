@@ -25,14 +25,17 @@ public class MovimentacaoFiado {
         this.pedido = pedido;
     }
 
+    /** Quando a movimentação foi anotada. */
     public LocalDateTime getData() {
         return data;
     }
 
+    /** Valor da compra ou do pagamento (sempre positivo; o tipo diz se soma ou subtrai). */
     public BigDecimal getValor() {
         return valor;
     }
 
+    /** COMPRA (aumenta a dívida) ou PAGAMENTO (diminui a dívida). */
     public TipoMovimentacao getTipo() {
         return tipo;
     }

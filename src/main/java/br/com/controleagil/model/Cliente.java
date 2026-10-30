@@ -47,6 +47,7 @@ public class Cliente extends Pessoa {
         return contaFiado;
     }
 
+    /** Número do cliente, ou null enquanto ele ainda não foi salvo. */
     public Long getId() {
         return id;
     }

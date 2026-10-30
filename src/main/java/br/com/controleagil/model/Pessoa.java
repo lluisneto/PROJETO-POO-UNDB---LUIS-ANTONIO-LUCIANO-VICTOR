@@ -23,6 +23,7 @@ public abstract class Pessoa {
         alterarTelefone(telefone);
     }
 
+    /** Nome (sempre preenchido). */
     public String getNome() {
         return nome;
     }

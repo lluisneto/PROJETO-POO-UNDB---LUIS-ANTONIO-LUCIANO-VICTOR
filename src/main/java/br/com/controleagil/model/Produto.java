@@ -16,11 +16,13 @@ public class Produto {
     private String nome;
     private BigDecimal preco;
 
+    /** Cria um produto. O nome é obrigatório e o preço precisa ser maior que zero. */
     public Produto(String nome, BigDecimal preco) {
         alterarNome(nome);
         alterarPreco(preco);
     }
 
+    /** Preço ATUAL do produto (os itens de pedidos antigos guardam o preço da época deles). */
     public BigDecimal getPreco() {
         return preco;
     }
@@ -32,12 +34,10 @@ public class Produto {
      * @param novoPreco precisa ser maior que zero
      */
     public final void alterarPreco(BigDecimal novoPreco) {
-        if (novoPreco == null || novoPreco.signum() <= 0) {
-            throw new RegraNegocioException("O preço do produto precisa ser maior que zero.");
-        }
-        this.preco = Dinheiro.arredondar(novoPreco);
+        this.preco = Dinheiro.positivo(novoPreco, "O preço do produto precisa ser maior que zero.");
     }
 
+    /** Nome do produto (ex.: "Coxinha de frango"). */
     public String getNome() {
         return nome;
     }
@@ -50,6 +50,7 @@ public class Produto {
         this.nome = novoNome.strip();
     }
 
+    /** Número do produto, ou null enquanto ele ainda não foi salvo. */
     public Long getId() {
         return id;
     }

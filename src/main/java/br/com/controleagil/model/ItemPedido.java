@@ -53,14 +53,17 @@ public class ItemPedido {
         return new ItemPedido(produto, quantidade + quantidadeExtra, precoUnitario);
     }
 
+    /** Produto deste item. */
     public Produto getProduto() {
         return produto;
     }
 
+    /** Quantas unidades (pelo menos 1). */
     public int getQuantidade() {
         return quantidade;
     }
 
+    /** Preço de UMA unidade na época da venda (não muda se o preço do produto mudar depois). */
     public BigDecimal getPrecoUnitario() {
         return precoUnitario;
     }

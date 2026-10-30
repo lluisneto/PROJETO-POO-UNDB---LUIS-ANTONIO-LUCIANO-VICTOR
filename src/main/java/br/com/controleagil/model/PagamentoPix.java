@@ -34,6 +34,7 @@ public class PagamentoPix extends Pagamento {
         }
     }
 
+    /** "Pix" ou "Pix (código ...)". */
     @Override
     public String getDescricao() {
         return codigoTransacao == null ? "Pix" : "Pix (código " + codigoTransacao + ")";

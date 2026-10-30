@@ -6,6 +6,7 @@ import br.com.controleagil.model.ItemPedido;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
+import br.com.controleagil.repository.memoria.ClienteRepositoryMemoria;
 import br.com.controleagil.repository.memoria.PedidoRepositoryMemoria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,7 +44,7 @@ class PedidoServiceTest {
     @BeforeEach
     void criarService() {
         Clock relogio = Clock.fixed(AGORA.atZone(FUSO).toInstant(), FUSO);
-        service = new PedidoService(new PedidoRepositoryMemoria(), relogio);
+        service = new PedidoService(new PedidoRepositoryMemoria(), new ClienteRepositoryMemoria(), relogio);
         cliente = new Cliente("Maria", "(98) 90000-0000", "Rua A, 10");
         coxinha = new Produto("Coxinha", reais("5.00"));
     }

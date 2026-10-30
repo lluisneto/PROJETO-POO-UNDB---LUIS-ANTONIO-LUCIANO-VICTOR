@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * Responsabilidade: testar os repositórios SQLite num banco de verdade, criado numa pasta temporária.
- * Repare que as variáveis são do tipo da INTERFACE (ClienteRepository): o teste não depende do SQLite.
+ * Repare que as variáveis são do tipo da INTERFACE (ClienteRepository): as verificações só usam
+ * salvar/buscar/listar, então o mesmo teste serviria para outra implementação do contrato.
  */
 class RepositorioSqliteTest {
 

@@ -10,8 +10,9 @@ import java.util.Optional;
  * sem dizer COMO eles são guardados.
  *
  * Conceito de POO: INTERFACE (um contrato). Hoje quem cumpre o contrato é ClienteRepositoryMemoria
- * (lista na memória); depois será um repositório SQLite. Os services só conhecem esta interface,
- * então a troca da memória pelo banco não muda nenhuma linha dos services nem das telas.
+ * (lista na memória); depois será um repositório SQLite. Os services só conhecem esta interface:
+ * quando o repositório SQLite cumprir o contrato inteiro (inclusive guardar a conta fiado e o
+ * histórico dela), os services e as telas não precisam mudar.
  */
 public interface ClienteRepository {
 

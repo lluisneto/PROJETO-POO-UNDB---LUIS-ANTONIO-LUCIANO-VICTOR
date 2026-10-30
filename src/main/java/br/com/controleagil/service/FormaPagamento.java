@@ -21,6 +21,7 @@ public enum FormaPagamento {
         this.descricao = descricao;
     }
 
+    /** Nome para mostrar na tela, ex.: "Dinheiro". */
     public String getDescricao() {
         return descricao;
     }

@@ -108,6 +108,9 @@ class PagamentoTest {
     @DisplayName("Valor do pagamento precisa ser maior que zero")
     void valorZeroLancaExcecao() {
         assertThrows(RegraNegocioException.class, () -> new PagamentoFiado(reais("0")));
+        // 0,004 é maior que zero, mas com 2 casas vira 0,00: também é recusado
+        assertThrows(RegraNegocioException.class, () -> new PagamentoPix(reais("0.004"), null));
+        assertThrows(RegraNegocioException.class, () -> new Produto("Coxinha", reais("0.004")));
         assertThrows(RegraNegocioException.class, () -> new PagamentoDinheiro(reais("10.00"), null));
     }
 }

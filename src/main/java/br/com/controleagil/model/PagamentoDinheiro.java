@@ -40,12 +40,14 @@ public class PagamentoDinheiro extends Pagamento {
         }
     }
 
+    /** "Dinheiro" ou "Dinheiro (troco R$ 6,00)". */
     @Override
     public String getDescricao() {
         BigDecimal troco = calcularTroco();
         return troco.signum() > 0 ? "Dinheiro (troco " + Dinheiro.formatar(troco) + ")" : "Dinheiro";
     }
 
+    /** Quanto o cliente entregou em dinheiro. */
     public BigDecimal getValorRecebido() {
         return valorRecebido;
     }

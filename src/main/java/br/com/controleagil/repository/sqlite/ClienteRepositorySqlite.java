@@ -19,9 +19,10 @@ import java.util.Optional;
  * Por enquanto guarda o limite da conta fiado; as movimentações do fiado
  * (tabela movimentacao_fiado) entram na próxima etapa.
  *
- * Conceito de POO: IMPLEMENTAÇÃO DE INTERFACE. Cumpre o mesmo contrato que o
- * ClienteRepositoryMemoria; por isso, no futuro, basta trocar qual dos dois o AppContexto cria.
- * Ainda NÃO é usado pelo sistema (o esqueleto roda em memória); é testado em RepositorioSqliteTest.
+ * Conceito de POO: IMPLEMENTAÇÃO DE INTERFACE. Implementa a mesma interface que o
+ * ClienteRepositoryMemoria, mas AINDA NÃO guarda tudo: sem as movimentações, o saldo do fiado
+ * se perderia ao fechar o sistema. Por isso ainda NÃO é usado pelo sistema (o esqueleto roda em
+ * memória); é testado em RepositorioSqliteTest.
  */
 public class ClienteRepositorySqlite implements ClienteRepository {
 

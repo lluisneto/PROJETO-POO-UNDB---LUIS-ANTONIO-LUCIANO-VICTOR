@@ -156,6 +156,7 @@ public class Pedido {
         return !agora.isBefore(dataHoraEntrega.minusMinutes(minutos));
     }
 
+    /** Número do pedido (é o id), ou null enquanto ele ainda não foi salvo. */
     public Long getId() {
         return id;
     }
@@ -165,6 +166,7 @@ public class Pedido {
         this.id = id;
     }
 
+    /** Cliente que fez o pedido. */
     public Cliente getCliente() {
         return cliente;
     }
@@ -179,14 +181,17 @@ public class Pedido {
         return Collections.unmodifiableList(pagamentos);
     }
 
+    /** Quando o pedido foi anotado no sistema. */
     public LocalDateTime getDataCriacao() {
         return dataCriacao;
     }
 
+    /** Dia e hora combinados para a entrega. */
     public LocalDateTime getDataHoraEntrega() {
         return dataHoraEntrega;
     }
 
+    /** Etapa atual do pedido. Para mudar, use alterarStatus(). */
     public StatusPedido getStatus() {
         return status;
     }

@@ -10,6 +10,7 @@ import br.com.controleagil.model.PagamentoPix;
 import br.com.controleagil.model.Pedido;
 import br.com.controleagil.model.Produto;
 import br.com.controleagil.model.StatusPedido;
+import br.com.controleagil.repository.ClienteRepository;
 import br.com.controleagil.repository.PedidoRepository;
 
 import java.math.BigDecimal;
@@ -37,19 +38,25 @@ public class PedidoService {
     public static final int MINUTOS_EM_BREVE = 60;
 
     private final PedidoRepository repositorio;
+    private final ClienteRepository clientes;
     private final Clock relogio;
 
-    public PedidoService(PedidoRepository repositorio, Clock relogio) {
+    /**
+     * @param clientes também é salvo quando o pedido recebe pagamento: no fiado, a compra é anotada
+     *                 na conta do CLIENTE, e no banco de dados essa mudança precisa ser gravada
+     */
+    public PedidoService(PedidoRepository repositorio, ClienteRepository clientes, Clock relogio) {
         this.repositorio = repositorio;
+        this.clientes = clientes;
         this.relogio = relogio;
     }
 
     /**
-     * Um PedidoService igual a este (mesmo repositório), mas com outro relógio.
-     * Usado pelos DadosExemplo para anotar, "de manhã cedo", pedidos que já foram entregues hoje.
+     * Um PedidoService igual a este (mesmos repositórios), mas com outro relógio.
+     * Usado pelos DadosExemplo para anotar, "antes do expediente", pedidos que já foram entregues.
      */
     public PedidoService comRelogio(Clock outroRelogio) {
-        return new PedidoService(repositorio, outroRelogio);
+        return new PedidoService(repositorio, clientes, outroRelogio);
     }
 
     /** Data de hoje, segundo o relógio do service. */
@@ -85,7 +92,11 @@ public class PedidoService {
             // Polimorfismo: dinheiro, Pix ou fiado. No fiado, a RN03 (limite) é conferida aqui dentro.
             pedido.registrarPagamento(pagamento);
         }
-        return repositorio.salvar(pedido);
+        repositorio.salvar(pedido);
+        if (pagamento != null) {
+            clientes.salvar(cliente); // no fiado, a conta do cliente mudou
+        }
+        return pedido;
     }
 
     /**
@@ -148,6 +159,7 @@ public class PedidoService {
     public void registrarPagamento(Pedido pedido, Pagamento pagamento) {
         pedido.registrarPagamento(pagamento);
         repositorio.salvar(pedido);
+        clientes.salvar(pedido.getCliente()); // no fiado, a conta do cliente mudou
     }
 
     // ------------------------------------------------------------------ status
@@ -171,6 +183,7 @@ public class PedidoService {
 
     // ------------------------------------------------------------------ consultas
 
+    /** Todos os pedidos, do horário de entrega mais cedo para o mais tarde. */
     public List<Pedido> listarTodos() {
         return repositorio.listarTodos();
     }
