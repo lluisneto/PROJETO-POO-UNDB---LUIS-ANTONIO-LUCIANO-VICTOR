@@ -15,6 +15,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -71,8 +72,14 @@
             <ToggleGroup fx:id="formasPagamento"/>
             <ToggleGroup fx:id="tiposCartao"/>
         </fx:define>
-        <RadioButton fx:id="opcaoPagarDepois" text="Pagar depois" toggleGroup="$formasPagamento" selected="true"/>
-        <RadioButton fx:id="opcaoDinheiro" text="Dinheiro" toggleGroup="$formasPagamento"/>
+        <!-- As formas de pagamento ficam lado a lado, em pílulas; os campos da escolhida aparecem embaixo -->
+        <FlowPane hgap="8" vgap="8">
+            <RadioButton fx:id="opcaoPagarDepois" styleClass="opcao-chip" text="Pagar depois" toggleGroup="$formasPagamento" selected="true"/>
+            <RadioButton fx:id="opcaoDinheiro" styleClass="opcao-chip" text="Dinheiro" toggleGroup="$formasPagamento"/>
+            <RadioButton fx:id="opcaoPix" styleClass="opcao-chip" text="Pix" toggleGroup="$formasPagamento"/>
+            <RadioButton fx:id="opcaoCartao" styleClass="opcao-chip" text="Cartão" toggleGroup="$formasPagamento"/>
+            <RadioButton fx:id="opcaoFiado" styleClass="opcao-chip" text="Fiado" toggleGroup="$formasPagamento"/>
+        </FlowPane>
         <VBox fx:id="camposDinheiro" spacing="8" styleClass="sub-opcao">
             <Label text="Valor recebido" styleClass="rotulo"/>
             <HBox spacing="16" alignment="CENTER_LEFT">
@@ -80,24 +87,24 @@
                 <Label fx:id="textoTroco"/>
             </HBox>
         </VBox>
-        <RadioButton fx:id="opcaoPix" text="Pix" toggleGroup="$formasPagamento"/>
         <VBox fx:id="camposPix" spacing="8" styleClass="sub-opcao">
             <Label text="Código da transação (opcional)" styleClass="rotulo"/>
             <TextField fx:id="campoCodigoPix" promptText="ex.: E2E1234..."/>
         </VBox>
-        <RadioButton fx:id="opcaoCartao" text="Cartão" toggleGroup="$formasPagamento"/>
         <VBox fx:id="camposCartao" spacing="8" styleClass="sub-opcao">
             <HBox spacing="16" alignment="CENTER_LEFT">
                 <RadioButton fx:id="opcaoDebito" text="Débito" toggleGroup="$tiposCartao" selected="true"/>
                 <RadioButton fx:id="opcaoCredito" text="Crédito" toggleGroup="$tiposCartao"/>
             </HBox>
         </VBox>
-        <RadioButton fx:id="opcaoFiado" text="Fiado" toggleGroup="$formasPagamento"/>
         <Label fx:id="textoFiado" styleClass="dica" wrapText="true" minHeight="-Infinity"/>
 
         <Region VBox.vgrow="ALWAYS"/>
         <Label fx:id="mensagemErro" styleClass="erro-campo" wrapText="true" minHeight="-Infinity"/>
-        <Button text="Salvar pedido" onAction="#salvar" styleClass="botao-primario" maxWidth="Infinity"/>
-        <Button text="Limpar" onAction="#limpar" maxWidth="Infinity"/>
+        <HBox spacing="8">
+            <Button text="Limpar" onAction="#limpar" minWidth="-Infinity"/>
+            <Button text="Salvar pedido" onAction="#salvar" styleClass="botao-primario" maxWidth="Infinity"
+                    HBox.hgrow="ALWAYS"/>
+        </HBox>
     </VBox>
 </HBox>

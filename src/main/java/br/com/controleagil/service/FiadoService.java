@@ -77,6 +77,11 @@ public class FiadoService {
         return listarContas(true).size();
     }
 
+    /** Quantos clientes estão com a dívida acima do limite (RN03 só avisa, então isso pode acontecer). */
+    public long contarAcimaDoLimite() {
+        return listarContas(true).stream().filter(cliente -> cliente.getContaFiado().estaAcimaDoLimite()).count();
+    }
+
     /**
      * RF09: o cliente paga (total ou parte) da dívida do fiado.
      * A RN04 (valor maior que zero e no máximo o saldo) é conferida pela ContaFiado.

@@ -2,24 +2,31 @@ package br.com.controleagil.controller;
 
 import br.com.controleagil.model.StatusPedido;
 import javafx.scene.control.Label;
+import javafx.scene.shape.Circle;
 
 /*
- * Responsabilidade: criar as "etiquetas" coloridas das telas (status do pedido, "Em breve",
- * "Atrasado"), sempre com TEXTO, para a cor nunca ser a única informação.
+ * Responsabilidade: criar as marcações de status das telas: o status do pedido (um ponto colorido
+ * + o texto) e as etiquetas "Em breve" e "Atrasado". Sempre com TEXTO, para a cor nunca ser a
+ * única informação.
  *
- * Fica num lugar só porque o Início, a Agenda e o diálogo de detalhes usam as mesmas etiquetas.
- * As cores estão no estilo.css (classes .status-...).
+ * Fica num lugar só porque o Início, a Agenda e o diálogo de detalhes usam as mesmas marcações.
+ * As cores estão no estilo.css (classes .status-... e .etiqueta-...).
  */
 public final class Etiquetas {
+
+    /** Raio do ponto de status, em pixels (o ponto tem 8px). */
+    private static final double RAIO_DO_PONTO = 4;
 
     private Etiquetas() {
         // Só métodos estáticos.
     }
 
-    /** Etiqueta do status, ex.: "Em produção" em laranja. */
+    /** Status do pedido, ex.: "● Em produção" (a cor do ponto vem do CSS). */
     public static Label status(StatusPedido status) {
-        Label etiqueta = new Label(status.getDescricao());
-        etiqueta.getStyleClass().addAll("etiqueta", classeDoStatus(status));
+        Circle ponto = new Circle(RAIO_DO_PONTO);
+        ponto.getStyleClass().add("ponto");
+        Label etiqueta = new Label(status.getDescricao(), ponto);
+        etiqueta.getStyleClass().addAll("status", classeDoStatus(status));
         return etiqueta;
     }
 

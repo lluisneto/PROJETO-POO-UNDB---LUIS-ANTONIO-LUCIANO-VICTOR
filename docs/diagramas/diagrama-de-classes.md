@@ -217,7 +217,7 @@ camadas, entraram também as classes abaixo. Elas não mudam o diagrama: ficam e
 | `AppContexto` | `util` | Cria repositórios e services **uma vez** e entrega aos controllers pela `controllerFactory` do `FXMLLoader` (injeção de dependência). Assim todas as telas usam os mesmos dados. |
 | `Formatador` | `util` | R$ no padrão brasileiro, datas `dd/MM/yyyy`, horas `HH:mm`, data por extenso e leitura dos valores digitados. |
 | `Dialogos` | `util` | Avisos padronizados e o tratamento de erros das telas (`tentar()`). |
-| `PrincipalController`, `Tela`, `Navegacao`, `TelaAtualizavel` | `controller` | Menu lateral e troca de telas. `Navegacao` e `TelaAtualizavel` são interfaces: as telas pedem "abra a Agenda" sem conhecer a janela principal, e a Agenda/Início se atualizam com o relógio. |
+| `PrincipalController`, `Tela`, `Navegacao`, `TelaAtualizavel` | `controller` | Navegação em pílulas e troca de telas. `Navegacao` e `TelaAtualizavel` são interfaces: as telas pedem "abra a Agenda" sem conhecer a janela principal, e a Agenda/Início se atualizam com o relógio. |
 | `InicioController`, `AgendaController`, `NovoPedidoController`, `ClientesController`, `ProdutosController`, `FiadoController` | `controller` | Uma por tela. São "finas": só chamam os services e mostram o resultado. |
 | `PagamentoDialogo`, `DetalhesPedidoDialogo`, `Etiquetas`, `Tabelas` | `controller` | Diálogos da Agenda, as etiquetas coloridas de status (sempre com texto) e o ajuste comum das tabelas (sem ordenar por clique no cabeçalho). |
 

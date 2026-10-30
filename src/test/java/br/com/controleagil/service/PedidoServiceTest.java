@@ -190,6 +190,22 @@ class PedidoServiceTest {
     }
 
     @Test
+    @DisplayName("Pedidos por dia (gráfico do Início) e entregues de hoje não contam os cancelados")
+    void pedidosPorDiaEEntreguesDeHoje() {
+        Pedido entregue = service.registrarPedido(cliente, AGORA.plusHours(1), List.of(new ItemPedido(coxinha, 1)), null);
+        service.registrarPedido(cliente, AGORA.plusHours(2), List.of(new ItemPedido(coxinha, 1)), null);
+        service.cancelar(service.registrarPedido(cliente, AGORA.plusHours(3), List.of(new ItemPedido(coxinha, 1)), null));
+        service.registrarPedido(cliente, HOJE.plusDays(2).atTime(9, 0), List.of(new ItemPedido(coxinha, 1)), null);
+        while (entregue.getStatus() != StatusPedido.ENTREGUE) {
+            service.avancarStatus(entregue);
+        }
+
+        assertEquals(List.of(2L, 0L, 1L), List.copyOf(service.pedidosPorDia(HOJE, 3).values()));
+        assertEquals(List.of(HOJE, HOJE.plusDays(1), HOJE.plusDays(2)), List.copyOf(service.pedidosPorDia(HOJE, 3).keySet()));
+        assertEquals(1, service.contarEntreguesDeHoje());
+    }
+
+    @Test
     @DisplayName("Pagamento registrado depois diminui o valor restante")
     void pagamentoDepois() {
         Pedido pedido = service.registrarPedido(cliente, AGORA.plusHours(1), List.of(new ItemPedido(coxinha, 4)), null);

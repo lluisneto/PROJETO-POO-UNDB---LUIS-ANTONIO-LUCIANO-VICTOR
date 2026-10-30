@@ -1,71 +1,65 @@
 /*
- * Identidade visual do Controle Ágil (a mesma dos slides do projeto).
+ * Identidade visual do Controle Ágil.
+ *
+ * Direção: fundo creme acinzentado, cartões quase brancos e bem arredondados que se separam do
+ * fundo só pela diferença de tom (sem borda e sem sombra), navegação em pílulas no topo, números
+ * grandes e o laranja guardado para a ação principal de cada tela. O marrom café marca o que está
+ * ativo (a pílula da tela aberta, a opção escolhida).
  *
  * Como funciona: TODAS as cores ficam definidas uma vez no .root, como "looked-up colors"
  * (variáveis do CSS do JavaFX, os nomes que começam com "-cor-"). O resto do arquivo só usa
  * esses nomes. Para mudar uma cor no sistema inteiro, mude aqui em cima.
  *
- * Regras do visual: cantos arredondados de 8 a 12px; espaçamentos em múltiplos de 8;
- * texto com contraste de pelo menos 4,5:1 sobre o fundo onde aparece.
+ * Regras do visual:
+ *  - raio pela função: cartão 24, bloco dentro do cartão 16, campo e linha de tabela 12,
+ *    botões e pílulas 999 (redondos nas pontas);
+ *  - espaçamentos da escala 4, 8, 12, 16, 20, 24, 32;
+ *  - laranja sólido em no máximo 2 coisas por tela; status sempre com TEXTO (a cor nunca sozinha);
+ *  - sombra só em janelas que aparecem por cima (listas de opções e diálogos).
  */
 
 /* ===================================================================== CORES E BASE */
 
 .root {
-    /* Paleta do projeto */
-    -cor-fundo-escuro: #2B1D14;     /* menu lateral */
-    -cor-fundo: #FBF6EE;            /* fundo do conteúdo */
-    -cor-fundo-2: #F3E9DA;          /* cabeçalhos de tabela, barra de status */
-    -cor-superficie: #FFFDF9;       /* cartões e campos; também o texto claro sobre fundos escuros */
-    -cor-destaque: #C2410C;         /* botão principal, item ativo */
-    -cor-destaque-escuro: #A93A0B;  /* hover / pressionado */
-    -cor-destaque-claro: #F0A35E;   /* texto de destaque sobre fundo escuro */
-    -cor-texto: #2B1D14;
-    -cor-texto-2: #4A3B30;          /* texto secundário */
-    -cor-texto-apagado: #6B5A4C;    /* rótulos, dicas */
-    -cor-borda: #E8DCCB;
-
-    /* Tons de apoio (derivados da paleta) */
-    -cor-sucesso: #1F6B3A;          /* verde escuro */
-    -cor-erro: #9B1C1C;             /* vermelho escuro */
-    -cor-erro-fundo: #FBE4E4;
-    -cor-menu-subtitulo: #CDBBA6;
-    -cor-menu-apagado: #A89580;
-    -cor-menu-icone: #D9C8B4;
-    -cor-borda-campo: #D9C8B2;
-    -cor-linha-alternada: #FAF3E8;
-    -cor-linha-selecionada: #F6D3B8;
-    -cor-linha-em-breve: #FDE3CC;
-    -cor-linha-em-breve-selecionada: #F6C9A6;
-    -cor-botao-hover: #FBEADC;
-    -cor-botao-pressionado: #F6D6BD;
-    -cor-dica-fundo: #FFF3E4;
-    -cor-dica-borda: #F0C79E;
-
-    /* Etiquetas de status: fundo e texto de cada uma */
-    -cor-pendente-fundo: #EADFCF;
-    -cor-pendente-texto: #5A4636;
-    -cor-producao-fundo: #F6B985;
-    -cor-producao-texto: #7A2E06;
-    -cor-saiu-fundo: #C4D8F2;
-    -cor-saiu-texto: #1B4378;
-    -cor-cancelado-fundo: #E4E1DD;
-    -cor-cancelado-texto: #5F5A55;
+    -cor-fundo: #F2ECE4;            /* fundo da janela */
+    -cor-cartao: #FFFDFA;           /* cartões, tabelas, campos, pílulas */
+    -cor-creme: #FBF6EE;            /* hover e blocos dentro dos cartões */
+    -cor-neutro: #EFE8DE;           /* trilho da barra, barras do gráfico */
+    -cor-linha: #E8E0D5;            /* divisórias finas e contorno dos botões */
+    -cor-borda: #9C8A79;            /* contorno dos campos e das opções */
+    -cor-texto: #2B1D14;            /* títulos, números, texto principal */
+    -cor-texto-2: #6B5A4C;          /* texto secundário, rótulos */
+    -cor-texto-3: #A08E7D;          /* só em texto grande: nome na saudação, centavos */
+    -cor-dica: #8A7B6E;             /* texto de ajuda dentro dos campos */
+    -cor-cafe: #2B1D14;             /* o que está ativo/escolhido */
+    -cor-sobre-cafe: #FBF6EE;       /* texto sobre o café */
+    -cor-destaque: #C2410C;         /* ação principal */
+    -cor-destaque-hover: #9A3412;   /* hover da ação principal; laranja usado como texto */
+    -cor-destaque-suave: #FCE8DA;   /* fundo de seleção e de "Em breve" */
+    -cor-pessego: #F0A35E;          /* ponto "Em produção" */
+    -cor-caramelo: #8C5A12;         /* ponto "Saiu para entrega" */
+    -cor-caramelo-suave: #FBEFD9;   /* caixas de aviso */
+    -cor-atraso: #B42318;           /* atrasado, erro, acima do limite */
+    -cor-atraso-suave: #FDECEA;
 
     /* Cores que o tema padrão do JavaFX (Modena) usa para desenhar os controles */
-    -fx-base: #F6EEE2;
+    -fx-base: #FFFDFA;
     -fx-background: -cor-fundo;
-    -fx-control-inner-background: -cor-superficie;
-    -fx-control-inner-background-alt: -cor-linha-alternada;
-    -fx-accent: -cor-destaque;
+    -fx-control-inner-background: -cor-cartao;
+    -fx-control-inner-background-alt: -cor-cartao;
+    -fx-accent: -cor-cafe;
     -fx-focus-color: -cor-destaque;
-    -fx-faint-focus-color: #C2410C33;
-    -fx-text-box-border: -cor-borda-campo;
-    -fx-box-border: -cor-borda-campo;
+    -fx-faint-focus-color: transparent;
+    -fx-selection-bar: -cor-destaque-suave;
+    -fx-selection-bar-non-focused: -cor-destaque-suave;
+    -fx-selection-bar-text: -cor-texto;
+    -fx-text-box-border: -cor-borda;
+    -fx-box-border: -cor-linha;
     -fx-text-background-color: -cor-texto;
-    -fx-selection-bar-text: -cor-superficie;
+    -fx-mark-highlight-color: transparent;
 
-    /* Fonte padrão do sistema (Segoe UI no Windows), tamanho base 14px */
+    /* Fonte do Windows (Segoe UI). Os títulos e números usam a versão "Semibold". */
+    -fx-font-family: "Segoe UI";
     -fx-font-size: 14px;
     -fx-background-color: -cor-fundo;
 }
@@ -74,328 +68,409 @@
     -fx-text-fill: -cor-texto;
 }
 
-/* ===================================================================== MENU LATERAL */
+/* ===================================================================== BARRA DO TOPO */
 
-.menu-lateral {
-    -fx-background-color: -cor-fundo-escuro;
-    -fx-padding: 24 16 16 16;
+.janela {
+    -fx-padding: 16 24 24 24;
 }
 
-.marca {
-    -fx-padding: 0 16 16 16;
+.barra-topo {
+    -fx-padding: 0 0 8 0;
+}
+
+/* Marca: círculo café com "LS" e o nome ao lado */
+.marca-logo {
+    -fx-background-color: -cor-cafe;
+    -fx-background-radius: 999;
+    -fx-min-width: 44;
+    -fx-min-height: 44;
+    -fx-max-width: 44;
+    -fx-max-height: 44;
+}
+
+.marca-logo .label {
+    -fx-text-fill: -cor-sobre-cafe;
+    -fx-font-family: "Georgia";
+    -fx-font-size: 17px;
 }
 
 .marca-nome {
-    -fx-text-fill: -cor-destaque-claro;
-    -fx-font-size: 22px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 16px;
 }
 
 .marca-cliente {
-    -fx-text-fill: -cor-menu-subtitulo;
+    -fx-text-fill: -cor-texto-2;
     -fx-font-size: 12px;
 }
 
-.menu-secao {
-    -fx-text-fill: -cor-menu-apagado;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-    -fx-padding: 16 16 0 16;
+/* Navegação: uma cápsula clara com as telas em pílulas; a tela aberta fica em café */
+.nav {
+    -fx-background-color: -cor-cartao;
+    -fx-background-radius: 999;
+    -fx-padding: 4;
+    -fx-spacing: 2;
 }
 
-/* ".menu-lateral .botao-menu" (duas classes) ganha do estilo geral ".button", que vem depois no arquivo */
-.menu-lateral .botao-menu {
+.nav .botao-menu {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-text-fill: -cor-fundo-2;
-    -fx-font-weight: normal;
-    -fx-alignment: CENTER_LEFT;
-    -fx-padding: 8 16 8 16;
-    -fx-background-radius: 8;
-    -fx-graphic-text-gap: 16;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+    -fx-text-fill: -cor-texto-2;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-pref-height: 36;
+    -fx-padding: 0 14 0 14;
     -fx-cursor: hand;
 }
 
-.menu-lateral .botao-menu:hover {
-    -fx-background-color: rgba(240, 163, 94, 0.14);
+.nav .botao-menu:hover {
+    -fx-background-color: -cor-creme;
+    -fx-text-fill: -cor-texto;
 }
 
-.menu-lateral .botao-menu:pressed {
-    -fx-background-color: rgba(240, 163, 94, 0.24);
+/* Foco pelo teclado: anel laranja fino */
+.nav .botao-menu:focus-visible {
+    -fx-background-color: -cor-destaque, -cor-cartao;
+    -fx-background-insets: 0, 2;
 }
 
-.menu-lateral .botao-menu:focused {
-    -fx-background-color: rgba(240, 163, 94, 0.14);
-    -fx-border-color: -cor-destaque-claro;
-    -fx-border-width: 1;
-    -fx-border-radius: 8;
-    -fx-padding: 8 16 8 16;
+.nav .botao-menu.ativo,
+.nav .botao-menu.ativo:hover {
+    -fx-background-color: -cor-cafe;
+    -fx-text-fill: -cor-sobre-cafe;
 }
 
-/* A tela aberta fica destacada no menu */
-.menu-lateral .botao-menu.ativo {
-    -fx-background-color: -cor-destaque;
-    -fx-text-fill: -cor-superficie;
-    -fx-font-weight: bold;
-}
-
-.icone-menu {
-    -fx-fill: -cor-menu-icone;
-}
-
-.menu-lateral .botao-menu.ativo .icone-menu {
-    -fx-fill: -cor-superficie;
-}
-
-.menu-rodape {
-    -fx-text-fill: -cor-menu-apagado;
-    -fx-font-size: 11px;
-    -fx-padding: 0 16 0 16;
-}
-
-/* ===================================================================== CABEÇALHO E BARRA DE STATUS */
-
-.area-conteudo {
-    -fx-background-color: -cor-fundo;
-}
-
-.cabecalho {
-    -fx-padding: 24 32 16 32;
-}
-
-.titulo-tela {
-    -fx-font-size: 24px;
-    -fx-font-weight: bold;
+.nav .botao-menu.ativo:focus-visible {
+    -fx-background-color: -cor-destaque, -cor-cafe;
+    -fx-background-insets: 0, 2;
 }
 
 .data-hoje {
-    -fx-text-fill: -cor-texto-apagado;
+    -fx-text-fill: -cor-texto-2;
 }
 
-.barra-status {
-    -fx-background-color: -cor-fundo-2;
-    -fx-border-color: -cor-borda transparent transparent transparent;
-    -fx-padding: 8 32 8 32;
-    -fx-min-height: 40;
+/* ===================================================================== CABEÇALHO DA TELA E MENSAGEM */
+
+.area-conteudo {
+    -fx-background-color: transparent;
 }
 
+.cabecalho {
+    -fx-padding: 8 0 12 0;
+}
+
+.titulo-tela {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 34px;
+    -fx-text-fill: -cor-texto;
+}
+
+/* A segunda parte do título (ex.: o nome na saudação), no mesmo tamanho, em tom mais claro */
+.titulo-tela-cinza {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 34px;
+    -fx-text-fill: -cor-texto-3;
+}
+
+/* Mensagem rápida (ex.: "Pedido nº 12 salvo"): uma pílula café que some sozinha */
 .mensagem-status {
-    -fx-text-fill: -cor-sucesso;
-    -fx-font-weight: bold;
+    -fx-background-color: -cor-cafe;
+    -fx-background-radius: 999;
+    -fx-text-fill: -cor-sobre-cafe;
+    -fx-padding: 8 18 8 18;
+    -fx-effect: dropshadow(gaussian, rgba(43, 29, 20, 0.16), 32, 0, 0, 12);
 }
 
-/* ===================================================================== TELAS, PAINÉIS E TEXTOS */
+/* ===================================================================== TELAS, CARTÕES E TEXTOS */
 
 .tela {
-    -fx-padding: 0 32 24 32;
+    -fx-padding: 0;
 }
 
-.painel {
-    -fx-background-color: -cor-superficie;
-    -fx-border-color: -cor-borda;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    -fx-padding: 16;
+.painel,
+.cartao {
+    -fx-background-color: -cor-cartao;
+    -fx-background-radius: 24;
+    -fx-padding: 24;
 }
 
-.secao-titulo {
+/* Cartões do Início: um pouco mais justos, para tudo caber na janela mínima (1100 × 700) */
+.cartao {
+    -fx-padding: 20 24 20 24;
+}
+
+/* Bloco dentro de um cartão (raio menor: 24 do cartão − espaço interno) */
+.bloco {
+    -fx-background-color: -cor-creme;
+    -fx-background-radius: 16;
+    -fx-padding: 12 16 12 16;
+}
+
+.secao-titulo,
+.cartao-titulo {
+    -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 16px;
-    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
 }
 
 .rotulo {
     -fx-text-fill: -cor-texto-2;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 12px;
 }
 
-.dica {
-    -fx-text-fill: -cor-texto-apagado;
+.dica,
+.cartao-detalhe {
+    -fx-text-fill: -cor-texto-2;
     -fx-font-size: 13px;
 }
 
 /* Caixa de explicação (ex.: "pedidos antigos mantêm o preço da época") */
 .dica-caixa {
-    -fx-background-color: -cor-dica-fundo;
-    -fx-border-color: -cor-dica-borda;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 8 16 8 16;
+    -fx-background-color: -cor-caramelo-suave;
+    -fx-background-radius: 16;
+    -fx-padding: 12 16 12 16;
 }
 
 .dica-caixa .label {
-    -fx-text-fill: -cor-texto-2;
+    -fx-text-fill: -cor-texto;
     -fx-font-size: 13px;
 }
 
 .erro-campo {
-    -fx-text-fill: -cor-erro;
+    -fx-text-fill: -cor-atraso;
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI Semibold";
 }
 
 /* Aviso que não impede a ação (ex.: fiado acima do limite) */
 .aviso-campo {
-    -fx-text-fill: -cor-destaque-escuro;
-    -fx-font-weight: bold;
+    -fx-text-fill: -cor-destaque-hover;
+    -fx-font-family: "Segoe UI Semibold";
 }
 
-/* Valores grandes: total do pedido, saldo do fiado */
-.total-destaque {
-    -fx-font-size: 28px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -cor-destaque;
-}
-
+/* Números grandes: total do pedido, saldo do fiado, cartões do Início */
+.cartao-numero,
+.total-destaque,
 .valor-destaque {
-    -fx-font-size: 32px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 36px;
+    -fx-text-fill: -cor-texto;
+}
+
+/* Os centavos ao lado do número grande, mais claros */
+.numero-centavos {
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 36px;
+    -fx-text-fill: -cor-texto-3;
+}
+
+.numero-medio {
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 24px;
+    -fx-text-fill: -cor-texto;
+}
+
+.numero-medio.atrasado {
+    -fx-text-fill: -cor-atraso;
 }
 
 .valor-grande {
+    -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 18px;
-    -fx-font-weight: bold;
 }
 
 /* Tela sem nada para mostrar */
 .estado-vazio-titulo {
+    -fx-font-family: "Segoe UI Semibold";
     -fx-font-size: 16px;
-    -fx-font-weight: bold;
     -fx-text-fill: -cor-texto-2;
 }
 
-/* ===================================================================== CARTÕES DO INÍCIO */
-
-.cartao {
-    -fx-background-color: -cor-superficie;
-    -fx-border-color: -cor-borda;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    -fx-padding: 16;
+/* Divisória vertical entre os números do cartão "Hoje" */
+.divisoria-vertical {
+    -fx-background-color: -cor-linha;
+    -fx-min-width: 1;
+    -fx-max-width: 1;
 }
 
-.cartao-titulo {
-    -fx-text-fill: -cor-texto-apagado;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
+/* ===================================================================== INÍCIO */
+
+.subtitulo-dia {
+    -fx-text-fill: -cor-texto-2;
+    -fx-font-size: 15px;
 }
 
-.cartao-numero {
-    -fx-font-size: 32px;
-    -fx-font-weight: bold;
-}
-
-.cartao-detalhe {
-    -fx-text-fill: -cor-texto-apagado;
-    -fx-font-size: 13px;
-}
-
-/* Cartão em destaque (Próximas 2 horas): fundo laranja e texto claro */
-.cartao-destaque {
-    -fx-background-color: -cor-destaque;
-    -fx-border-color: -cor-destaque;
-}
-
-.cartao-destaque .cartao-titulo,
-.cartao-destaque .cartao-numero,
-.cartao-destaque .cartao-detalhe {
-    -fx-text-fill: -cor-superficie;
-}
-
-/* Linhas clicáveis da lista "Próximas entregas" */
+/* Linhas da lista "Próximas entregas" (blocos clicáveis) */
 .linha-entrega {
-    -fx-padding: 8 16 8 16;
-    -fx-background-radius: 8;
+    -fx-background-color: -cor-creme;
+    -fx-background-radius: 16;
+    -fx-padding: 10 14 10 14;
     -fx-cursor: hand;
 }
 
 .linha-entrega:hover {
-    -fx-background-color: -cor-fundo-2;
+    -fx-background-color: -cor-neutro;
 }
 
 .linha-entrega-hora {
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 15px;
+}
+
+.linha-entrega-itens {
+    -fx-text-fill: -cor-texto-2;
+    -fx-font-size: 12px;
+}
+
+/* Link discreto (ex.: "Ver agenda"): texto laranja escuro, sublinha no hover.
+   ".button.link" (duas classes) ganha do estilo geral ".button". */
+.button.link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -cor-destaque-hover;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-padding: 4 0 4 0;
+    -fx-cursor: hand;
+}
+
+.button.link:hover,
+.button.link:pressed,
+.button.link:focus-visible {
+    -fx-background-color: transparent;
+}
+
+.button.link:hover .text {
+    -fx-underline: true;
+}
+
+/* Barra de progresso fina (entregues no dia) */
+.progresso {
+    -fx-pref-height: 8;
+    -fx-min-height: 8;
+    -fx-max-height: 8;
+}
+
+.progresso .track {
+    -fx-background-color: -cor-neutro;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+}
+
+.progresso .bar {
+    -fx-background-color: -cor-cafe;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+    -fx-padding: 4;
+}
+
+/* Gráfico de barras "Próximos 7 dias": sem grade, barras arredondadas, hoje em laranja */
+.grafico {
+    -fx-padding: 0;
+    -fx-legend-visible: false;
+}
+
+.grafico .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.grafico .chart-vertical-grid-lines,
+.grafico .chart-horizontal-grid-lines,
+.grafico .chart-vertical-zero-line,
+.grafico .chart-horizontal-zero-line,
+.grafico .chart-alternative-row-fill {
+    -fx-stroke: transparent;
+    -fx-fill: transparent;
+}
+
+.grafico .axis {
+    -fx-tick-label-fill: -cor-texto-2;
+    -fx-tick-length: 0;
+    -fx-font-size: 12px;
+    -fx-border-color: transparent;
+}
+
+.grafico .chart-bar {
+    -fx-background-color: -cor-neutro;
+    -fx-background-radius: 10;
+}
+
+.grafico .chart-bar:hoje {
+    -fx-background-color: -cor-destaque;
 }
 
 /* ===================================================================== BOTÕES */
 
-/* Botão secundário (padrão): contorno laranja, fundo claro */
+/* Botão secundário (padrão): pílula clara com contorno fino */
 .button {
-    -fx-background-color: -cor-superficie;
-    -fx-border-color: -cor-destaque;
-    -fx-text-fill: -cor-destaque;
-    -fx-font-weight: bold;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 8 16 8 16;
+    -fx-background-color: -cor-linha, -cor-cartao;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 999;
+    -fx-text-fill: -cor-texto;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-padding: 0 18 0 18;
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
     -fx-cursor: hand;
 }
 
-/* No hover e no clique o fundo escurece; o texto escurece junto para manter o contraste */
 .button:hover {
-    -fx-background-color: -cor-botao-hover;
-    -fx-text-fill: -cor-destaque-escuro;
+    -fx-background-color: -cor-linha, -cor-creme;
 }
 
 .button:pressed {
-    -fx-background-color: -cor-botao-pressionado;
-    -fx-text-fill: -cor-destaque-escuro;
+    -fx-background-color: -cor-linha, -cor-neutro;
 }
 
-/* Borda de 2px no foco (teclado); o espaçamento diminui 1px para o botão não "pular" */
-.button:focused {
-    -fx-border-width: 2;
-    -fx-padding: 7 15 7 15;
+/* Foco pelo teclado: anel laranja de 2px */
+.button:focus-visible {
+    -fx-background-color: -cor-destaque, -cor-cartao;
+    -fx-background-insets: 0, 2;
 }
 
 .button:disabled {
     -fx-opacity: 0.45;
 }
 
-/* Botão principal: laranja com texto claro */
+/* Botão principal (um por tela): laranja com texto claro */
 .botao-primario {
     -fx-background-color: -cor-destaque;
-    -fx-border-color: -cor-destaque;
-    -fx-text-fill: -cor-superficie;
+    -fx-background-insets: 0;
+    -fx-text-fill: #FFFDFA;
 }
 
 .botao-primario:hover,
 .botao-primario:pressed {
-    -fx-background-color: -cor-destaque-escuro;
-    -fx-border-color: -cor-destaque-escuro;
-    -fx-text-fill: -cor-superficie;
+    -fx-background-color: -cor-destaque-hover;
 }
 
-.botao-primario:focused {
-    -fx-border-color: -cor-fundo-escuro;
+.botao-primario:focus-visible {
+    -fx-background-color: -cor-cafe, -cor-destaque;
+    -fx-background-insets: 0, 2;
 }
 
-/* Ação perigosa (cancelar pedido) */
+/* Ação perigosa (cancelar pedido): texto vermelho escuro */
 .botao-perigo {
-    -fx-border-color: -cor-erro;
-    -fx-text-fill: -cor-erro;
+    -fx-text-fill: -cor-atraso;
 }
 
 .botao-perigo:hover,
 .botao-perigo:pressed {
-    -fx-background-color: -cor-erro-fundo;
-    -fx-text-fill: -cor-erro;
+    -fx-background-color: -cor-linha, -cor-atraso-suave;
 }
 
 /* Botão discreto dentro das tabelas (ex.: remover item) */
 .botao-texto {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-text-fill: -cor-erro;
-    -fx-padding: 0 8 0 8;
+    -fx-text-fill: -cor-atraso;
+    -fx-padding: 0 10 0 10;
+    -fx-pref-height: 30;
+    -fx-min-height: 30;
     -fx-font-size: 13px;
 }
 
 .botao-texto:hover,
 .botao-texto:pressed {
-    -fx-background-color: -cor-erro-fundo;
-    -fx-text-fill: -cor-erro;
+    -fx-background-color: -cor-atraso-suave;
 }
 
 /* ===================================================================== CAMPOS */
@@ -404,49 +479,165 @@
 .combo-box,
 .date-picker,
 .spinner {
-    -fx-background-radius: 8;
+    -fx-background-color: -cor-borda, -cor-cartao;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 12, 11;
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
 }
 
 .text-field {
-    -fx-padding: 8;
-    -fx-prompt-text-fill: -cor-texto-apagado; /* texto de ajuda dentro do campo (ex.: "ex.: 100,00") */
+    -fx-padding: 0 12 0 12;
+    -fx-prompt-text-fill: -cor-dica;
+    -fx-highlight-fill: -cor-destaque-suave;
+    -fx-highlight-text-fill: -cor-texto;
 }
 
-.radio-button {
+.text-field:focused,
+.combo-box:focused,
+.date-picker:focused,
+.spinner:focused {
+    -fx-background-color: -cor-destaque, -cor-cartao;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 12, 10;
+}
+
+/* O campo de texto dentro do DatePicker, do ComboBox editável e do Spinner não tem moldura própria */
+.date-picker > .text-field,
+.combo-box > .text-field,
+.spinner > .text-field {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0 4 0 12;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0 4 0 12;
+}
+
+.combo-box .arrow-button,
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 14 0 8;
+}
+
+.combo-box .arrow,
+.date-picker .arrow {
+    -fx-background-color: -cor-texto-2;
+}
+
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+}
+
+.spinner .increment-arrow,
+.spinner .decrement-arrow {
+    -fx-background-color: -cor-texto-2;
+}
+
+/* Listas que abrem por cima (ComboBox, calendário): cartão com sombra suave */
+.combo-box-popup > .list-view,
+.date-picker-popup,
+.context-menu {
+    -fx-background-color: -cor-cartao;
+    -fx-background-radius: 16;
+    -fx-padding: 6;
+    -fx-effect: dropshadow(gaussian, rgba(43, 29, 20, 0.16), 32, 0, 0, 12);
+}
+
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-padding: 8 12 8 12;
+}
+
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover,
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background-color: -cor-destaque-suave;
+    -fx-text-fill: -cor-texto;
+}
+
+/* Rádios e caixas de marcar: contorno marrom, marcador café */
+.radio-button,
+.check-box {
     -fx-padding: 0;
+}
+
+.radio-button > .radio,
+.check-box > .box {
+    -fx-background-color: -cor-borda, -cor-cartao;
+    -fx-background-insets: 0, 1.5;
+}
+
+.radio-button:selected > .radio {
+    -fx-background-color: -cor-cafe, -cor-cartao;
+}
+
+.radio-button > .radio > .dot {
+    -fx-background-color: transparent;
+}
+
+.radio-button:selected > .radio > .dot {
+    -fx-background-color: -cor-cafe;
+}
+
+.check-box:selected > .box > .mark {
+    -fx-background-color: -cor-cafe;
+}
+
+/* Formas de pagamento como opções largas em pílula; a escolhida fica com contorno café */
+.opcao-chip {
+    -fx-background-color: -cor-linha, -cor-cartao;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 999;
+    -fx-padding: 8 14 8 12;
+    -fx-cursor: hand;
+}
+
+.opcao-chip:hover {
+    -fx-background-color: -cor-linha, -cor-creme;
+}
+
+.opcao-chip:selected {
+    -fx-background-color: -cor-cafe, -cor-creme;
+    -fx-background-insets: 0, 1.5;
+}
+
+.opcao-chip:disabled {
+    -fx-opacity: 0.5;
 }
 
 /* Campos que aparecem embaixo da opção de pagamento escolhida (tela Novo pedido) */
 .sub-opcao {
-    -fx-padding: 0 0 8 32;
+    -fx-padding: 4 0 4 0;
 }
 
 /* ===================================================================== TABELAS */
 
+/* A tabela já é um cartão: fundo claro, cantos de 24, sem grade e sem listras */
 .table-view {
-    -fx-background-color: -cor-borda, -cor-superficie;
-    -fx-background-insets: 0, 1;
-    -fx-background-radius: 12, 11;
-    -fx-padding: 1;
+    -fx-background-color: -cor-cartao;
+    -fx-background-radius: 24;
+    -fx-background-insets: 0;
+    -fx-padding: 8 12 8 12;
     -fx-table-cell-border-color: transparent;
 }
 
 .table-view:focused {
-    -fx-background-color: -cor-destaque, -cor-superficie;
-    -fx-background-insets: 0, 2;
-    -fx-padding: 2;
+    -fx-background-color: -cor-cartao;
+    -fx-background-insets: 0;
 }
 
-/* Cabeçalho da tabela em bege (-cor-fundo-2) */
 .table-view .column-header-background {
-    -fx-background-color: -cor-fundo-2;
-    -fx-background-radius: 11 11 0 0;
+    -fx-background-color: transparent;
 }
 
 .table-view .column-header,
 .table-view .filler {
     -fx-background-color: transparent;
-    -fx-border-color: transparent transparent -cor-borda transparent;
+    -fx-border-color: transparent transparent -cor-linha transparent;
     -fx-size: 40px;
 }
 
@@ -458,21 +649,28 @@
 
 .table-view .column-header .label {
     -fx-text-fill: -cor-texto-2;
-    -fx-font-weight: bold;
-    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 12px;
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 0 8 0 8;
 }
 
-.table-row-cell {
-    -fx-background-color: -cor-superficie;
-    -fx-cell-size: 40px;
+.table-view .column-drag-header {
+    -fx-background-color: -cor-neutro;
+}
+
+.table-row-cell,
+.table-row-cell:odd {
+    -fx-background-color: -cor-linha, -cor-cartao;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-cell-size: 48px;
     -fx-border-color: transparent;
 }
 
-/* Linhas alternadas suaves */
-.table-row-cell:odd {
-    -fx-background-color: -cor-linha-alternada;
+.table-row-cell:hover {
+    -fx-background-color: -cor-creme;
+    -fx-background-insets: 0;
+    -fx-background-radius: 12;
 }
 
 .table-cell {
@@ -482,32 +680,37 @@
     -fx-border-color: transparent; /* sem as linhas verticais entre as colunas */
 }
 
-/* Seleção visível, com texto escuro (contraste alto) */
-.table-row-cell:selected {
-    -fx-background-color: -cor-linha-selecionada;
+/* Seleção em laranja bem claro, com texto escuro (contraste alto). O seletor longo é o mesmo
+   do tema Modena: sem ele, a linha selecionada voltaria a ficar azul. */
+.table-row-cell:filled:selected,
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:selected {
+    -fx-background-color: -cor-destaque-suave;
+    -fx-background-insets: 0;
+    -fx-background-radius: 12;
 }
 
-.table-row-cell:selected .table-cell {
+.table-row-cell:filled:selected .table-cell {
     -fx-text-fill: -cor-texto;
 }
 
-.table-row-cell:empty {
+.table-row-cell:empty,
+.table-row-cell:empty:hover {
     -fx-background-color: transparent;
 }
 
-/* Pedido "Em breve" na Agenda: linha destacada, com uma faixa laranja à esquerda */
+/* Pedido "Em breve" na Agenda: fundo pêssego bem claro (a etiqueta "Em breve" diz o motivo) */
 .table-row-cell:em-breve {
-    -fx-background-color: -cor-linha-em-breve;
-    -fx-border-color: transparent transparent transparent -cor-destaque;
-    -fx-border-width: 0 0 0 4;
+    -fx-background-color: #FEF4EA;
+    -fx-background-insets: 0;
+    -fx-background-radius: 12;
 }
 
 .table-row-cell:em-breve:selected {
-    -fx-background-color: -cor-linha-em-breve-selecionada;
+    -fx-background-color: -cor-destaque-suave;
 }
 
 .table-view .placeholder .label {
-    -fx-text-fill: -cor-texto-apagado;
+    -fx-text-fill: -cor-texto-2;
 }
 
 /* Colunas de valores alinhadas à direita */
@@ -519,42 +722,49 @@
     -fx-alignment: CENTER_RIGHT;
 }
 
-/* ===================================================================== ETIQUETAS DE STATUS */
+/* ===================================================================== STATUS */
 
 /*
- * Sempre com TEXTO: a cor nunca é a única informação (quem não enxerga bem as cores
- * também entende). Os fundos variam de claridade, não só de tom.
+ * Status do pedido: um ponto de 8px + o TEXTO (a cor nunca é a única informação).
+ * "Em breve" e "Atrasado" são etiquetas em pílula, com fundo suave.
  */
-.etiqueta {
-    -fx-background-radius: 12;
-    -fx-padding: 4 8 4 8;
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
+.status {
+    -fx-graphic-text-gap: 8;
+    -fx-font-size: 13px;
 }
 
-.status-pendente {
-    -fx-background-color: -cor-pendente-fundo;
-    -fx-text-fill: -cor-pendente-texto;
+.status .ponto {
+    -fx-stroke-width: 0;
 }
 
-.status-em-producao {
-    -fx-background-color: -cor-producao-fundo;
-    -fx-text-fill: -cor-producao-texto;
+.status-pendente .ponto {
+    -fx-fill: transparent;
+    -fx-stroke: -cor-dica;
+    -fx-stroke-width: 1.5;
 }
 
-.status-saiu-para-entrega {
-    -fx-background-color: -cor-saiu-fundo;
-    -fx-text-fill: -cor-saiu-texto;
+.status-em-producao .ponto {
+    -fx-fill: -cor-pessego;
+}
+
+.status-saiu-para-entrega .ponto {
+    -fx-fill: -cor-caramelo;
 }
 
 .status-entregue {
-    -fx-background-color: -cor-sucesso;
-    -fx-text-fill: -cor-superficie;
+    -fx-text-fill: -cor-texto-2;
+}
+
+.status-entregue .ponto {
+    -fx-fill: -cor-texto-2;
 }
 
 .status-cancelado {
-    -fx-background-color: -cor-cancelado-fundo;
-    -fx-text-fill: -cor-cancelado-texto;
+    -fx-text-fill: -cor-texto-3;
+}
+
+.status-cancelado .ponto {
+    -fx-fill: #C9BCAF;
 }
 
 /* O texto "Cancelado" aparece riscado */
@@ -562,62 +772,70 @@
     -fx-strikethrough: true;
 }
 
+.etiqueta {
+    -fx-background-radius: 999;
+    -fx-padding: 3 10 3 10;
+    -fx-font-size: 12px;
+    -fx-font-family: "Segoe UI Semibold";
+}
+
 .etiqueta-em-breve {
-    -fx-background-color: -cor-destaque;
-    -fx-text-fill: -cor-superficie;
+    -fx-background-color: -cor-destaque-suave;
+    -fx-text-fill: -cor-destaque-hover;
 }
 
 .etiqueta-atrasado {
-    -fx-background-color: -cor-erro;
-    -fx-text-fill: -cor-superficie;
+    -fx-background-color: -cor-atraso-suave;
+    -fx-text-fill: -cor-atraso;
 }
 
 /* ===================================================================== FIADO */
 
 .barra-limite {
-    -fx-min-height: 16;
-    -fx-pref-height: 16;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
 }
 
 .barra-limite .track {
-    -fx-background-color: -cor-fundo-2;
-    -fx-background-radius: 8;
+    -fx-background-color: -cor-neutro;
+    -fx-background-radius: 999;
     -fx-background-insets: 0;
 }
 
 .barra-limite .bar {
-    -fx-background-color: -cor-destaque;
-    -fx-background-radius: 8;
+    -fx-background-color: -cor-cafe;
+    -fx-background-radius: 999;
     -fx-background-insets: 0;
-    -fx-padding: 8;
+    -fx-padding: 4;
 }
 
-/* Uso do limite acima de 90%: barra vermelha */
+/* Uso do limite acima de 90%: barra vermelha (o texto embaixo diz quanto falta ou passou) */
 .barra-limite.alerta .bar {
-    -fx-background-color: -cor-erro;
+    -fx-background-color: -cor-atraso;
 }
 
 .rodape-total {
-    -fx-background-color: -cor-fundo-2;
-    -fx-background-radius: 12;
-    -fx-padding: 16 24 16 24;
+    -fx-background-color: -cor-cartao;
+    -fx-background-radius: 999;
+    -fx-padding: 10 24 10 24;
 }
 
 /* ===================================================================== DIÁLOGOS */
 
 .dialog-pane {
-    -fx-background-color: -cor-fundo;
+    -fx-background-color: -cor-cartao;
     -fx-padding: 0;
 }
 
 .dialog-pane > .header-panel {
-    -fx-background-color: -cor-fundo-2;
-    -fx-padding: 16 24 16 24;
+    -fx-background-color: -cor-creme;
+    -fx-padding: 20 24 20 24;
 }
 
 .dialog-pane > .header-panel .label {
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 17px;
 }
 
 .dialog-pane > .content {
@@ -625,7 +843,7 @@
 }
 
 .dialog-pane > .button-bar > .container {
-    -fx-padding: 0 24 16 24;
+    -fx-padding: 0 24 20 24;
 }
 
 /* ===================================================================== DIVERSOS */
@@ -636,12 +854,48 @@
 }
 
 .separator .line {
-    -fx-border-color: -cor-borda;
+    -fx-border-color: -cor-linha;
+}
+
+/* Barras de rolagem finas, sem setas */
+.scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #D9CBBB;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: -cor-borda;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-padding: 0;
+}
+
+.scroll-bar:vertical {
+    -fx-pref-width: 10;
+}
+
+.scroll-bar:horizontal {
+    -fx-pref-height: 10;
 }
 
 .tooltip {
-    -fx-background-color: -cor-fundo-escuro;
-    -fx-text-fill: -cor-fundo-2;
+    -fx-background-color: -cor-cafe;
+    -fx-text-fill: -cor-sobre-cafe;
     -fx-font-size: 13px;
-    -fx-background-radius: 8;
+    -fx-background-radius: 10;
+    -fx-padding: 6 10 6 10;
 }

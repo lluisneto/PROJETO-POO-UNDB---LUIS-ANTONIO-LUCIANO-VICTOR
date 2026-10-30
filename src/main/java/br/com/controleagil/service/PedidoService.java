@@ -20,7 +20,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
  * Responsabilidade: os casos de uso de pedidos: registrar, receber pagamento, mudar status
@@ -240,6 +242,26 @@ public class PedidoService {
     /** Quantos pedidos (sem contar os cancelados) têm entrega hoje. */
     public long contarPedidosDeHoje() {
         return agendaDoDia(hoje()).size();
+    }
+
+    /** Quantos pedidos de hoje já foram entregues. */
+    public long contarEntreguesDeHoje() {
+        return agendaDoDia(hoje()).stream().filter(pedido -> pedido.getStatus() == StatusPedido.ENTREGUE).count();
+    }
+
+    /**
+     * Quantos pedidos (sem contar os cancelados) há em cada dia, a partir de "inicio".
+     * Usado no gráfico "Próximos 7 dias" do Início.
+     *
+     * @return dia → quantidade, na ordem dos dias (dias sem pedido aparecem com 0)
+     */
+    public Map<LocalDate, Long> pedidosPorDia(LocalDate inicio, int dias) {
+        Map<LocalDate, Long> porDia = new LinkedHashMap<>();
+        for (int i = 0; i < dias; i++) {
+            LocalDate dia = inicio.plusDays(i);
+            porDia.put(dia, (long) agendaDoDia(dia).size());
+        }
+        return porDia;
     }
 
     /** Quantos pedidos em aberto têm entrega entre agora e daqui a "horas" horas. */

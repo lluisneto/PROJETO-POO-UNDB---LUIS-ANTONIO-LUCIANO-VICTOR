@@ -20,12 +20,13 @@ import javafx.util.Duration;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.EnumMap;
 import java.util.Map;
 
 /*
- * Responsabilidade: a janela principal: menu lateral, cabeçalho (título + data), barra de status
- * e a troca da tela do centro.
+ * Responsabilidade: a janela principal: navegação em pílulas no topo, data, título da tela
+ * (saudação no Início), mensagem rápida no pé e a troca da tela do centro.
  *
  * Conceitos:
  *  - IMPLEMENTA A INTERFACE Navegacao: as outras telas pedem "abra a Agenda" sem conhecer esta classe.
@@ -43,6 +44,7 @@ public class PrincipalController implements Navegacao {
     private Timeline relogio;
     private final Map<Tela, TelaGuardada> telasGuardadas = new EnumMap<>(Tela.class);
     private Object controllerMontado;
+    private Tela telaAtual = Tela.INICIO;
 
     @FXML private BorderPane areaConteudo;
     @FXML private Button botaoInicio;
@@ -52,6 +54,7 @@ public class PrincipalController implements Navegacao {
     @FXML private Button botaoProdutos;
     @FXML private Button botaoFiado;
     @FXML private Label tituloTela;
+    @FXML private Label tituloTelaCinza;
     @FXML private Label dataHoje;
     @FXML private Label mensagemStatus;
 
@@ -83,7 +86,7 @@ public class PrincipalController implements Navegacao {
         Dialogos.tentar(() -> {
             Parent conteudo = carregar(tela);
             areaConteudo.setCenter(conteudo);
-            tituloTela.setText(tela.getTitulo());
+            mostrarTitulo(tela);
             destacarNoMenu(tela);
         });
     }
@@ -150,6 +153,27 @@ public class PrincipalController implements Navegacao {
         }
     }
 
+    /**
+     * Título da tela. No Início, uma saudação pela hora do dia ("Bom dia," + o nome da empresa em
+     * tom mais claro); nas outras telas, só o nome da tela.
+     */
+    private void mostrarTitulo(Tela tela) {
+        telaAtual = tela;
+        boolean inicio = tela == Tela.INICIO;
+        tituloTela.setText(inicio ? saudacao(LocalTime.now()) + "," : tela.getTitulo());
+        tituloTelaCinza.setText(inicio ? "L Salgados" : "");
+        tituloTelaCinza.setVisible(inicio);
+        tituloTelaCinza.setManaged(inicio);
+    }
+
+    /** "Bom dia" até meio-dia, "Boa tarde" até as 18h, depois "Boa noite". */
+    static String saudacao(LocalTime hora) {
+        if (hora.isBefore(LocalTime.NOON)) {
+            return "Bom dia";
+        }
+        return hora.isBefore(LocalTime.of(18, 0)) ? "Boa tarde" : "Boa noite";
+    }
+
     /** Só o botão da tela aberta fica com a classe CSS "ativo" (destacado). */
     private void destacarNoMenu(Tela telaAtiva) {
         botoesDoMenu.forEach((tela, botao) -> {
@@ -164,6 +188,7 @@ public class PrincipalController implements Navegacao {
     private void iniciarRelogio() {
         relogio = new Timeline(new KeyFrame(Duration.seconds(30), evento -> {
             atualizarData();
+            mostrarTitulo(telaAtual); // a saudação muda de "Bom dia" para "Boa tarde" sozinha
             TelaAtualizavel tela = telaAberta;
             if (tela != null) {
                 // runLater: roda logo DEPOIS da animação. Durante uma animação o JavaFX não deixa abrir

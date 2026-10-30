@@ -2,7 +2,7 @@
 
 <!--
   Tela Fiado. À esquerda: as contas (quem deve mais primeiro). À direita: a conta selecionada
-  (saldo, uso do limite, histórico e registrar pagamento). Embaixo: o total a receber.
+  (saldo, uso do limite, histórico e registrar pagamento). O total a receber fica acima das contas.
 -->
 
 <?import javafx.scene.control.Button?>
@@ -24,10 +24,17 @@
     <HBox spacing="16" VBox.vgrow="ALWAYS">
         <!-- ===== Contas ===== -->
         <VBox spacing="16" HBox.hgrow="ALWAYS">
-            <HBox spacing="16" alignment="CENTER_LEFT">
-                <CheckBox fx:id="somenteQuemDeve" text="Mostrar só quem deve"/>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <CheckBox fx:id="somenteQuemDeve" text="Mostrar só quem deve" minWidth="-Infinity"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="resumoLista" styleClass="dica"/>
+                <Label fx:id="resumoLista" styleClass="dica" minWidth="-Infinity"/>
+            </HBox>
+            <!-- Total a receber, logo acima das contas -->
+            <HBox styleClass="rodape-total" spacing="16" alignment="CENTER_LEFT">
+                <Label text="Total a receber no fiado" styleClass="rotulo"/>
+                <Label fx:id="totalAReceber" styleClass="valor-grande"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="resumoDevedores" styleClass="dica"/>
             </HBox>
             <!-- "&#10;" é uma quebra de linha: os títulos compridos ficam em duas linhas -->
             <TableView fx:id="tabelaContas" VBox.vgrow="ALWAYS" styleClass="cabecalho-duplo">
@@ -59,7 +66,7 @@
 
                 <Separator/>
                 <Label text="Histórico" styleClass="secao-titulo"/>
-                <TableView fx:id="tabelaHistorico" VBox.vgrow="ALWAYS" minHeight="120" prefHeight="160"
+                <TableView fx:id="tabelaHistorico" VBox.vgrow="ALWAYS" minHeight="96" prefHeight="140"
                            styleClass="cabecalho-duplo">
                     <columns>
                         <TableColumn fx:id="colunaData" text="Data" prefWidth="96" minWidth="88"/>
@@ -80,13 +87,5 @@
                 <Label fx:id="mensagemErro" styleClass="erro-campo" wrapText="true" minHeight="-Infinity"/>
             </VBox>
         </VBox>
-    </HBox>
-
-    <!-- ===== Total a receber ===== -->
-    <HBox styleClass="rodape-total" spacing="16" alignment="CENTER_LEFT">
-        <Label text="Total a receber no fiado" styleClass="rotulo"/>
-        <Label fx:id="totalAReceber" styleClass="valor-grande"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="resumoDevedores" styleClass="dica"/>
     </HBox>
 </VBox>

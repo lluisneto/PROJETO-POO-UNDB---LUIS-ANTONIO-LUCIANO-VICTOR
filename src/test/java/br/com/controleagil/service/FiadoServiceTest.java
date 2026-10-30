@@ -87,6 +87,14 @@ class FiadoServiceTest {
     }
 
     @Test
+    @DisplayName("Conta quantos clientes passaram do limite (o fiado acima do limite só gera aviso)")
+    void contarAcimaDoLimite() {
+        assertEquals(0, fiado.contarAcimaDoLimite());
+        bruno.getContaFiado().registrarCompra(reais("60.00"), null); // deve 110 de 100
+        assertEquals(1, fiado.contarAcimaDoLimite());
+    }
+
+    @Test
     @DisplayName("Quem quitou a dívida não tem data de \"devendo desde\"")
     void quemQuitouNaoDeve() {
         assertNull(FiadoService.devendoDesde(carla.getContaFiado()));

@@ -1,59 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  Tela Início (painel): 4 cartões com os números do dia e a lista das próximas entregas.
+  Tela Início (painel do dia), em cartões de tamanhos diferentes:
+   - "Hoje" (largo): pedidos do dia, quantos já foram entregues, próximas 2 horas e atrasados;
+   - "Próximas entregas" (coluna da direita, alta): os próximos pedidos, um bloco por pedido;
+   - "A receber no fiado" e "Próximos 7 dias" (gráfico de barras, hoje em laranja).
   Os textos com fx:id são preenchidos pelo InicioController.
-  Os cartões ficam num TilePane ("ladrilhos"): em janela larga, 4 numa linha; em janela estreita,
-  2 por linha (o InicioController decide), para os números nunca serem cortados.
 -->
 
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.controleagil.controller.InicioController"
-      styleClass="tela" spacing="24">
+      styleClass="tela" spacing="16">
 
-    <!-- ===== Cartões ===== -->
-    <TilePane fx:id="cartoes" hgap="16" vgap="16" prefColumns="4">
-        <VBox styleClass="cartao" spacing="8" maxWidth="Infinity">
-            <Label text="Pedidos de hoje" styleClass="cartao-titulo"/>
-            <Label fx:id="numeroPedidosHoje" styleClass="cartao-numero"/>
-            <Label fx:id="detalhePedidosHoje" styleClass="cartao-detalhe"/>
-        </VBox>
-        <VBox styleClass="cartao, cartao-destaque" spacing="8" maxWidth="Infinity">
-            <Label text="Próximas 2 horas" styleClass="cartao-titulo"/>
-            <Label fx:id="numeroProximasHoras" styleClass="cartao-numero"/>
-            <Label fx:id="detalheProximasHoras" styleClass="cartao-detalhe"/>
-        </VBox>
-        <VBox styleClass="cartao" spacing="8" maxWidth="Infinity">
-            <Label text="A receber no fiado" styleClass="cartao-titulo"/>
-            <Label fx:id="valorAReceber" styleClass="cartao-numero"/>
-            <Label fx:id="detalheAReceber" styleClass="cartao-detalhe"/>
-        </VBox>
-        <VBox styleClass="cartao" spacing="8" maxWidth="Infinity">
-            <Label text="Clientes devendo" styleClass="cartao-titulo"/>
-            <Label fx:id="numeroDevedores" styleClass="cartao-numero"/>
-            <Label fx:id="detalheDevedores" styleClass="cartao-detalhe"/>
-        </VBox>
-    </TilePane>
+    <!-- Resumo do dia em uma frase + a ação principal da tela -->
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <Label fx:id="resumoDoDia" styleClass="subtitulo-dia" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+        <Button text="Novo pedido" onAction="#abrirNovoPedido" styleClass="botao-primario" minWidth="-Infinity"/>
+    </HBox>
 
-    <!-- ===== Próximas entregas ===== -->
-    <VBox styleClass="painel" spacing="8" VBox.vgrow="ALWAYS">
-        <HBox alignment="CENTER_LEFT" spacing="16">
-            <VBox spacing="8" HBox.hgrow="ALWAYS">
-                <Label text="Próximas entregas" styleClass="secao-titulo"/>
-                <Label text="Atrasados de dias anteriores e pedidos de hoje que ainda não foram finalizados, por horário. Clique para abrir a agenda."
-                       styleClass="dica" wrapText="true" minHeight="-Infinity"/>
+    <GridPane hgap="16" vgap="16" VBox.vgrow="ALWAYS">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="33.34"/>
+            <ColumnConstraints percentWidth="33.33"/>
+            <ColumnConstraints percentWidth="33.33"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints vgrow="NEVER"/>
+            <RowConstraints vgrow="ALWAYS"/>
+        </rowConstraints>
+
+        <!-- ===== Hoje ===== -->
+        <HBox styleClass="cartao" spacing="24" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2">
+            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="Pedidos de hoje" styleClass="cartao-titulo"/>
+                <Label fx:id="numeroPedidosHoje" styleClass="cartao-numero"/>
+                <Label fx:id="detalhePedidosHoje" styleClass="dica"/>
+                <ProgressBar fx:id="barraEntregues" styleClass="progresso" maxWidth="Infinity"/>
             </VBox>
-            <Button text="Abrir agenda do dia" onAction="#abrirAgenda" minWidth="-Infinity"/>
-            <Button text="Novo pedido" onAction="#abrirNovoPedido" styleClass="botao-primario" minWidth="-Infinity"/>
+            <Region styleClass="divisoria-vertical"/>
+            <VBox spacing="6" minWidth="-Infinity">
+                <Label text="Próximas 2 horas" styleClass="rotulo"/>
+                <Label fx:id="numeroProximasHoras" styleClass="numero-medio"/>
+                <Label text="entregas" styleClass="dica"/>
+            </VBox>
+            <Region styleClass="divisoria-vertical"/>
+            <VBox spacing="6" minWidth="-Infinity">
+                <Label text="Atrasados" styleClass="rotulo"/>
+                <Label fx:id="numeroAtrasados" styleClass="numero-medio"/>
+                <Label fx:id="detalheAtrasados" styleClass="dica"/>
+            </VBox>
         </HBox>
-        <VBox fx:id="listaEntregas" spacing="8"/>
-        <Label fx:id="semEntregas" text="Nenhuma entrega pendente para hoje." styleClass="estado-vazio-titulo"
-               visible="false" managed="false"/>
-    </VBox>
+
+        <!-- ===== Próximas entregas ===== -->
+        <VBox styleClass="cartao" spacing="12" GridPane.columnIndex="2" GridPane.rowIndex="0" GridPane.rowSpan="2">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label text="Próximas entregas" styleClass="cartao-titulo"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Ver agenda" onAction="#abrirAgenda" styleClass="link" minWidth="-Infinity"/>
+            </HBox>
+            <Label text="Atrasados primeiro, depois os de hoje por horário." styleClass="dica" wrapText="true"
+                   minHeight="-Infinity"/>
+            <VBox fx:id="listaEntregas" spacing="8"/>
+            <Label fx:id="semEntregas" text="Nenhuma entrega pendente para hoje." styleClass="estado-vazio-titulo"
+                   wrapText="true" visible="false" managed="false"/>
+        </VBox>
+
+        <!-- ===== A receber no fiado ===== -->
+        <VBox styleClass="cartao" spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label text="A receber no fiado" styleClass="cartao-titulo"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Ver fiado" onAction="#abrirFiado" styleClass="link" minWidth="-Infinity"/>
+            </HBox>
+            <HBox alignment="BASELINE_LEFT">
+                <Label fx:id="valorAReceber" styleClass="cartao-numero" minWidth="-Infinity"/>
+                <Label fx:id="centavosAReceber" styleClass="numero-centavos" minWidth="-Infinity"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label fx:id="detalheAReceber" styleClass="dica"/>
+                <Label fx:id="acimaDoLimite" styleClass="etiqueta, etiqueta-atrasado" visible="false" managed="false"
+                       minWidth="-Infinity"/>
+            </HBox>
+            <!-- Quem deve mais (até 2) -->
+            <VBox fx:id="listaDevedores" spacing="6"/>
+        </VBox>
+
+        <!-- ===== Próximos 7 dias ===== -->
+        <VBox styleClass="cartao" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label text="Próximos 7 dias" styleClass="cartao-titulo"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="resumoSemana" styleClass="dica" minWidth="-Infinity"/>
+            </HBox>
+            <BarChart fx:id="grafico" styleClass="grafico" VBox.vgrow="ALWAYS" minHeight="90" prefHeight="160"
+                      legendVisible="false" animated="false" barGap="0" categoryGap="12"
+                      horizontalGridLinesVisible="false" verticalGridLinesVisible="false"
+                      horizontalZeroLineVisible="false" verticalZeroLineVisible="false">
+                <xAxis>
+                    <CategoryAxis tickMarkVisible="false" animated="false"/>
+                </xAxis>
+                <yAxis>
+                    <NumberAxis tickLabelsVisible="false" tickMarkVisible="false" minorTickVisible="false"
+                                animated="false" prefWidth="0" minWidth="0" maxWidth="0"/>
+                </yAxis>
+            </BarChart>
+        </VBox>
+    </GridPane>
 </VBox>

@@ -1,22 +1,31 @@
 package br.com.controleagil.controller;
 
 import br.com.controleagil.model.Pedido;
+import br.com.controleagil.service.Devedor;
 import br.com.controleagil.service.FiadoService;
 import br.com.controleagil.service.PedidoService;
 import br.com.controleagil.util.Formatador;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
+import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /*
- * Responsabilidade: a tela Início (painel do dia): números de hoje e próximas entregas.
+ * Responsabilidade: a tela Início (painel do dia): números de hoje, próximas entregas, fiado a
+ * receber e o gráfico dos próximos 7 dias.
  *
  * Controller FINO: não calcula nada. Pede os números aos services e só coloca nos rótulos.
  * Implementa TelaAtualizavel: o painel se atualiza sozinho quando o relógio anda.
@@ -26,22 +35,31 @@ public class InicioController implements TelaAtualizavel {
     /** Quantas entregas aparecem na lista. */
     private static final int LIMITE_DA_LISTA = 5;
     private static final int HORAS_DO_CARTAO = 2;
-    /** Abaixo desta largura por cartão, os números grandes não cabem: os cartões passam para 2 por linha. */
-    private static final double LARGURA_MINIMA_DO_CARTAO = 220;
+    private static final int DIAS_DO_GRAFICO = 7;
+    private static final Locale PORTUGUES = Locale.of("pt", "BR");
+    /** Quantos devedores aparecem no cartão do fiado. */
+    private static final int DEVEDORES_NO_CARTAO = 2;
+    /** A barra de hoje no gráfico (no CSS: .chart-bar:hoje). */
+    private static final PseudoClass HOJE = PseudoClass.getPseudoClass("hoje");
 
     private final PedidoService pedidoService;
     private final FiadoService fiadoService;
     private final Navegacao navegacao;
 
-    @FXML private TilePane cartoes;
+    @FXML private Label resumoDoDia;
     @FXML private Label numeroPedidosHoje;
     @FXML private Label detalhePedidosHoje;
+    @FXML private ProgressBar barraEntregues;
     @FXML private Label numeroProximasHoras;
-    @FXML private Label detalheProximasHoras;
+    @FXML private Label numeroAtrasados;
+    @FXML private Label detalheAtrasados;
     @FXML private Label valorAReceber;
+    @FXML private Label centavosAReceber;
     @FXML private Label detalheAReceber;
-    @FXML private Label numeroDevedores;
-    @FXML private Label detalheDevedores;
+    @FXML private Label acimaDoLimite;
+    @FXML private VBox listaDevedores;
+    @FXML private Label resumoSemana;
+    @FXML private BarChart<String, Number> grafico;
     @FXML private VBox listaEntregas;
     @FXML private Label semEntregas;
 
@@ -53,21 +71,14 @@ public class InicioController implements TelaAtualizavel {
 
     @FXML
     private void initialize() {
-        cartoes.widthProperty().addListener((obs, antes, largura) -> ajustarCartoes(largura.doubleValue()));
         atualizar();
-    }
-
-    /** 4 cartões por linha quando cabem; senão, 2 por linha. Cada cartão ocupa a largura da sua coluna. */
-    private void ajustarCartoes(double largura) {
-        double espaco = cartoes.getHgap();
-        int colunas = largura >= 4 * LARGURA_MINIMA_DO_CARTAO + 3 * espaco ? 4 : 2;
-        cartoes.setPrefColumns(colunas);
-        cartoes.setPrefTileWidth(Math.floor((largura - (colunas - 1) * espaco) / colunas));
     }
 
     @Override
     public void atualizar() {
-        preencherCartoes();
+        preencherHoje();
+        preencherFiado();
+        preencherGrafico();
         preencherProximasEntregas();
     }
 
@@ -81,26 +92,113 @@ public class InicioController implements TelaAtualizavel {
         navegacao.abrir(Tela.NOVO_PEDIDO);
     }
 
-    private void preencherCartoes() {
-        numeroPedidosHoje.setText(String.valueOf(pedidoService.contarPedidosDeHoje()));
-        detalhePedidosHoje.setText("sem contar os cancelados");
-
-        numeroProximasHoras.setText(String.valueOf(pedidoService.contarEntregasNasProximasHoras(HORAS_DO_CARTAO)));
-        detalheProximasHoras.setText(textoAtrasados(pedidoService.contarAtrasados()));
-
-        valorAReceber.setText(Formatador.moeda(fiadoService.totalAReceber()));
-        detalheAReceber.setText("soma dos saldos devedores");
-
-        numeroDevedores.setText(String.valueOf(fiadoService.contarDevedores()));
-        detalheDevedores.setText("de " + fiadoService.listarContas(false).size() + " com conta fiado");
+    @FXML
+    private void abrirFiado() {
+        navegacao.abrir(Tela.FIADO);
     }
 
-    private static String textoAtrasados(long atrasados) {
-        if (atrasados == 0) {
-            return "nenhum pedido atrasado";
+    // ------------------------------------------------------------------ cartão "Hoje"
+
+    private void preencherHoje() {
+        long hoje = pedidoService.contarPedidosDeHoje();
+        long entregues = pedidoService.contarEntreguesDeHoje();
+        long proximas = pedidoService.contarEntregasNasProximasHoras(HORAS_DO_CARTAO);
+        long atrasados = pedidoService.contarAtrasados();
+
+        numeroPedidosHoje.setText(String.valueOf(hoje));
+        detalhePedidosHoje.setText(hoje == 0 ? "nenhum pedido para hoje" : entregues + " de " + hoje + " já entregues");
+        barraEntregues.setProgress(hoje == 0 ? 0 : (double) entregues / hoje);
+
+        numeroProximasHoras.setText(String.valueOf(proximas));
+        numeroAtrasados.setText(String.valueOf(atrasados));
+        numeroAtrasados.getStyleClass().remove("atrasado");
+        if (atrasados > 0) {
+            numeroAtrasados.getStyleClass().add("atrasado"); // em vermelho, e o texto embaixo explica
         }
-        return atrasados == 1 ? "e 1 pedido atrasado" : "e " + atrasados + " pedidos atrasados";
+        detalheAtrasados.setText(atrasados == 0 ? "nenhum" : "veja na agenda");
+
+        resumoDoDia.setText(hoje + (hoje == 1 ? " pedido hoje" : " pedidos hoje") + " · "
+                + entregues + (entregues == 1 ? " entregue" : " entregues") + " · "
+                + (atrasados == 0 ? "nada atrasado" : atrasados + (atrasados == 1 ? " atrasado" : " atrasados")));
     }
+
+    // ------------------------------------------------------------------ cartão do fiado
+
+    private void preencherFiado() {
+        String[] partes = separarCentavos(Formatador.moeda(fiadoService.totalAReceber()));
+        valorAReceber.setText(partes[0]);
+        centavosAReceber.setText(partes[1]);
+
+        long devedores = fiadoService.contarDevedores();
+        detalheAReceber.setText(devedores == 0 ? "ninguém está devendo"
+                : devedores + (devedores == 1 ? " cliente devendo" : " clientes devendo"));
+
+        long acima = fiadoService.contarAcimaDoLimite();
+        acimaDoLimite.setText(acima == 1 ? "1 acima do limite" : acima + " acima do limite");
+        acimaDoLimite.setVisible(acima > 0);
+        acimaDoLimite.setManaged(acima > 0);
+
+        // Quem deve mais (o relatório já vem do maior saldo para o menor).
+        listaDevedores.getChildren().setAll(fiadoService.relatorioDevedores().stream()
+                .limit(DEVEDORES_NO_CARTAO)
+                .map(InicioController::criarLinhaDevedor)
+                .toList());
+    }
+
+    /** "Mercadinho Bom Preço ........ R$ 455,00" */
+    private static HBox criarLinhaDevedor(Devedor devedor) {
+        Label nome = new Label(devedor.cliente().getNome());
+        nome.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(nome, Priority.ALWAYS);
+        Label saldo = new Label(Formatador.moeda(devedor.saldo()));
+        saldo.setMinWidth(Label.USE_PREF_SIZE);
+        HBox linha = new HBox(8, nome, saldo);
+        linha.getStyleClass().add("bloco");
+        linha.setAlignment(Pos.CENTER_LEFT);
+        return linha;
+    }
+
+    /** "R$ 485,00" vira "R$ 485" e ",00": os centavos aparecem num tom mais claro. */
+    static String[] separarCentavos(String valor) {
+        int virgula = valor.lastIndexOf(',');
+        return virgula < 0 ? new String[] {valor, ""} : new String[] {valor.substring(0, virgula), valor.substring(virgula)};
+    }
+
+    // ------------------------------------------------------------------ gráfico dos próximos 7 dias
+
+    private void preencherGrafico() {
+        LocalDate hoje = pedidoService.hoje();
+        Map<LocalDate, Long> porDia = pedidoService.pedidosPorDia(hoje, DIAS_DO_GRAFICO);
+
+        XYChart.Series<String, Number> serie = new XYChart.Series<>();
+        long total = 0;
+        for (Map.Entry<LocalDate, Long> dia : porDia.entrySet()) {
+            String nome = dia.getKey().equals(hoje) ? "hoje" : nomeCurtoDoDia(dia.getKey());
+            XYChart.Data<String, Number> barra = new XYChart.Data<>(nome, dia.getValue());
+            boolean eHoje = dia.getKey().equals(hoje);
+            String dica = Formatador.data(dia.getKey()) + ": " + dia.getValue()
+                    + (dia.getValue() == 1 ? " pedido" : " pedidos");
+            // A barra só existe depois que o gráfico a desenha: aí ela ganha a cor de hoje e a dica.
+            // (Pseudo-classe, e não classe CSS: o BarChart troca as classes da barra logo depois.)
+            barra.nodeProperty().addListener((obs, antes, no) -> {
+                if (no != null) {
+                    no.pseudoClassStateChanged(HOJE, eHoje);
+                    Tooltip.install(no, new Tooltip(dica));
+                }
+            });
+            serie.getData().add(barra);
+            total += dia.getValue();
+        }
+        grafico.getData().setAll(List.of(serie));
+        resumoSemana.setText("hoje " + porDia.get(hoje) + " · total " + total);
+    }
+
+    /** "sáb.", "dom." ... sem o ponto: "sáb", "dom". */
+    private static String nomeCurtoDoDia(LocalDate dia) {
+        return dia.getDayOfWeek().getDisplayName(TextStyle.SHORT, PORTUGUES).replace(".", "");
+    }
+
+    // ------------------------------------------------------------------ próximas entregas
 
     private void preencherProximasEntregas() {
         List<Pedido> proximas = pedidoService.proximasEntregas(LIMITE_DA_LISTA);
@@ -109,7 +207,7 @@ public class InicioController implements TelaAtualizavel {
         semEntregas.setManaged(proximas.isEmpty());
     }
 
-    /** Uma linha da lista: hora · cliente · total · status (e "Em breve"/"Atrasado", se for o caso). */
+    /** Um bloco da lista: hora · cliente e total · status (e "Em breve"/"Atrasado", se for o caso). */
     private HBox criarLinha(Pedido pedido) {
         // Atrasado de outro dia aparece com a data na frente (ex.: "28/10 15:30").
         Label hora = new Label(Formatador.horaNoDia(pedido.getDataHoraEntrega(), pedidoService.hoje()));
@@ -117,26 +215,24 @@ public class InicioController implements TelaAtualizavel {
         hora.setMinWidth(Label.USE_PREF_SIZE);
 
         Label cliente = new Label(pedido.getCliente().getNome());
-        Label numero = new Label("nº " + pedido.getId());
-        numero.getStyleClass().add("dica");
-        Region espaco = new Region();
-        HBox.setHgrow(espaco, Priority.ALWAYS);
+        cliente.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(cliente, Priority.ALWAYS);
         Label total = new Label(Formatador.moeda(pedido.calcularTotal()));
-        total.setMinWidth(110);
-        total.setAlignment(Pos.CENTER_RIGHT);
+        total.setMinWidth(Label.USE_PREF_SIZE);
+        HBox primeiraLinha = new HBox(8, cliente, total);
+        primeiraLinha.setAlignment(Pos.CENTER_LEFT);
 
-        // As etiquetas ficam numa caixa de largura fixa, para os valores ficarem alinhados na coluna.
-        HBox etiquetas = new HBox(8);
-        etiquetas.setAlignment(Pos.CENTER_RIGHT);
-        etiquetas.setMinWidth(240);
+        HBox segundaLinha = new HBox(8, Etiquetas.status(pedido.getStatus()));
+        segundaLinha.setAlignment(Pos.CENTER_LEFT);
         if (pedidoService.estaAtrasado(pedido)) {
-            etiquetas.getChildren().add(Etiquetas.atrasado());
+            segundaLinha.getChildren().add(Etiquetas.atrasado());
         } else if (pedidoService.estaEmBreve(pedido)) {
-            etiquetas.getChildren().add(Etiquetas.emBreve());
+            segundaLinha.getChildren().add(Etiquetas.emBreve());
         }
-        etiquetas.getChildren().add(Etiquetas.status(pedido.getStatus()));
 
-        HBox linha = new HBox(16, hora, cliente, numero, espaco, total, etiquetas);
+        VBox texto = new VBox(4, primeiraLinha, segundaLinha);
+        HBox.setHgrow(texto, Priority.ALWAYS);
+        HBox linha = new HBox(12, hora, texto);
         linha.getStyleClass().add("linha-entrega");
         linha.setAlignment(Pos.CENTER_LEFT);
         linha.setOnMouseClicked(evento -> navegacao.abrir(Tela.AGENDA));

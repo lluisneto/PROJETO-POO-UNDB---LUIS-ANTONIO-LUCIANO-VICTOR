@@ -18,9 +18,9 @@ Os códigos de regra (RN, RC) e de requisito (RF) são os de [`docs/requisitos/r
 
 | Parte | O que faz |
 |-------|-----------|
-| Menu lateral (fundo escuro) | Botões **Início**, **Agenda do dia**, **Novo pedido**, **Clientes**, **Produtos** e **Fiado**. A tela aberta fica destacada em laranja. O menu troca só o centro da janela. |
-| Cabeçalho | Título da tela e a data de hoje por extenso (ex.: "quinta-feira, 29 de outubro de 2026"). |
-| Barra de status | Mensagens de sucesso (ex.: "Pedido nº 12 salvo para hoje às 15:30.") que somem depois de alguns segundos. |
+| Barra do topo | A marca ("LS" + Controle Ágil), a navegação em pílulas (**Início**, **Agenda do dia**, **Novo pedido**, **Clientes**, **Produtos** e **Fiado**; a tela aberta fica em marrom café) e a data de hoje por extenso. A navegação troca só o centro da janela. |
+| Título | Nome da tela; no Início, uma saudação pela hora do dia ("Bom dia, L Salgados"). |
+| Mensagem rápida | Pílula no canto de baixo com o sucesso (ex.: "Pedido nº 12 salvo para hoje às 15:30."), que some depois de alguns segundos. |
 | Avisos | Regra de negócio quebrada vira um aviso com a mensagem da regra. Erro inesperado vira um aviso genérico e o detalhe técnico vai para o console. |
 | Falha ao gravar | Se o banco não aceitar uma gravação (ex.: arquivo travado por outro programa), aparece o motivo, nada é salvo pela metade e o sistema **recarrega os dados do banco**: a tela nunca mostra algo que não está gravado. |
 | Uma janela só | O sistema não abre duas vezes no mesmo banco (duas janelas apagariam o que a outra gravou). A segunda tentativa mostra "O Controle Ágil já está aberto". |
@@ -32,11 +32,11 @@ para um pedido "Em breve" virar "Atrasado" quando a hora passar.
 
 | Elemento | O que mostra |
 |----------|--------------|
-| Pedidos de hoje | Quantos pedidos têm entrega hoje (sem contar os cancelados). |
-| Próximas 2 horas *(cartão em destaque)* | Pedidos em aberto com entrega nas próximas 2 horas, e quantos estão atrasados. |
-| A receber no fiado | Soma dos saldos devedores de todas as contas. |
-| Clientes devendo | Quantos clientes têm saldo devedor, de quantos com conta fiado. |
-| Próximas entregas | Até 5 pedidos de hoje ainda não finalizados, por horário: hora, cliente, número, total, status e "Em breve"/"Atrasado". Clicar abre a Agenda do dia. |
+| Resumo do dia | Uma frase ("5 pedidos hoje · 2 entregues · 1 atrasado") e o botão **Novo pedido**. |
+| Hoje *(cartão largo)* | Pedidos de hoje (sem contar os cancelados), quantos já foram entregues (com barra), entregas nas próximas 2 horas e atrasados. |
+| Próximas entregas | Até 5 pedidos (atrasados primeiro, depois os de hoje por horário), um bloco por pedido: hora, cliente, total, status e "Em breve"/"Atrasado". Clicar abre a Agenda do dia. |
+| A receber no fiado | Soma dos saldos devedores (centavos em tom mais claro), quantos clientes devem, quantos passaram do limite e os 2 que devem mais. |
+| Próximos 7 dias | Gráfico de barras com os pedidos de cada dia; a barra de hoje fica em laranja e cada barra mostra o número ao passar o mouse. |
 
 Regras usadas: RF06, RF07.
 
@@ -67,7 +67,7 @@ Regras usadas: RN05, RC02, RC03, RC07, RN03 (fiado acima do limite **só avisa**
 | Itens | Produto (com preço) + quantidade + **Adicionar**. Adicionar um produto que já está na lista **soma a quantidade**. Cada linha tem **Remover**. |
 | Total | Em destaque, atualizado na hora. |
 | Pagamento | **Pagar depois** (padrão), **Dinheiro** (valor recebido e troco calculado na hora), **Pix** (código opcional), **Cartão** (escolha **Débito** ou **Crédito**) ou **Fiado** (mostra o crédito disponível e avisa quanto o total passa do limite; ao salvar, pede confirmação; desabilitado, com explicação, se o cliente não tiver conta fiado). |
-| Salvar / Limpar | Salvar registra o pedido e mostra o número na barra de status. Erros aparecem logo acima do botão Salvar. |
+| Salvar / Limpar | Salvar registra o pedido e mostra o número na mensagem rápida. Erros aparecem logo acima do botão Salvar. |
 | Rascunho guardado | Dá para ir até **Clientes** (cadastrar um cliente novo) ou **Produtos** e voltar: o pedido que estava sendo montado continua lá, e o cliente novo já aparece na lista. Com a lista vazia, o campo diz onde cadastrar. |
 
 Regras usadas: RN01, RN02, RN03 (fiado acima do limite **só avisa** e pede confirmação), RC18, RC06, RC10, RC11, RC12, RF03, RF04, RF08, RF14.
@@ -101,14 +101,14 @@ Regras usadas: RC05, RC13 (preço > 0), RC14, RF02.
 | Conta selecionada | Saldo devedor em destaque, "devendo desde", barra de uso do limite com texto (ex.: "R$ 120,00 de R$ 200,00 usados. Ainda pode comprar R$ 80,00."; acima do limite: "Passou do limite em R$ 5,00."; fica vermelha a partir de 90%). |
 | Histórico | Data · Tipo (Compra, Pagamento ou Estorno) · Valor · Pedido nº, do mais novo para o mais antigo. |
 | Registrar pagamento | Valor + botão. Pagamento válido reduz o saldo e entra no histórico. |
-| Rodapé | Total a receber somando todas as contas e quantos clientes estão devendo. |
+| Total a receber | Acima das contas: a soma de todas as contas e quantos clientes estão devendo. |
 
 Regras usadas: RN03 (conta acima do limite só avisa), RN04, RC08, RC17, RF08 a RF13.
 
 ## Roteiro rápido de teste manual
 
-1. Abra o sistema (`.\mvnw.cmd javafx:run`). Na primeira vez, escolha **Carregar exemplos**. O **Início** mostra os cartões e as próximas entregas.
-2. Clique em cada item do menu: as 6 telas abrem e o item ativo fica laranja.
+1. Abra o sistema (`.\mvnw.cmd javafx:run`). Na primeira vez, escolha **Carregar exemplos**. O **Início** mostra a saudação, os cartões do dia, as próximas entregas e o gráfico.
+2. Clique em cada pílula da navegação: as 6 telas abrem e a ativa fica em marrom café.
 3. **Agenda do dia**: confira um pedido "Atrasado" e um "Em breve" (linha destacada). Isso vale no dia em que os exemplos foram carregados; nos dias seguintes, os pedidos de exemplo que ficaram em aberto aparecem no aviso "atrasados de dias anteriores" (para refazer o roteiro do zero, feche o sistema e apague o `controle-agil.db`).
 4. Selecione um pedido pendente e clique em **Avançar para Em produção** até **Entregue**. Depois disso, os botões de avançar e cancelar ficam desabilitados.
 5. **Novo pedido**: escolha **Mercadinho Bom Preço** (crédito de R$ 45,00), adicione 10 coxinhas, escolha **Fiado**: o texto avisa quanto passa do limite. Salve: o sistema pede confirmação; escolha **Salvar no fiado** e o pedido aparece na Agenda (na tela Fiado, a conta aparece acima do limite). Em outro pedido, escolha **Cartão** › **Crédito** e salve.
