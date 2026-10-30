@@ -34,15 +34,15 @@ flowchart LR
     uc8 -. "se for fiado, usa" .-> uc7
 ```
 
-| Caso de uso | Requisitos | Classes envolvidas |
-|-------------|------------|--------------------|
-| Cadastrar cliente | RF01 | `Cliente`, `ClienteRepository`, `ClientesController` |
-| Cadastrar produto | RF02 | `Produto`, `ProdutoRepository` |
-| Registrar pedido agendado | RF03 | `Pedido`, `ItemPedido`, `PedidoService` |
-| Atualizar status do pedido | RF04 | `Pedido`, `StatusPedido` |
-| Ver agenda do dia | RF05 | `PedidoService.agendaDoDia()` |
-| Ver alertas de entrega | RF06 | `PedidoService.entregasProximas()` |
-| Abrir conta fiado | RF07 | `Cliente.abrirContaFiado()`, `ContaFiado` |
-| Receber pagamento | RF12 | `Pagamento`, `PagamentoDinheiro`, `PagamentoPix`, `PagamentoFiado` |
-| Registrar pagamento do fiado | RF08, RF09, RF11 | `ContaFiado`, `MovimentacaoFiado` |
-| Ver relatório de devedores | RF10 | `FiadoService`, `Devedor` |
+| Caso de uso | Requisitos | Tela | Classes envolvidas |
+|-------------|------------|------|--------------------|
+| Cadastrar cliente | RF01 | Clientes | `Cliente`, `ClienteService`, `ClientesController` |
+| Cadastrar produto | RF02 | Produtos | `Produto`, `ProdutoService`, `ProdutosController` |
+| Registrar pedido agendado | RF03, RF04 | Novo pedido | `Pedido`, `ItemPedido`, `PedidoService`, `NovoPedidoController` |
+| Atualizar status do pedido | RF05 | Agenda do dia | `Pedido`, `StatusPedido`, `PedidoService.avancarStatus()` |
+| Ver agenda do dia | RF06 | Agenda do dia | `PedidoService.pedidosDoDia()`, `AgendaController` |
+| Ver alertas de entrega | RF07 | Início e Agenda do dia | `PedidoService.estaEmBreve()` / `estaAtrasado()` |
+| Abrir conta fiado | RF11 | Clientes | `Cliente.abrirContaFiado()`, `ContaFiado` |
+| Receber pagamento | RF14, RF08 | Novo pedido e Agenda do dia | `Pagamento`, `PagamentoDinheiro`, `PagamentoPix`, `PagamentoFiado` |
+| Registrar pagamento do fiado | RF09, RF10, RF13 | Fiado | `FiadoService`, `ContaFiado`, `MovimentacaoFiado` |
+| Ver relatório de devedores | RF12 | Fiado e Início | `FiadoService`, `Devedor` |

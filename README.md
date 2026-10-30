@@ -70,22 +70,24 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 
 ## ✅ Funcionalidades
 
+> Marcado = já funciona no **esqueleto da interface** (com dados em memória; o SQLite é o próximo passo).
+
 ### Etapa 1: Pedidos agendados
 - [x] Cadastro de clientes
-- [ ] Cadastro de produtos (salgados, preços)
-- [ ] Registro de pedido com itens, **data e horário de entrega**
-- [ ] Controle de status: `PENDENTE` → `EM_PRODUCAO` → `SAIU_PARA_ENTREGA` → `ENTREGUE` / `CANCELADO`
-- [ ] Agenda do dia (pedidos ordenados por horário)
-- [ ] Alerta de pedidos com entrega próxima
+- [x] Cadastro de produtos (salgados, preços)
+- [x] Registro de pedido com itens, **data e horário de entrega**
+- [x] Controle de status: `PENDENTE` → `EM_PRODUCAO` → `SAIU_PARA_ENTREGA` → `ENTREGUE` / `CANCELADO`
+- [x] Agenda do dia (pedidos ordenados por horário)
+- [x] Alerta de pedidos com entrega próxima ("Em breve") e atrasados
 
 ### Etapa 1: Conta fiado
-- [ ] Conta fiado por cliente
-- [ ] Registro de compras fiado (débitos)
-- [ ] Registro de pagamentos (total ou parcial)
-- [ ] Cálculo automático do saldo devedor
-- [ ] Limite de crédito por cliente
-- [ ] Relatório de devedores (quem deve, quanto e há quanto tempo)
-- [ ] Histórico de movimentações
+- [x] Conta fiado por cliente
+- [x] Registro de compras fiado (débitos)
+- [x] Registro de pagamentos (total ou parcial)
+- [x] Cálculo automático do saldo devedor
+- [x] Limite de crédito por cliente
+- [x] Relatório de devedores (quem deve, quanto e há quanto tempo)
+- [x] Histórico de movimentações
 
 ### Etapa 2: Entregas (futuro)
 - [ ] Cadastro de entregadores (fixos e avulsos)
@@ -99,11 +101,11 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 
 | Tecnologia | Para que serve no projeto |
 |------------|---------------------------|
-| **Java 21+** | Linguagem principal do sistema |
-| **JavaFX** | Interface gráfica desktop (telas, botões, tabelas) |
-| **SQLite** | Banco de dados local em um único arquivo, sem servidor |
-| **Maven** | Gerencia as dependências (bibliotecas) e o build do projeto |
-| **JUnit 5** | Testes automatizados |
+| **Java 21 (LTS)** | Linguagem principal do sistema, com módulos (`module-info.java`) |
+| **JavaFX 21** | Interface gráfica desktop (telas, botões, tabelas), com telas em FXML e visual em CSS |
+| **SQLite** | Banco de dados local em um único arquivo, sem servidor (próximo passo; hoje o sistema roda em memória) |
+| **Maven** (com Maven Wrapper) | Gerencia as dependências (bibliotecas) e o build. O `mvnw.cmd` baixa o Maven sozinho |
+| **JUnit 6** | Testes automatizados |
 | **Git + GitHub** | Controle de versão e trabalho em equipe |
 
 ---
@@ -131,7 +133,7 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 - **Polimorfismo:** cada tipo de `Pagamento` implementa `processar()` do seu jeito; o `PagamentoFiado`, por exemplo, lança o valor na conta fiado do cliente.
 - **Abstração:** `Pessoa` e `Pagamento` são classes abstratas, representando conceitos gerais.
 
-> 📐 Diagramas em [`docs/diagramas/`](docs/diagramas/): [classes](docs/diagramas/diagrama-de-classes.md) e [casos de uso](docs/diagramas/casos-de-uso.md). Requisitos em [`docs/requisitos/requisitos.md`](docs/requisitos/requisitos.md).
+> 📐 Diagramas em [`docs/diagramas/`](docs/diagramas/): [classes](docs/diagramas/diagrama-de-classes.md) (com as classes de apoio) e [casos de uso](docs/diagramas/casos-de-uso.md). Requisitos em [`docs/requisitos/requisitos.md`](docs/requisitos/requisitos.md). O que cada tela faz: [`docs/interface/telas.md`](docs/interface/telas.md).
 
 ---
 
@@ -139,50 +141,91 @@ Um sistema desktop dividido em módulos, desenvolvido em etapas:
 
 ```
 PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR/
-├── docs/                        # Documentação do projeto
-│   ├── diagramas/               # Diagramas UML (classes, casos de uso)
-│   └── requisitos/              # Levantamento de requisitos com o cliente
+├── docs/                          # Documentação do projeto
+│   ├── diagramas/                 # Diagrama de classes (+ classes de apoio) e casos de uso
+│   ├── interface/telas.md         # O que cada tela faz e quais regras aplica
+│   └── requisitos/                # Requisitos (RF), regras de negócio (RN) e não funcionais (RNF)
 ├── src/
 │   ├── main/
-│   │   ├── java/br/com/controleagil/
-│   │   │   ├── model/           # Classes do domínio (Cliente, Pedido, ContaFiado...)
-│   │   │   ├── repository/      # Acesso ao banco de dados (salvar, buscar)
-│   │   │   ├── service/         # Regras de negócio (ex.: validar limite do fiado)
-│   │   │   └── controller/      # Ligação entre as telas e as regras
+│   │   ├── java/
+│   │   │   ├── module-info.java   # Módulo Java: o que o sistema usa e o que ele libera
+│   │   │   └── br/com/controleagil/
+│   │   │       ├── App.java       # Abre a janela
+│   │   │       ├── model/         # Domínio, igual ao diagrama (Cliente, Pedido, ContaFiado...)
+│   │   │       ├── exception/     # RegraNegocioException
+│   │   │       ├── repository/    # Interfaces de acesso aos dados
+│   │   │       │   ├── memoria/   # Implementação em memória (usada hoje)
+│   │   │       │   └── sqlite/    # Implementação SQLite (primeira versão, ainda não ligada)
+│   │   │       ├── service/       # Casos de uso e regras que envolvem vários objetos + DadosExemplo
+│   │   │       ├── controller/    # Uma classe por tela (finas: só chamam os services)
+│   │   │       └── util/          # AppContexto (monta tudo), Formatador (R$, datas), Dialogos
 │   │   └── resources/
-│   │       ├── view/            # Telas JavaFX (arquivos .fxml)
-│   │       └── db/              # Script de criação do banco (schema.sql)
-│   └── test/java/br/com/controleagil/   # Testes automatizados (JUnit)
-├── .gitignore                   # Arquivos que o Git deve ignorar
-└── README.md                    # Este arquivo
+│   │       ├── view/              # Telas JavaFX (arquivos .fxml)
+│   │       ├── css/estilo.css     # Identidade visual (cores em variáveis)
+│   │       └── db/schema.sql      # Script de criação do banco SQLite
+│   └── test/java/br/com/controleagil/   # Testes automatizados (JUnit), espelhando os pacotes
+├── .mvn/wrapper/ , mvnw , mvnw.cmd    # Maven Wrapper (não precisa instalar o Maven)
+├── pom.xml                        # Dependências e build (Maven)
+├── .gitignore                     # Arquivos que o Git deve ignorar
+└── README.md                      # Este arquivo
 ```
 
-**Por que separar assim?** Cada pasta tem uma responsabilidade só. A tela (`controller`/`view`) não acessa o banco diretamente: ela pede ao `service`, que aplica as regras e usa o `repository`. Isso deixa o código mais organizado, mais fácil de testar e de dividir entre a equipe.
+**Por que separar assim?** Cada pasta tem uma responsabilidade só. A tela (`controller`/`view`) não acessa os dados diretamente: ela pede ao `service`, que aplica as regras e usa o `repository` pela **interface**. Por isso, trocar a memória pelo SQLite não muda nenhuma linha dos services nem das telas: só o `AppContexto`, que monta o sistema.
 
 ---
 
 ## ▶️ Como executar
 
-Pré-requisitos:
-- JDK 21 ou superior
-- Maven 3.9 ou superior
-- Git
+Os comandos abaixo são para o **Windows**, no terminal **PowerShell** (também funciona no terminal do VS Code).
 
-```bash
-# Clonar o repositório
-git clone https://github.com/lluisneto/PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR.git
-cd PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR
+### 1. Pré-requisitos
 
-# Rodar os testes automatizados
-mvn test
+- **JDK 21** (recomendado: [Eclipse Temurin 21](https://adoptium.net/temurin/releases/?version=21), instalador `.msi` para Windows x64; marque a opção que configura o `JAVA_HOME`).
+- **Git**.
+- **Não** precisa instalar o Maven: o projeto traz o **Maven Wrapper** (`mvnw.cmd`), que baixa o Maven sozinho na primeira vez (precisa de internet nessa primeira vez).
 
-# Abrir o sistema
-mvn javafx:run
+Para conferir o Java, abra um PowerShell novo e rode:
+
+```powershell
+java -version
 ```
 
-Na primeira vez que o sistema abre, ele cria o arquivo `controle-agil.db` (o banco SQLite) na pasta do projeto. Esse arquivo fica fora do Git (`.gitignore`).
+Tem que aparecer `21` na versão.
 
-O que já funciona na tela: **cadastro de clientes**, com a opção de abrir a conta fiado. As regras de pedidos, pagamentos e fiado já estão prontas e testadas no código; as telas delas são os próximos passos.
+### 2. Baixar o projeto
+
+```powershell
+git clone https://github.com/lluisneto/PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR.git
+cd PROJETO-POO-UNDB---LUIS-ANTONIO-LUCIANO-VICTOR
+```
+
+### 3. Abrir o sistema
+
+```powershell
+.\mvnw.cmd javafx:run
+```
+
+A janela abre com **dados de exemplo fictícios** (produtos, clientes, pedidos de hoje e de amanhã, contas fiado).
+Tudo fica na memória: o que você cadastrar some quando fechar o sistema. O banco SQLite é o próximo passo.
+
+### 4. Rodar os testes automatizados
+
+```powershell
+.\mvnw.cmd test
+```
+
+Para apagar o que foi compilado antes e testar do zero: `.\mvnw.cmd clean test`.
+
+### 5. Abrir no VS Code
+
+1. Instale a extensão **Extension Pack for Java** (da Microsoft).
+2. No VS Code, use **File > Open Folder...** e escolha a pasta do projeto. A extensão reconhece o `pom.xml` sozinha (espere terminar o "Java: Importing projects" no rodapé).
+3. Para abrir o sistema, use o terminal do VS Code (**Terminal > New Terminal**, que já é PowerShell) e rode `.\mvnw.cmd javafx:run`.
+4. Os testes aparecem na aba **Testing** (ícone de tubo de ensaio) e também rodam com `.\mvnw.cmd test`.
+
+> Se o PowerShell disser que `mvnw.cmd` não é reconhecido, confira se você está na pasta do projeto (onde fica o `pom.xml`) e se escreveu o `.\` antes.
+
+O passo a passo para testar cada tela está em [`docs/interface/telas.md`](docs/interface/telas.md#roteiro-rápido-de-teste-manual).
 
 ---
 
@@ -192,12 +235,13 @@ O que já funciona na tela: **cadastro de clientes**, com a opção de abrir a c
 - [x] Documentação inicial (README) e estrutura do repositório
 - [x] Diagrama de classes UML e casos de uso
 - [x] Requisitos documentados (RF, RN, RNF)
-- [x] Implementação das classes do domínio (`model`)
-- [ ] Banco de dados SQLite (tabelas criadas; clientes e produtos já salvam)
-- [ ] Módulo de pedidos agendados (regras prontas, falta a tela)
-- [ ] Módulo de conta fiado (regras prontas, falta a tela)
-- [ ] Interface gráfica (JavaFX): tela inicial e clientes prontas
-- [ ] Testes automatizados (33 testes passando; ampliar junto com as telas)
+- [x] Implementação das classes do domínio (`model`), seguindo o diagrama de classes
+- [x] Esqueleto da interface (JavaFX): as 6 telas navegáveis, com as regras de negócio funcionando e dados de exemplo em memória
+- [x] Módulo de pedidos agendados (Novo pedido, Agenda do dia, alertas "Em breve" e "Atrasado")
+- [x] Módulo de conta fiado (contas, limite, histórico, pagamentos, total a receber)
+- [x] Testes automatizados das regras de negócio (model, services e formatação)
+- [ ] Banco de dados SQLite: ligar os repositórios SQLite (clientes e produtos já existem; faltam pedidos, pagamentos e movimentações do fiado)
+- [ ] Validar com o cliente as perguntas pendentes (limite do fiado bloqueia ou avisa? antecedência do alerta? cartão?)
 - [ ] Apresentação ao cliente
 - [ ] Etapa 2: módulo de entregas
 
